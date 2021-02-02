@@ -3,6 +3,7 @@
 
 #include "PHG4TpcElectronDrift.h"
 #include "PHG4TpcDistortion.h"
+#include "PHG4TpcCentralMembrane.h"
 #include "PHG4TpcPadPlane.h"  // for PHG4TpcPadPlane
 
 #include <g4main/PHG4Hit.h>
