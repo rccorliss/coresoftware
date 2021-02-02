@@ -224,7 +224,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
   dtrans = new TH1F("difftrans", "transversal diffusion", 100, diffusion_trans - diffusion_trans / 2., diffusion_trans + diffusion_trans / 2.);
   se->registerHisto(dtrans);
 
-  do_ElectronDriftQAHistos = false;  // Whether or not to produce an ElectronDriftQA.root file with useful info
+  do_ElectronDriftQAHistos = true;  // Whether or not to produce an ElectronDriftQA.root file with useful info
   if (do_ElectronDriftQAHistos)
   {
     hitmapstart = new TH2F("hitmapstart", "g4hit starting X-Y locations", 1560, -78, 78, 1560, -78, 78);
