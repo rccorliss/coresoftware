@@ -30,7 +30,8 @@ pkginclude_HEADERS = \
   PHG4TpcDigitizer.h \
   PHG4TpcSubsystem.h \
   PHG4TpcEndCapSubsystem.h \
-  PHG4TpcDistortion.h
+  PHG4TpcDistortion.h \
+  PHG4TpcCentralMembrane.h
 
 libg4tpc_la_SOURCES = \
   PHG4TpcDetector.cc \
@@ -45,7 +46,8 @@ libg4tpc_la_SOURCES = \
   PHG4TpcSteppingAction.cc \
   PHG4TpcEndCapSteppingAction.cc \
   PHG4TpcSubsystem.cc \
-  PHG4TpcEndCapSubsystem.cc
+  PHG4TpcEndCapSubsystem.cc \
+  PHG4TpcCentralMembrane.cc
 
 ################################################
 # linking tests
