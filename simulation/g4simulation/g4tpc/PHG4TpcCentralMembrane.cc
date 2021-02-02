@@ -36,6 +36,7 @@ PHG4TpcCentralMembrane::PHG4TpcCentralMembrane()
     keepUntil_R2 {7,7,8,7,8,8,8,8},
     keepUntil_R3 {11,10,11,11,11,11,12,11}
 {
+  printf("building CM\n");
   begin_CM = 221.4019814 * mm; // inner radius of CM
   end_CM = 759.2138 * mm; // outer radius of CM
   
