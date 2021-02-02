@@ -16,6 +16,7 @@
 
 class PHG4TpcPadPlane;
 class PHG4TpcDistortion;
+class PHG4TpcCentralMembrane;
 class PHCompositeNode;
 class TH1;
 class TH2;
@@ -55,6 +56,7 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
 
   //! setup TPC distortion
   void setTpcDistortion(PHG4TpcDistortion *);
+  void setCentralMembrane(bool addCMHits){do_addCmHits=addCMHits; return;};
 
   //! setup readout plane
   void registerPadPlane(PHG4TpcPadPlane *padplane);
@@ -69,9 +71,13 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   std::unique_ptr<TrkrHitSetContainer> single_hitsetcontainer;
   std::unique_ptr<PHG4TpcPadPlane> padplane;
 
+  PHG4TpcCentralMembrane * membrane;
+  PHG4HitContainer *cmHits;
+
   std::unique_ptr<PHG4TpcDistortion> m_distortionMap;
   int event_num = 0;
   bool do_ElectronDriftQAHistos = false;
+  bool do_addCmHits=true;
 
   TH1 *dlong = nullptr;
   TH1 *dtrans = nullptr;

@@ -75,6 +75,9 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   InitializeParameters();
   RandomGenerator.reset(gsl_rng_alloc(gsl_rng_mt19937));
   set_seed(PHRandomSeed());
+  
+  membrane=new PHG4TpcCentralMembrane();
+  cmHits=new PHG4HitContainer();
   return;
 }
 
@@ -237,6 +240,14 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     deltarnodist = new TH2F("deltarnodist", "Delta r (no SC distortion, only diffusion); r (cm);#Delta r (cm)", 580, 20, 78, 1000, -2, 5);
   }
 
+  if (do_addCmHits)
+    {
+      for (int i=0;i<membrane->PHG4Hits.size();i++){
+	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
+	cmHits->AddHit(membrane->PHG4Hits[i]);
+      }
+    }
+
   if (Verbosity())
   {
     // eval tree only when verbosity is on
@@ -275,6 +286,12 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
 
   PHG4HitContainer::ConstIterator hiter;
   PHG4HitContainer::ConstRange hit_begin_end = g4hit->getHits();
+  int nHitSets=1;
+
+  if (do_addCmHits){//add in the second set, if we have it.
+    nHitSets=2;
+  }
+  
   //std::cout << "g4hits size " << g4hit->size() << std::endl;
   unsigned int count_g4hits = 0;
   int count_electrons = 0;
@@ -284,6 +301,8 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   double ihit = 0;
   unsigned int dump_interval = 5000;  // dump temp_hitsetcontainer to the node tree after this many g4hits
   unsigned int dump_counter = 0;
+  for (int hitSet=0;hitSet<nHitSets;hitSet++){
+    if (hitSet>0) hit_begin_end=cmHits->getHits();
   for (hiter = hit_begin_end.first; hiter != hit_begin_end.second; ++hiter)
   {
     count_g4hits++;
@@ -550,6 +569,7 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
     single_hitsetcontainer->Reset();
 
   }  // end loop over g4hits
+  }//end loop over hitsets.
   
   if (Verbosity() > 2)
   {
