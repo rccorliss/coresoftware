@@ -76,9 +76,11 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   InitializeParameters();
   RandomGenerator.reset(gsl_rng_alloc(gsl_rng_mt19937));
   set_seed(PHRandomSeed());
-  
+  printf("starting to build electron drift\n");
   membrane=new PHG4TpcCentralMembrane();
+  printf("done building CM (from ElectronDrift perspective)\n");
   cmHits=new PHG4HitContainer();
+  printf("done building electron drift\n");
   return;
 }
 
