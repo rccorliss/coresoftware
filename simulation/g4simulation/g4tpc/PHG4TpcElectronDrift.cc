@@ -247,7 +247,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     {
       for (int i=0;i<membrane->PHG4Hits.size();i++){
 	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
-	membrane->PHG4Hits[i]->set_hit_id(1e8+i);//rcc hardcoded 300 electrons per stripe!
+	membrane->PHG4Hits[i]->set_hit_id(1e8+i);
 	cmHits->AddHit(membrane->PHG4Hits[i]);
       }
     }
