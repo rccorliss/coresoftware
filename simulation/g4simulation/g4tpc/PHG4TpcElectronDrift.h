@@ -42,7 +42,9 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   //! detector name
   void Detector(const std::string &d)
   {
+    printf("Heard %s.  Setting\n",d);
     detector = d;
+    printf("detector=%s\n",detector);
   }
 
   //! detector name
