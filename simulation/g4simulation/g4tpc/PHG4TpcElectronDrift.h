@@ -105,7 +105,8 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   TNtuple *nthit = nullptr;
   TNtuple *ntfinalhit = nullptr;
   TNtuple *ntpad = nullptr;
-  std::string detector;
+  //std::string detector; //rcc commented this out in favor of the line below to force behavior that was crashing.
+  std::string detector="TPC";
   std::string hitnodename;
   std::string seggeonodename;
 
