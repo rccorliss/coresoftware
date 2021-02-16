@@ -288,13 +288,34 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
     gSystem->Exit(1);
   }
 
-  PHG4HitContainer::ConstIterator hiter;
-  PHG4HitContainer::ConstRange hit_begin_end = g4hit->getHits();
-  int nHitSets=1;
 
+  PHG4HitContainer::ConstIterator hiter;
+  PHG4HitContainer::ConstRange hit_begin_end;
+
+  const float cm_flash_advance=0.;//set the default z shift to zero.  Gotta think about how to actually handle this in data.
   if (do_addCmHits){//add in the second set, if we have it.
-    nHitSets=2;
+    //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
+    int newkey=1+g4hit->getmaxkey(g4hit->GetID());//this can't be the right way to getID for the layer that is needed.  ask Tony.
+    hit_begin_end=cmHits->getHits();
+    for (hiter = hit_begin_end.first; hiter != hit_begin_end.second; ++hiter){
+      hiter->second->set_hit_id(newkey);
+      hiter->second->set_z(hiter->second->get_z()+cm_flash_advance);
+      g4hits->AddHit(hiter->second);
+      newkey++;
+    }
   }
+
+
+
+  hit_begin_end= g4hit->getHits();
+
+
+
+  //int nHitSets=1;
+  //old version:
+  //if (do_addCmHits){//add in the second set, if we have it.
+  //   nHitSets=2;
+  //}
   
   //std::cout << "g4hits size " << g4hit->size() << std::endl;
   unsigned int count_g4hits = 0;
@@ -305,8 +326,8 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   double ihit = 0;
   unsigned int dump_interval = 5000;  // dump temp_hitsetcontainer to the node tree after this many g4hits
   unsigned int dump_counter = 0;
-  for (int hitSet=0;hitSet<nHitSets;hitSet++){
-    if (hitSet>0) hit_begin_end=cmHits->getHits();
+  //for (int hitSet=0;hitSet<nHitSets;hitSet++){
+  //  if (hitSet>0) hit_begin_end=cmHits->getHits();
   for (hiter = hit_begin_end.first; hiter != hit_begin_end.second; ++hiter)
   {
     count_g4hits++;
