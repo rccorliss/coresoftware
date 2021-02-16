@@ -299,7 +299,8 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
     hit_begin_end=cmHits->getHits();
     for (hiter = hit_begin_end.first; hiter != hit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
-      hiter->second->set_z(hiter->second->get_z()+cm_flash_advance);
+      hiter->second->set_z(0,hiter->second->get_z(0)+cm_flash_advance);
+      hiter->second->set_z(1,hiter->second->get_z(1)+cm_flash_advance);
       g4hit->AddHit(hiter->second);
       newkey++;
     }
