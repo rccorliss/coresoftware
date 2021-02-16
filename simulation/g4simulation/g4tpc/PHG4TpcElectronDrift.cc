@@ -300,7 +300,7 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
     for (hiter = hit_begin_end.first; hiter != hit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
       hiter->second->set_z(hiter->second->get_z()+cm_flash_advance);
-      g4hits->AddHit(hiter->second);
+      g4hit->AddHit(hiter->second);
       newkey++;
     }
   }
@@ -594,7 +594,7 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
     single_hitsetcontainer->Reset();
 
   }  // end loop over g4hits
-  }//end loop over hitsets.
+  //old version: }//end loop over hitsets.
   
   if (Verbosity() > 2)
   {
