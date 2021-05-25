@@ -4,6 +4,7 @@
 #include "PHG4TpcElectronDrift.h"
 #include "PHG4TpcDistortion.h"
 #include "PHG4TpcCentralMembrane.h"
+#include "PHG4TpcLaser.h"
 #include "PHG4TpcPadPlane.h"  // for PHG4TpcPadPlane
 
 #include <g4main/PHG4Hit.h>
@@ -78,6 +79,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   set_seed(PHRandomSeed());
   printf("starting to build electron drift\n");
   membrane=new PHG4TpcCentralMembrane();
+  //laser=new PHG4TpcLaser();
   printf("done building CM (from ElectronDrift perspective)\n");
   cmHits=new PHG4HitContainer();
   printf("done building electron drift\n");
@@ -292,7 +294,7 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   PHG4HitContainer::ConstIterator hiter;
   PHG4HitContainer::ConstRange hit_begin_end;
 
-  const float cm_flash_advance=0.;//set the default z shift to zero.  Gotta think about how to actually handle this in data.
+  const float cm_flash_advance=30.;//set the default z shift to zero.  Gotta think about how to actually handle this in data.
   if (do_addCmHits){//add in the second set, if we have it.
     //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
     int newkey=1+g4hit->getmaxkey(g4hit->GetID());//this can't be the right way to getID for the layer that is needed.  ask Tony.

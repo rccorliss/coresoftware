@@ -89,7 +89,7 @@ PHG4TpcCentralMembrane::PHG4TpcCentralMembrane()
   for (int i = 0; i < 18; i++){ // loop over petalID
     for (int j = 0; j < 8; j++){ // loop over radiusID
       for (int k = 0; k < nGoodStripes_R1_e[j]; k++){ // loop over stripeID
-	PHG4Hits.push_back(GetPHG4HitFromStripe(i, 0, j, k, nElectrons));
+	PHG4Hits.push_back(GetPHGH4itFromStripe(i, 0, j, k, nElectrons));
 	BotVertices.push_back(GetBotVerticesFromStripe(0, j, k));
 	TopVertices.push_back(GetTopVerticesFromStripe(0, j, k));
       }

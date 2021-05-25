@@ -61,6 +61,7 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   //! setup TPC distortion
   void setTpcDistortion(PHG4TpcDistortion *);
   void setCentralMembrane(bool addCMHits){do_addCmHits=addCMHits; return;};
+  void setCentralMembraneDelay(int ns){do_addCmHits=addCMHits; return;};
 
   //! setup readout plane
   void registerPadPlane(PHG4TpcPadPlane *padplane);
