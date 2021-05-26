@@ -4,7 +4,7 @@
 #include "PHG4TpcElectronDrift.h"
 #include "PHG4TpcDistortion.h"
 #include "PHG4TpcCentralMembrane.h"
-#include "PHG4TpcLaser.h"
+//for future #include "PHG4TpcLaser.h"
 #include "PHG4TpcPadPlane.h"  // for PHG4TpcPadPlane
 
 #include <g4main/PHG4Hit.h>
@@ -295,6 +295,7 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   PHG4HitContainer::ConstRange hit_begin_end;
 
   const float cm_flash_advance=30.;//set the default z shift to zero.  Gotta think about how to actually handle this in data.
+  //eventually need to get the drift speed and use the time info
   if (do_addCmHits){//add in the second set, if we have it.
     //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
     int newkey=1+g4hit->getmaxkey(g4hit->GetID());//this can't be the right way to getID for the layer that is needed.  ask Tony.
