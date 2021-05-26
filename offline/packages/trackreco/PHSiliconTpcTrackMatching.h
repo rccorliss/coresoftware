@@ -19,7 +19,7 @@ class PHSiliconTpcTrackMatching : public PHTrackPropagating
 
   PHSiliconTpcTrackMatching(const std::string &name = "PHSiliconTpcTrackMatching");
 
-  virtual ~PHSiliconTpcTrackMatching();
+  ~PHSiliconTpcTrackMatching() override;
 
   void set_track_map_name_silicon(const std::string &map_name) { _track_map_name_silicon = map_name; }
   void set_phi_search_window(const double win){_phi_search_win = win;}
@@ -75,7 +75,7 @@ class PHSiliconTpcTrackMatching : public PHTrackPropagating
   double _collision_rate = 50e3;  // input rate for phi correction
   double _reference_collision_rate = 50e3;  // reference rate for phi correction
 
-  bool _is_ca_seeder = false;
+  bool _is_ca_seeder = true;
   bool _sc_calib_flag = false;
   bool _test_windows = false;
 

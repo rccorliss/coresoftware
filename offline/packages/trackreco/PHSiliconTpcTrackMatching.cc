@@ -4,7 +4,7 @@
 
 /// Tracking includes
 #include <trackbase/TrkrDefs.h>                // for cluskey, getTrkrId, tpcId
-#include <trackbase_historic/SvtxTrack_v1.h>
+#include <trackbase_historic/SvtxTrack_v2.h>
 #include <trackbase_historic/SvtxTrackMap.h>
 #include <trackbase_historic/SvtxVertex.h>     // for SvtxVertex
 #include <trackbase_historic/SvtxVertexMap.h>
@@ -50,8 +50,7 @@ PHSiliconTpcTrackMatching::~PHSiliconTpcTrackMatching()
 int PHSiliconTpcTrackMatching::Setup(PHCompositeNode *topNode)
 {
   // put these in the output file
-  cout << PHWHERE << " p0 " << _par0 << " p1 " << _par1 << " p2 " 
-       << _par2 << " Search windows: phi " << _phi_search_win << " eta " 
+  cout << PHWHERE "_is_ca_seeder " << _is_ca_seeder << " Search windows: phi " << _phi_search_win << " eta " 
        << _eta_search_win << endl;
 
   // corrects the PHTpcTracker phi bias
@@ -90,11 +89,28 @@ int PHSiliconTpcTrackMatching::Process()
   // We will have to expand the number of tracks whenever we find multiple matches to the silicon
 
   if(Verbosity() > 0)
-    cout << PHWHERE << " TPC track map size " << _track_map->size() << " Silicon track map size " << _track_map->size() << endl;
+    cout << PHWHERE << " TPC track map size " << _track_map->size() << " Silicon track map size " << _track_map_silicon->size() << endl;
 
- // We remember the original size of the TPC track map here
+  if(Verbosity() > 2)
+    {
+      // list silicon tracks
+      for (auto phtrk_iter_si = _track_map_silicon->begin();
+	   phtrk_iter_si != _track_map_silicon->end(); 
+	   ++phtrk_iter_si)
+	{
+	  _tracklet_si = phtrk_iter_si->second;	  
+	  
+	  double si_phi = atan2(_tracklet_si->get_py(), _tracklet_si->get_px());
+	  double si_eta = _tracklet_si->get_eta();
+	  
+	  cout << " Si track " << _tracklet_si->get_id()  << " si_phi " << si_phi  << " si_eta " << si_eta << endl;
+	}  
+    }
+  
+  
+  // We remember the original size of the TPC track map here
   const unsigned int original_track_map_lastkey = _track_map->end()->first;
-
+  
   // loop over the original TPC tracks
   for (auto phtrk_iter = _track_map->begin();
        phtrk_iter != _track_map->end(); 
@@ -280,7 +296,7 @@ int PHSiliconTpcTrackMatching::Process()
 	  // get the si tracklet for this id
 	  _tracklet_si = _track_map_silicon->get(*si_it);
 
-	  if(Verbosity() > 3)
+	  if(Verbosity() > 0)
 	    cout << "   isi = " << isi << " si tracklet " << _tracklet_si->get_id() << " was matched to TPC tracklet " << _tracklet_tpc->get_id() << endl;
 
 	  // get the silicon clusters
@@ -341,9 +357,9 @@ int PHSiliconTpcTrackMatching::Process()
 	      // more than one si stub matches
 	      // make a copy of the TPC track, update it and add it to the end of the node tree 
 	      #if __cplusplus < 201402L
-	      auto newTrack = boost::make_unique<SvtxTrack_v1>();
+	      auto newTrack = boost::make_unique<SvtxTrack_v2>();
 	      #else
-	      auto newTrack = std::make_unique<SvtxTrack_v1>();
+	      auto newTrack = std::make_unique<SvtxTrack_v2>();
 	      #endif
 	      const unsigned int lastTrackKey = _track_map->end()->first; 
 	      if(Verbosity() >= 1) cout << "Extra match, add a new track to node tree with key " <<  lastTrackKey << endl;
@@ -416,7 +432,7 @@ int PHSiliconTpcTrackMatching::Process()
 		  newTrack->identify();
 		}
 
-	      _track_map->insert(newTrack.release());
+	      _track_map->insert(newTrack.get());
 	 
 	    }
 	  

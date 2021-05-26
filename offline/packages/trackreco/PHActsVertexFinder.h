@@ -2,7 +2,7 @@
 #define TRACKRECO_PHACTSVERTEXFINDER_H
 
 #include "PHInitVertexing.h"
-#include "ActsTrackingGeometry.h"
+#include <trackbase/ActsTrackingGeometry.h>
 
 #include <trackbase/TrkrDefs.h>
 
@@ -40,7 +40,7 @@ class PHActsVertexFinder: public PHInitVertexing
  public:
   PHActsVertexFinder(const std::string &name = "PHActsVertexFinder");
 
-  virtual ~PHActsVertexFinder() {}
+  ~PHActsVertexFinder() override {}
 
   void setMaxVertices(int maxVertices)
     { m_maxVertices = maxVertices; }
@@ -68,9 +68,6 @@ class PHActsVertexFinder: public PHInitVertexing
   
   void updateTrackDCA(const unsigned int trackKey,
 		      const Acts::Vector3D vertex);
-
-  /// The acts trajectories from PHActsTrkFitter
-  std::map<const unsigned int, Trajectory> *m_actsFitResults;
 
   /// An Acts vertex object map
   VertexMap *m_actsVertexMap;

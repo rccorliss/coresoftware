@@ -18,7 +18,6 @@ AM_CPPFLAGS = \
   -isystem $(OFFLINE_MAIN)/include \
   -isystem $(ROOTSYS)/include \
   -isystem ${G4_MAIN}/include \
-  -I$(OFFLINE_MAIN)/include/eigen3 \
   -I$(OPT_SPHENIX)/include
 
 # rootcint barfs on isystem
@@ -125,6 +124,7 @@ libphg4hit_la_SOURCES = \
   PHG4Particlev1.cc \
   PHG4Particlev2.cc \
   PHG4Particlev3.cc \
+  PHG4Shower.cc \
   PHG4Showerv1.cc \
   PHG4TruthInfoContainer.cc \
   PHG4VtxPoint.cc \
