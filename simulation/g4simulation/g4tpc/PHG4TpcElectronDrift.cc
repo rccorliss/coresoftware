@@ -82,6 +82,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   //laser=new PHG4TpcLaser();
   printf("done building CM (from ElectronDrift perspective)\n");
   cmHits=new PHG4HitContainer();
+  centralMembraneDelay=30;//ns, nonzero for testing.
   printf("done building electron drift\n");
   return;
 }
