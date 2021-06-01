@@ -217,6 +217,8 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
   drift_velocity = get_double_param("drift_velocity");
   min_time = 0.0;
   max_time = (tpc_length / 1.75) / drift_velocity;
+  printf("mintime=0, maxtime=%f\n",max_time);
+  assert(false);
   electrons_per_gev = get_double_param("electrons_per_gev");
   min_active_radius = get_double_param("min_active_radius");
   max_active_radius = get_double_param("max_active_radius");
