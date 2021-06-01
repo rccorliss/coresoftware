@@ -74,6 +74,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   , single_hitsetcontainer(new TrkrHitSetContainerv1)
 {
   printf("electron drift heard the subsysReco name: %s\n",name.c_str());
+  printf("edrift->Name() returns: %s\n",this->Name().c_str());
   InitializeParameters();
   RandomGenerator.reset(gsl_rng_alloc(gsl_rng_mt19937));
   set_seed(PHRandomSeed());
@@ -83,6 +84,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   printf("done building CM (from ElectronDrift perspective)\n");
   cmHits=new PHG4HitContainer();
   centralMembraneDelay=30;//ns, nonzero for testing.
+  printf("just before finishing, edrift->Name() returns: %s\n",this->Name().c_str());
   printf("done building electron drift\n");
   return;
 }
