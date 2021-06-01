@@ -3,6 +3,10 @@
 
 #include "PHG4TpcElectronDrift.h"
 #include "PHG4TpcDistortion.h"
+#include "PHG4TpcCentralMembrane.h"
+//for future #include "PHG4TpcLaser.h"
+
+
 #include "PHG4TpcPadPlane.h"  // for PHG4TpcPadPlane
 
 #include <g4main/PHG4Hit.h>
@@ -74,6 +78,10 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   InitializeParameters();
   RandomGenerator.reset(gsl_rng_alloc(gsl_rng_mt19937));
   set_seed(PHRandomSeed());
+  membrane=new PHG4TpcCentralMembrane();//eventually make this an external PHG4TpcLaser that we pass in?
+  cmHits=new PHG4HitContainer();
+  centralMembraneDelay=-100;//ns, nonzero for testing.
+
   return;
 }
 
@@ -236,6 +244,22 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     deltarnodist = new TH2F("deltarnodist", "Delta r (no SC distortion, only diffusion); r (cm);#Delta r (cm)", 580, 20, 78, 1000, -2, 5);
   }
 
+  //
+  if (do_addCmHits)
+    {//todo:  put in the real spacing.
+      for (int i=0;i<(int)(membrane->PHG4Hits.size());i++){
+	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
+	membrane->PHG4Hits[i]->set_hit_id(1e8+i);
+	membrane->PHG4Hits[i]->set_z(0,1.);
+	membrane->PHG4Hits[i]->set_z(1,1.);
+	cmHits->AddHit(membrane->PHG4Hits[i]);
+	membrane->PHG4Hits[i]->set_z(0,-1.);
+	membrane->PHG4Hits[i]->set_z(1,-1.);
+	cmHits->AddHit(membrane->PHG4Hits[i]);
+      }
+    }
+  
+
   if (Verbosity())
   {
     // eval tree only when verbosity is on
@@ -273,7 +297,23 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   }
 
   PHG4HitContainer::ConstIterator hiter;
-  PHG4HitContainer::ConstRange hit_begin_end = g4hit->getHits();
+  
+if (do_addCmHits){//add in the second set, if we have it.
+    //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
+    int newkey=1+g4hit->getmaxkey(g4hit->GetID());//this can't be the right way to getID for the layer that is needed.  ask Tony.
+    PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
+    for (hiter = cmHit_begin_end.first; hiter != cmHit_begin_end.second; ++hiter){
+      hiter->second->set_hit_id(newkey);
+      hiter->second->set_t(0,1.*centralMembraneDelay);
+      hiter->second->set_t(1,1.*centralMembraneDelay);
+      g4hit->AddHit(hiter->second);
+      newkey++;
+    }
+  }
+
+    PHG4HitContainer::ConstRange hit_begin_end = g4hit->getHits();
+
+
   //std::cout << "g4hits size " << g4hit->size() << std::endl;
   unsigned int count_g4hits = 0;
   int count_electrons = 0;
