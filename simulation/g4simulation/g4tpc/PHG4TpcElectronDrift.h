@@ -43,9 +43,9 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   void Detector(const std::string &d)
   {
     printf("tried to set detector.  skipped for sake or argument\n");
-    printf("Heard %s.  Setting\n",d);
+    printf("Heard %s.  Setting\n",d.c_str());
     //detector = d;
-    printf("IGNORED.  detector=%s\n",detector);
+    printf("IGNORED.  detector=%s\n",detector.c_str());
     return;
   }
 
