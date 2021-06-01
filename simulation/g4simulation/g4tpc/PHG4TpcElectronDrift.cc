@@ -312,7 +312,7 @@ if (do_addCmHits){//add in the second set, if we have it.
    PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
     for (hiter = cmHit_begin_end.first; hiter != cmHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
-      PHG4Hit* tempHit=new PHG4Hitv1(hiter->second);
+      PHG4Hitv1* tempHit=new PHG4Hitv1(hiter->second);
       //tempHit->CopyFrom(hiter->second);
       g4hit->AddHit(tempHit);
       newkey++;
