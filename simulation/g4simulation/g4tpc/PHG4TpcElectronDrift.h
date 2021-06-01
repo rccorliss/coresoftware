@@ -81,7 +81,7 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   
   bool do_addCmHits=true;
   //PHG4TpcCentralMembrane * membrane;
-  //PHG4HitContainer *cmHits;
+  PHG4HitContainer *cmHits;
   int centralMembraneDelay; //ns
   
   
