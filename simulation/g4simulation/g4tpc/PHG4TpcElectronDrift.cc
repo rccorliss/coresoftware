@@ -81,7 +81,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   membrane=new PHG4TpcCentralMembrane();//eventually make this an external PHG4TpcLaser that we pass in?
   cmHits=new PHG4HitContainer();
   centralMembraneDelay=0;//ns, set nonzero for testing.  -15000<x<100 should fit okay.
-  printf("definitely running my local PHg4TPcElectronDrift.  Note the typos!\n"0;
+  printf("definitely running my local PHg4TPcElectronDrift.  Note the typos!\n");
   return;
 }
 
