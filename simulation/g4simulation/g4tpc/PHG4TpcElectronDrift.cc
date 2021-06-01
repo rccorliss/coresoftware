@@ -78,9 +78,9 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   InitializeParameters();
   RandomGenerator.reset(gsl_rng_alloc(gsl_rng_mt19937));
   set_seed(PHRandomSeed());
-  membrane=new PHG4TpcCentralMembrane();//eventually make this an external PHG4TpcLaser that we pass in?
-  cmHits=new PHG4HitContainer();
-  centralMembraneDelay=-100;//ns, nonzero for testing.
+  //membrane=new PHG4TpcCentralMembrane();//eventually make this an external PHG4TpcLaser that we pass in?
+  //cmHits=new PHG4HitContainer();
+  //centralMembraneDelay=-100;//ns, nonzero for testing.
 
   return;
 }
@@ -244,8 +244,9 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     deltarnodist = new TH2F("deltarnodist", "Delta r (no SC distortion, only diffusion); r (cm);#Delta r (cm)", 580, 20, 78, 1000, -2, 5);
   }
 
-  //
-  if (do_addCmHits)
+  //add CM hits if requested
+  /*
+  if ( do_addCmHits)
     {//todo:  put in the real spacing.
       for (int i=0;i<(int)(membrane->PHG4Hits.size());i++){
 	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
@@ -258,7 +259,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
 	cmHits->AddHit(membrane->PHG4Hits[i]);
       }
     }
-  
+  */
 
   if (Verbosity())
   {
@@ -297,7 +298,8 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   }
 
   PHG4HitContainer::ConstIterator hiter;
-  
+
+  /*
 if (do_addCmHits){//add in the second set, if we have it.
     //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
     int newkey=1+g4hit->getmaxkey(g4hit->GetID());//this can't be the right way to getID for the layer that is needed.  ask Tony.
@@ -310,7 +312,7 @@ if (do_addCmHits){//add in the second set, if we have it.
       newkey++;
     }
   }
-
+  */
     PHG4HitContainer::ConstRange hit_begin_end = g4hit->getHits();
 
 
