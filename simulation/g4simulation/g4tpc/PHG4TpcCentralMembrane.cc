@@ -21,7 +21,7 @@ using namespace std;
 
 //PHG4TpcCentralMembrane::
 
-StripesClass::StripesClass()
+PHG4TpcCentralMembrane::PHG4TpcCentralMembrane()
   : R1_e {227.0902789 * mm, 238.4100043 * mm, 249.7297296 * mm, 261.049455 * mm, 272.3691804 * mm, 283.6889058 * mm, 295.0086312 * mm, 306.3283566 * mm},
     R1 {317.648082 * mm, 328.9678074 * mm, 340.2875328 * mm, 351.6072582 * mm, 362.9269836 * mm, 374.246709 * mm,  385.5664344 * mm, 396.8861597 * mm},
     R2 {421.705532 * mm, 442.119258 * mm, 462.532984 * mm, 482.9467608 * mm, 503.36069 * mm, 523.774416 * mm, 544.188015 * mm, 564.601868 * mm},
@@ -110,7 +110,7 @@ StripesClass::StripesClass()
 }
 
 
-void StripesClass::CalculateVertices(int nStripes, int nPads, double R[], double spacing[], double x1a[][nRadii], double y1a[][nRadii], double x1b[][nRadii], double y1b[][nRadii], double x2a[][nRadii], double y2a[][nRadii], double x2b[][nRadii], double y2b[][nRadii], double x3a[][nRadii], double y3a[][nRadii], double x3b[][nRadii], double y3b[][nRadii], double padfrac, double str_width[][nRadii], double widthmod[], int nGoodStripes[],  int keepUntil[], int nStripesIn[], int nStripesBefore[]) {
+void PHG4TpcCentralMembrane::CalculateVertices(int nStripes, int nPads, double R[], double spacing[], double x1a[][nRadii], double y1a[][nRadii], double x1b[][nRadii], double y1b[][nRadii], double x2a[][nRadii], double y2a[][nRadii], double x2b[][nRadii], double y2b[][nRadii], double x3a[][nRadii], double y3a[][nRadii], double x3b[][nRadii], double y3b[][nRadii], double padfrac, double str_width[][nRadii], double widthmod[], int nGoodStripes[],  int keepUntil[], int nStripesIn[], int nStripesBefore[]) {
   const double phi_module = TMath::Pi()/6.0; // angle span of a module
   const int pr_mult = 3; // multiples of intrinsic resolution of pads
   const int dw_mult = 8; // multiples of diffusion width
@@ -225,7 +225,7 @@ void StripesClass::CalculateVertices(int nStripes, int nPads, double R[], double
   }
 }
 
-PHG4Hitv1* StripesClass::GetBotVerticesFromStripe(int moduleID, int radiusID, int stripeID){
+PHG4Hitv1* PHG4TpcCentralMembrane::GetBotVerticesFromStripe(int moduleID, int radiusID, int stripeID){
   PHG4Hitv1 *botvert;
   TVector3 dummyPos0, dummyPos1;
     
@@ -263,7 +263,7 @@ PHG4Hitv1* StripesClass::GetBotVerticesFromStripe(int moduleID, int radiusID, in
   return botvert;
 }
 
-PHG4Hitv1* StripesClass::GetTopVerticesFromStripe(int moduleID, int radiusID, int stripeID){
+PHG4Hitv1* PHG4TpcCentralMembrane::GetTopVerticesFromStripe(int moduleID, int radiusID, int stripeID){
   PHG4Hitv1 *topvert;
   TVector3 dummyPos0, dummyPos1;
     
@@ -301,7 +301,7 @@ PHG4Hitv1* StripesClass::GetTopVerticesFromStripe(int moduleID, int radiusID, in
     return topvert;
 }
 
-int StripesClass::SearchModule(int nStripes, double x1a[][nRadii], double x1b[][nRadii], double x2a[][nRadii], double x2b[][nRadii], double y1a[][nRadii], double y1b[][nRadii], double y2a[][nRadii], double y2b[][nRadii], double x3a[][nRadii], double y3a[][nRadii], double x3b[][nRadii], double y3b[][nRadii], double x, double y, int nGoodStripes[]){
+int PHG4TpcCentralMembrane::SearchModule(int nStripes, double x1a[][nRadii], double x1b[][nRadii], double x2a[][nRadii], double x2b[][nRadii], double y1a[][nRadii], double y1b[][nRadii], double y2a[][nRadii], double y2b[][nRadii], double x3a[][nRadii], double y3a[][nRadii], double x3b[][nRadii], double y3b[][nRadii], double x, double y, int nGoodStripes[]){
   int c = 0;
   
   for(int j=0; j<nRadii; j++){
@@ -328,7 +328,7 @@ int StripesClass::SearchModule(int nStripes, double x1a[][nRadii], double x1b[][
   return c;
 }
 
-int StripesClass::getSearchResult(double xcheck, double ycheck){
+int PHG4TpcCentralMembrane::getSearchResult(double xcheck, double ycheck){
   const double phi_petal = TMath::Pi()/9.0; // angle span of one petal
   const double end_R1_e = 312.0 * mm; // arbitrary radius between R1_e and R1
   const double end_R1 = 408.0 * mm; // arbitrary radius between R1 and R2
@@ -361,7 +361,7 @@ int StripesClass::getSearchResult(double xcheck, double ycheck){
   return result;
 }
 
-PHG4Hitv1* StripesClass::GetPHG4HitFromStripe(int petalID, int moduleID, int radiusID, int stripeID, int nElectrons)
+PHG4Hitv1* PHG4TpcCentralMembrane::GetPHG4HitFromStripe(int petalID, int moduleID, int radiusID, int stripeID, int nElectrons)
 { //this function generates a PHG4 hit using coordinates from a stripe
   const double phi_petal = TMath::Pi()/9.0; // angle span of one petal
   PHG4Hitv1 *hit;
@@ -487,7 +487,7 @@ PHG4Hitv1* StripesClass::GetPHG4HitFromStripe(int petalID, int moduleID, int rad
   return hit;
 }
 
-int StripesClass::getStripeID(double xcheck, double ycheck){
+int PHG4TpcCentralMembrane::getStripeID(double xcheck, double ycheck){
   //check if point came from stripe then see which stripe it is
   //213 stripes in a petal, 18 petals, ntotstripes = 3834
   int result, rID, petalID;
