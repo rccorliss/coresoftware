@@ -80,7 +80,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   set_seed(PHRandomSeed());
   membrane=new PHG4TpcCentralMembrane();//eventually make this an external PHG4TpcLaser that we pass in?
   cmHits=new PHG4HitContainer();
-  centralMembraneDelay=-100;//ns, nonzero for testing.
+  centralMembraneDelay=0;//ns, set nonzero for testing.  -15000<x<100 should fit okay.
 
   return;
 }
@@ -216,9 +216,9 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
   added_smear_sigma_trans = get_double_param("added_smear_trans");
   drift_velocity = get_double_param("drift_velocity");
   min_time = 0.0;
-  max_time = (tpc_length / 1.75) / drift_velocity;
-  printf("mintime=0, maxtime=%f\n",max_time);
-  assert(false);
+  max_time = (tpc_length / 1.75) / drift_velocity; 
+  //printf("mintime=0, maxtime=%f\n",max_time);
+  //assert(false);
   electrons_per_gev = get_double_param("electrons_per_gev");
   min_active_radius = get_double_param("min_active_radius");
   max_active_radius = get_double_param("max_active_radius");
@@ -252,7 +252,9 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     {//todo:  put in the real spacing.
       for (int i=0;i<(int)(membrane->PHG4Hits.size());i++){
 	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
-	membrane->PHG4Hits[i]->set_hit_id(1e8+2*i);
+	membrane->PHG4Hits[i]->set_hit_id(1e8+2*i); //dummy hit id
+	membrane->PHG4Hits[i]->set_t(0,1.*centralMembraneDelay);//real hit delay
+	membrane->PHG4Hits[i]->set_t(1,1.*centralMembraneDelay);//real hit delay.
 	membrane->PHG4Hits[i]->set_z(0,1.);
 	membrane->PHG4Hits[i]->set_z(1,1.);
 	cmHits->AddHit(membrane->PHG4Hits[i]);
@@ -305,13 +307,11 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   
 if (do_addCmHits){//add in the second set, if we have it.
     //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
-    int newkey=1+g4hit->getmaxkey(g4hit->GetID());//this can't be the right way to getID for the layer that is needed.  ask Tony.
+    int newkey=1+g4hit->getmaxkey(g4hit->GetID());
     PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
     for (hiter = cmHit_begin_end.first; hiter != cmHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
-      hiter->second->set_t(0,1.*centralMembraneDelay);
-      hiter->second->set_t(1,1.*centralMembraneDelay);
-      g4hit->AddHit(hiter->second);
+       g4hit->AddHit(hiter->second);
       newkey++;
     }
   }
