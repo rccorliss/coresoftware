@@ -252,16 +252,16 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     {//todo:  put in the real spacing.
       for (int i=0;i<(int)(membrane->PHG4Hits.size());i++){
 	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
-	membrane->PHG4Hits[i]->set_hit_id(1e8+2*i); //dummy hit id
+	membrane->PHG4Hits[i]->set_hit_id(1e8+i); //dummy hit id
 	membrane->PHG4Hits[i]->set_t(0,1.*centralMembraneDelay);//real hit delay
 	membrane->PHG4Hits[i]->set_t(1,1.*centralMembraneDelay);//real hit delay.
 	membrane->PHG4Hits[i]->set_z(0,1.);
 	membrane->PHG4Hits[i]->set_z(1,1.);
 	cmHits->AddHit(membrane->PHG4Hits[i]);
-	membrane->PHG4Hits[i]->set_hit_id(1e8+2*i+1);
-	membrane->PHG4Hits[i]->set_z(0,-1.);
-	membrane->PHG4Hits[i]->set_z(1,-1.);
-	cmHits->AddHit(membrane->PHG4Hits[i]);
+	//membrane->PHG4Hits[i]->set_hit_id(1e8+2*i+1);
+	//membrane->PHG4Hits[i]->set_z(0,-1.);
+	//membrane->PHG4Hits[i]->set_z(1,-1.);
+	//cmHits->AddHit(membrane->PHG4Hits[i]);
       }
     }
   
@@ -312,7 +312,7 @@ if (do_addCmHits){//add in the second set, if we have it.
    PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
     for (hiter = cmHit_begin_end.first; hiter != cmHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
-       g4hit->AddHit(hiter->second);
+	g4hit->AddHit(hiter->second->CloneMe());
       newkey++;
     }
        printf("last CM hitID is %d\n",newkey);
