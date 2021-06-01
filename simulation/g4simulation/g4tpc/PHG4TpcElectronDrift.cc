@@ -73,6 +73,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   , temp_hitsetcontainer(new TrkrHitSetContainerv1)
   , single_hitsetcontainer(new TrkrHitSetContainerv1)
 {
+  printf("electron drift heard the subsysReco name: %s\n",name.c_str());
   InitializeParameters();
   RandomGenerator.reset(gsl_rng_alloc(gsl_rng_mt19937));
   set_seed(PHRandomSeed());
