@@ -25,6 +25,7 @@ libg4tpc_la_LIBADD = \
 
 pkginclude_HEADERS = \
   PHG4TpcElectronDrift.h \
+  PHG4TpcCentralMembrane.h \
   PHG4TpcPadPlane.h \
   PHG4TpcPadPlaneReadout.h \
   PHG4TpcDigitizer.h \
@@ -40,6 +41,7 @@ libg4tpc_la_SOURCES = \
   PHG4TpcEndCapDisplayAction.cc \
   PHG4TpcDistortion.cc \
   PHG4TpcElectronDrift.cc \
+  PHG4TpcCentralMembrane.cc \
   PHG4TpcPadPlane.cc \
   PHG4TpcPadPlaneReadout.cc \
   PHG4TpcSteppingAction.cc \
