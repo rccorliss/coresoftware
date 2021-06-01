@@ -81,7 +81,7 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   membrane=new PHG4TpcCentralMembrane();//eventually make this an external PHG4TpcLaser that we pass in?
   cmHits=new PHG4HitContainer();
   centralMembraneDelay=0;//ns, set nonzero for testing.  -15000<x<100 should fit okay.
-
+  printf("definitely running my local PHg4TPcElectronDrift.  Note the typos!\n"0;
   return;
 }
 
@@ -304,7 +304,7 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
 
   PHG4HitContainer::ConstIterator hiter;
 
-  
+  printf("PHG4TpcElectronDrift::process_event\n");
 if (do_addCmHits){//add in the second set, if we have it.
     //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
     int newkey=1+g4hit->getmaxkey(g4hit->GetID());
@@ -315,6 +315,8 @@ if (do_addCmHits){//add in the second set, if we have it.
        g4hit->AddHit(hiter->second);
       newkey++;
     }
+       printf("last CM hitID is %d\n",newkey);
+
   }
   
     PHG4HitContainer::ConstRange hit_begin_end = g4hit->getHits();
