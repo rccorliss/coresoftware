@@ -312,7 +312,9 @@ if (do_addCmHits){//add in the second set, if we have it.
    PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
     for (hiter = cmHit_begin_end.first; hiter != cmHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
-      g4hit->AddHit((PHG4Hit*)(hiter->second->CloneMe()));
+      PHG4Hit* tempHit=new PHG4Hit();
+      tempHit->CopyFrom(hiter->second);
+      g4hit->AddHit(tempHit);
       newkey++;
     }
        printf("last CM hitID is %d\n",newkey);
