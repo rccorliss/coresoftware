@@ -250,10 +250,11 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     {//todo:  put in the real spacing.
       for (int i=0;i<(int)(membrane->PHG4Hits.size());i++){
 	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
-	membrane->PHG4Hits[i]->set_hit_id(1e8+i);
+	membrane->PHG4Hits[i]->set_hit_id(1e8+2*i);
 	membrane->PHG4Hits[i]->set_z(0,1.);
 	membrane->PHG4Hits[i]->set_z(1,1.);
 	cmHits->AddHit(membrane->PHG4Hits[i]);
+	membrane->PHG4Hits[i]->set_hit_id(1e8+2*i+1);
 	membrane->PHG4Hits[i]->set_z(0,-1.);
 	membrane->PHG4Hits[i]->set_z(1,-1.);
 	cmHits->AddHit(membrane->PHG4Hits[i]);
