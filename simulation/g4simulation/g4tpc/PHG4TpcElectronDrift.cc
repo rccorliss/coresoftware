@@ -308,7 +308,8 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
 if (do_addCmHits){//add in the second set, if we have it.
     //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
     int newkey=1+g4hit->getmaxkey(g4hit->GetID());
-    PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
+   printf("first CM hitID is %d\n",newkey);
+   PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
     for (hiter = cmHit_begin_end.first; hiter != cmHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
        g4hit->AddHit(hiter->second);
