@@ -217,7 +217,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
   added_smear_sigma_trans = get_double_param("added_smear_trans");
   drift_velocity = get_double_param("drift_velocity");
   min_time = 0.0;
-  max_time = (tpc_length / 1.75) / drift_velocity;
+  max_time = (tpc_length / 1.75) / drift_velocity; //14% larger than the drift time from CM to readout, 1.8us above nominal drift time
   electrons_per_gev = get_double_param("electrons_per_gev");
   min_active_radius = get_double_param("min_active_radius");
   max_active_radius = get_double_param("max_active_radius");
@@ -304,12 +304,13 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
       hiter->second->set_hit_id(newkey);
       hiter->second->set_z(0,hiter->second->get_z(0)+cm_flash_advance);
       hiter->second->set_z(1,hiter->second->get_z(1)+cm_flash_advance);
+      //set_t
       g4hit->AddHit(hiter->second);
       newkey++;
     }
   }
 
-
+  //second block for direct laser
 
   hit_begin_end= g4hit->getHits();
 
