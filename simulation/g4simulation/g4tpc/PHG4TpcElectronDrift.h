@@ -18,6 +18,7 @@ class PHG4TpcPadPlane;
 class PHG4TpcDistortion;
 class PHG4TpcCentralMembrane;
 class PHCompositeNode;
+class PHG4HitContainer;
 class TH1;
 class TH2;
 class TH3;
@@ -80,8 +81,8 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
 
   
   bool do_addCmHits=true;
-  PHG4TpcCentralMembrane * membrane;
-  //PHG4HitContainer *cmHits;
+  //PHG4TpcCentralMembrane * membrane;
+  PHG4HitContainer *cmHits;
   int centralMembraneDelay; //ns
   
   
