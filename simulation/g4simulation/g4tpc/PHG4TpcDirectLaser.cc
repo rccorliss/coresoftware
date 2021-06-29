@@ -28,7 +28,7 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
 
 
   for (int i=0;i<4;i++){
-    PHG4Hits.push_back(GenerateLaserHit(10*TMath::Pi/180.,90*TMath::Pi/180.,i));
+    PHG4Hits.push_back(GenerateLaserHit(TMath::Pi/180.*10.,TMath::Pi/180.*90,i));
   }
   
   
@@ -89,8 +89,8 @@ TVector3  PHG4TpcDirectLaser::GetCylinderStrike(TVector3 s, TVector3 v, float ra
   if (rootterm >= 0 && a > 0) {
     //Find the (up to) two points where we collide with the cylinder:
     float sqrtterm=sqrt(rootterm);
-    float t1 = (-b+sqrtterm)/(2*a);
-    float t2 = (-b-sqrtterm)/(2*a);
+     t1 = (-b+sqrtterm)/(2*a);
+     t2 = (-b-sqrtterm)/(2*a);
   }
 
   //if either of the t's are nonzero, we have a collision.  the collision closest to the start (hence with the smallest t that is greater than zero) is the one that happens.
