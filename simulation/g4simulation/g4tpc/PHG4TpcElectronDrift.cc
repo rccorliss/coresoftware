@@ -265,6 +265,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
 	//membrane->PHG4Hits[i]->set_z(1,-1.);
 	//cmHits->AddHit(membrane->PHG4Hits[i]);
       }
+    }
   if ( do_addDirectLaserHits)
     {
      for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
@@ -296,7 +297,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
   padplane->CreateReadoutGeometry(topNode, seggeo);
 
   return Fun4AllReturnCodes::EVENT_OK;
-}
+    }
 
 int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
 {
