@@ -112,6 +112,8 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   TVector3 pos(60.,0.,105.5*direction);
   TVector3 dir(0.,0.,-1.*direction);
 
+
+
   //adjust direction:
   dir.RotateY(theta);
   dir.RotateZ(phi);
@@ -130,7 +132,7 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   }
 
   //now compute the laser hit:
-  
+  printf("PHG4TpcDirectLaser::GenerateLaserHit(%1.2f,%1.2f,%d): posz=%1.2f,dirz=%1.2f,endz=%1.2f(%c)\n",theta,phi,laser,pos.Z(),dir.Z(),strike.Z(),(strike==fc_strike?'f':'c'));
 
   //from phg4tpcsteppingaction.cc
   hit = new PHG4Hitv1();
