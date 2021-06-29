@@ -270,8 +270,8 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     {
      for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
        float len=sqrt((directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))*(directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))
-	 +(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))*(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))
-	 +(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1))*(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1)))
+		      +(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))*(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))
+		      +(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1))*(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1)));
 	directLaser->PHG4Hits[i]->set_eion(300./electrons_per_gev*len);//rcc dummy hardcoded 300 electrons per cm!
 	directLaser->PHG4Hits[i]->set_hit_id(1e8+i); //dummy hit id
 	directLaser->PHG4Hits[i]->set_t(0,0.);
