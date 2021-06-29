@@ -35,7 +35,7 @@ private:
 
   TVector3 GetCmStrike(TVector3 start, TVector3 direction);
   TVector3 GetFieldcageStrike(TVector3 start, TVector3 direction);
-  TVector3 GetCylinderStrike(TVector3 s, TVector3 v, float radius)
+  TVector3 GetCylinderStrike(TVector3 s, TVector3 v, float radius);
   
   int nElectrons;
  

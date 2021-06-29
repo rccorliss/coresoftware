@@ -85,7 +85,7 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   bool do_addDirectLaserHits=true;
   PHG4TpcDirectLaser * directLaser=nullptr;
   PHG4TpcCentralMembrane * membrane=nullptr;
-  PHG4HitContainer *cmHits=nullptr;
+  PHG4HitContainer *laserHits=nullptr; //holds the cm and direct laser hits
   int centralMembraneDelay=0; //ns
   
   
