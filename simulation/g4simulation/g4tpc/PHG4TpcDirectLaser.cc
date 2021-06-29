@@ -108,7 +108,7 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
 { //this function generates a PHG4 hit using coordinates from a stripe
   PHG4Hitv1 *hit;
   float direction=1;
-  if (i>3) direction=-1;
+  if (laser>3) direction=-1;
   TVector3 pos(60.,0.,105.5*direction);
   TVector3 dir(0.,0.,-1.*direction);
 
