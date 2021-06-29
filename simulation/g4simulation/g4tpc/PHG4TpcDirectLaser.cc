@@ -27,7 +27,7 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
   end_CM = 759.2138 * mm; // outer radius of CM
 
 
-  for (int i=0;i<4;i++){
+  for (int i=0;i<4*2;i++){
     PHG4Hits.push_back(GenerateLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i));
   }
   
@@ -107,8 +107,10 @@ TVector3  PHG4TpcDirectLaser::GetCylinderStrike(TVector3 s, TVector3 v, float ra
 PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int laser)
 { //this function generates a PHG4 hit using coordinates from a stripe
   PHG4Hitv1 *hit;
-  TVector3 pos(60.,0.,105.5);
-  TVector3 dir(0.,0.,1.);
+  float direction=1;
+  if (i>3) direction=-1;
+  TVector3 pos(60.,0.,105.5*direction);
+  TVector3 dir(0.,0.,-1.*direction);
 
   //adjust direction:
   dir.RotateY(theta);
