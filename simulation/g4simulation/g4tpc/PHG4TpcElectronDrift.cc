@@ -4,6 +4,7 @@
 #include "PHG4TpcElectronDrift.h"
 #include "PHG4TpcDistortion.h"
 #include "PHG4TpcCentralMembrane.h"
+#include "PHG4TpcDirectLaser.h"
 //for future #include "PHG4TpcLaser.h"
 
 
@@ -79,7 +80,8 @@ PHG4TpcElectronDrift::PHG4TpcElectronDrift(const std::string &name)
   RandomGenerator.reset(gsl_rng_alloc(gsl_rng_mt19937));
   set_seed(PHRandomSeed());
   membrane=new PHG4TpcCentralMembrane();//eventually make this an external PHG4TpcLaser that we pass in?
-  cmHits=new PHG4HitContainer();
+  directLaser=new PHG4TpcDirectLaser();//eventually make this an external PHG4TpcLaser that we pass in?
+  laserHits=new PHG4HitContainer();
   centralMembraneDelay=0;//ns, set nonzero for testing.  -15000<x<100 should fit okay.
   printf("definitely running my local PHg4TPcElectronDrift.  Note the typos!\n");
   return;
@@ -257,14 +259,25 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
 	membrane->PHG4Hits[i]->set_t(1,1.*centralMembraneDelay);//real hit delay.
 	membrane->PHG4Hits[i]->set_z(0,1.);
 	membrane->PHG4Hits[i]->set_z(1,1.);
-	cmHits->AddHit(membrane->PHG4Hits[i]);
+	laserHits->AddHit(membrane->PHG4Hits[i]);
 	//membrane->PHG4Hits[i]->set_hit_id(1e8+2*i+1);
 	//membrane->PHG4Hits[i]->set_z(0,-1.);
 	//membrane->PHG4Hits[i]->set_z(1,-1.);
 	//cmHits->AddHit(membrane->PHG4Hits[i]);
       }
-    }
-  
+  if ( do_addDirectLaserHits)
+    {
+     for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
+	directLaser->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc dummy hardcoded 300 electrons per stripe!
+	directLaser->PHG4Hits[i]->set_hit_id(1e8+i); //dummy hit id
+	directLaser->PHG4Hits[i]->set_t(0,0.);
+	directLaser->PHG4Hits[i]->set_t(1,0.);
+	laserHits->AddHit(directLaser->PHG4Hits[i]);
+	//membrane->PHG4Hits[i]->set_hit_id(1e8+2*i+1);
+	//membrane->PHG4Hits[i]->set_z(0,-1.);
+	//membrane->PHG4Hits[i]->set_z(1,-1.);
+	//cmHits->AddHit(membrane->PHG4Hits[i]);
+      }
 
   if (Verbosity())
   {
