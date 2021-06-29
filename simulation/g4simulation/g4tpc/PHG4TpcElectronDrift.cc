@@ -324,15 +324,15 @@ if (do_addCmHits){//add in the second set, if we have it.
     //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
     int newkey=1+g4hit->getmaxkey(g4hit->GetID());
    printf("first CM hitID is %d\n",newkey);
-   PHG4HitContainer::ConstRange cmHit_begin_end=cmHits->getHits();
-    for (hiter = cmHit_begin_end.first; hiter != cmHit_begin_end.second; ++hiter){
+   PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();
+    for (hiter = laserHit_begin_end.first; hiter != laserHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
       PHG4Hitv1* tempHit=new PHG4Hitv1(hiter->second);
       //tempHit->CopyFrom(hiter->second);
       g4hit->AddHit(tempHit);
       newkey++;
     }
-       printf("last CM hitID is %d\n",newkey);
+       printf("last Laser hitID is %d\n",newkey);
 
   }
   
