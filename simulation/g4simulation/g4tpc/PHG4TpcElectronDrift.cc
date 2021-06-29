@@ -323,10 +323,9 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   PHG4HitContainer::ConstIterator hiter;
 
   printf("PHG4TpcElectronDrift::process_event\n");
-if (do_addCmHits){//add in the second set, if we have it.
-    //currently we inject the hits at z=0, but we should eventually move them to some user-defined z offset.
+if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we have it.
     int newkey=1+g4hit->getmaxkey(g4hit->GetID());
-   printf("first CM hitID is %d\n",newkey);
+   printf("first Laser hitID is %d\n",newkey);
    PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();
     for (hiter = laserHit_begin_end.first; hiter != laserHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);

@@ -134,7 +134,7 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   }
 
   //now compute the laser hit:
-  printf("PHG4TpcDirectLaser::GenerateLaserHit(%1.2f,%1.2f,%d): posz=%1.2f,dirz=%1.2f,endz=%1.2f(%c)\n",theta,phi,laser,pos.Z(),dir.Z(),strike.Z(),(strike==fc_strike?'f':'c'));
+  printf("PHG4TpcDirectLaser::GenerateLaserHit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)(%c hit)\n",theta,phi,laser,pos.X(),pos.Y(),pos.Z(),strike.X(),strike.Y(),strike.Z(),(strike==fc_strike?'f':'c'));
 
   //from phg4tpcsteppingaction.cc
   hit = new PHG4Hitv1();
@@ -150,9 +150,9 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
 
 
   // momentum
-  hit->set_px(0, 500.0); // GeV
-  hit->set_py(0, 500.0);
-  hit->set_pz(0, 500.0);
+  hit->set_px(0, 700.0); // GeV
+  hit->set_py(0, 700.0);
+  hit->set_pz(0, 700.0);
   
   // time in ns
   hit->set_t(0, 0.0); // nanosecond
@@ -160,9 +160,9 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   hit->set_trkid(-1); // dummy number
 
   
-  hit->set_px(1, 500.0); // dummy large number, in GeV
-  hit->set_py(1, 500.0);
-  hit->set_pz(1, 500.0);
+  hit->set_px(1, 700.0); // dummy large number, in GeV
+  hit->set_py(1, 700.0);
+  hit->set_pz(1, 700.0);
   
   hit->set_t(1, 1.0); // dummy number, nanosecond
 
