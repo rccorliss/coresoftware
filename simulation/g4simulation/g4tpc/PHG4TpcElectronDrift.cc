@@ -278,6 +278,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
 	//membrane->PHG4Hits[i]->set_z(1,-1.);
 	//cmHits->AddHit(membrane->PHG4Hits[i]);
       }
+    }
 
   if (Verbosity())
   {
