@@ -140,9 +140,9 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   hit->set_y(0, pos.Y() / cm);
   hit->set_z(0, pos.Z() / cm);
   //and the exist values
-  hit->set_x(1, pos.X() / cm);
-  hit->set_y(1, pos.Y() / cm);
-  hit->set_z(1, pos.Z() / cm);
+  hit->set_x(1, strike.X() / cm);
+  hit->set_y(1, strike.Y() / cm);
+  hit->set_z(1, strike.Z() / cm);
 
 
   // momentum
