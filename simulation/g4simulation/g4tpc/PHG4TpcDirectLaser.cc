@@ -28,7 +28,7 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
 
 
   for (int i=0;i<4;i++){
-    PHG4Hits.push_back(GenerateLaserHit(TMath::Pi/180.*10.,TMath::Pi/180.*90,i));
+    PHG4Hits.push_back(GenerateLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i));
   }
   
   
