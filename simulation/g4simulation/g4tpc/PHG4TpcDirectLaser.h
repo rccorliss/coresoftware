@@ -24,6 +24,7 @@ public:
   PHG4TpcDirectLaser(); //default constructor
 
   double begin_CM, end_CM; // inner and outer radii of central membrane
+  double halfwidth_CM; //half the width of the CM;
   double ifc,ofc;
   
   vector<PHG4Hitv1*> PHG4Hits;

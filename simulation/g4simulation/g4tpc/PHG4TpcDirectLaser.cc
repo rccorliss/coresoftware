@@ -25,7 +25,7 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
 {
   begin_CM = 221.4019814 * mm; // inner radius of CM
   end_CM = 759.2138 * mm; // outer radius of CM
-
+  halfwidth_CM=0.5*mm;
 
   for (int i=0;i<4*2;i++){
     PHG4Hits.push_back(GenerateLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i));
@@ -38,7 +38,9 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
 
 TVector3 PHG4TpcDirectLaser::GetCmStrike(TVector3 start, TVector3 direction){
   TVector3 ret;
-  float dist=end_CM-start.Z();
+  float end=halfwidth_CM;
+  if (start.Z()<0) end=-halfwidth_CM;
+  float dist=end-start.Z();
   float direction_scale=dist/direction.Z();
   ret=start+direction*direction_scale;
   
