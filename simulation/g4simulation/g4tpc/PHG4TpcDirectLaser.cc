@@ -29,7 +29,7 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
 
   for (int i=0;i<4*2;i++){
     PHG4Hits.push_back(new PHG4Hitv1());//instantiate it
-    RebuildLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i)); //and then aim it at a default location.
+    RebuildLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i); //and then aim it at a default location.
   }
   
   
