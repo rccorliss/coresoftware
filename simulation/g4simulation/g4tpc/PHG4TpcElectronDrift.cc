@@ -327,7 +327,9 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
 
   printf("PHG4TpcElectronDrift::process_event\n");
 if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we have it.
-    int newkey=1+g4hit->getmaxkey(g4hit->GetID());
+  int newkey=0;
+  //for now, clobber all the real hits, only show the ones from the laser.
+  g4hit->Reset();//1+g4hit->getmaxkey(g4hit->GetID());
    printf("first Laser hitID is %d\n",newkey);
    PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();
     for (hiter = laserHit_begin_end.first; hiter != laserHit_begin_end.second; ++hiter){
@@ -445,7 +447,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
         deltarnodist->Fill(radstart, rantrans);                // delta r no distortion, just diffusion+smear
       }
 
-      if (m_distortionMap)
+      if (false && m_distortionMap)
       {
         const double x_distortion = m_distortionMap->get_x_distortion(x_start, y_start, z_start);
         const double y_distortion = m_distortionMap->get_y_distortion(x_start, y_start, z_start);
