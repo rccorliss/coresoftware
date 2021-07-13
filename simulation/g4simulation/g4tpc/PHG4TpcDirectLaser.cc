@@ -29,7 +29,7 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
 
   for (int i=0;i<4*2;i++){
     PHG4Hits.push_back(new PHG4Hitv1());//instantiate it
-    GenerateLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i)); //and then aim it at a default location.
+    RebuildLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i)); //and then aim it at a default location.
   }
   
   
@@ -62,8 +62,8 @@ void PHG4TpcDirectLaser::SetThetaStepping(int n, float min,float max){
 }
 void PHG4TpcDirectLaser::AimToThetaPhi(float theta, float phi){
     for (int i=0;i<4*2;i++){
-    RebuildLaserHit(theta,phi,i));
-  }
+      RebuildLaserHit(theta,phi,i);
+    }
 return;
 }
 void PHG4TpcDirectLaser::AimToPatternStep(int n){
@@ -225,7 +225,7 @@ void PHG4TpcDirectLaser::RebuildLaserHit(float theta, float phi, int laser)
   //double Tpc_ElectronsPerKeV = Tpc_NTot / Tpc_dEdx;
   //double Tpc_ElectronsPerGeV = Tpc_NTot / Tpc_dEdx*1e6; //electrons per gev.
 
-  double edep = Tpc_dEdx*1e6 / Tpc_NTot; // GeV dep per electron
+  double electrons_per_gev = Tpc_dEdx*1e6 / Tpc_NTot; // GeV dep per electron
 
   float electrons_per_cm=300;//hardcoded
   float totalE=electrons_per_cm*len/electrons_per_gev;//rcc dummy hardcoded 300 electrons per cm!

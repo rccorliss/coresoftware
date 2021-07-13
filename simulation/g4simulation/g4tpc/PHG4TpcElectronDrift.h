@@ -64,8 +64,9 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
    void setCentralMembraneDelay(int ns){centralMembraneDelay=ns; return;};
 
    //! setup Direct Lasers
-   void setDirectLaser(bool addLaserHits){do_addDirectLaserHits=addLaserHits; return;};
-   PHG4TpcDirectLaser * directLaser=nullptr; //lazy way to expose the direct laser
+   void setDirectLaser(bool x){do_addDirectLaserHits=x; return;};
+   void setDirectLaserAuto(bool x){do_autoAdvanceDirectLaser=x; return;};//make it advance through its pattern automatically
+   PHG4TpcDirectLaser * directLaser=nullptr; //lazy way to expose the direct laser so we can adjust it
 
   //! setup readout plane
   void registerPadPlane(PHG4TpcPadPlane *padplane);
@@ -86,7 +87,8 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
 
   
   bool do_addCmHits=true;
-  bool do_addDirectLaserHits=true;
+  bool do_addDirectLaserHits=false;
+  bool do_autoAdvanceDirectLaser=false;
   PHG4TpcCentralMembrane * membrane=nullptr;
   PHG4HitContainer *laserHits=nullptr; //holds the cm and direct laser hits
   int centralMembraneDelay=0; //ns

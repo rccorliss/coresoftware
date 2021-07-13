@@ -324,6 +324,10 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
 
   printf("PHG4TpcElectronDrift::process_event\n");
 if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we have it.
+
+  if (do_autoAdvanceDirectLaser){
+    directLaser->AimToNextPatternStep();
+  }
   int newkey=g4hit->getmaxkey(g4hit->GetID());
    printf("first Laser hitID is %d\n",newkey);
    PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();

@@ -34,7 +34,7 @@ public:
   int GetNpatternSteps(){return nPhiSteps*nThetaSteps;};
   void AimToThetaPhi(float theta, float phi);
   void AimToPatternStep(int n);
-  void AimToNextPatternStep(){AimToPatternStep(currentPatternStep+1);};
+  void AimToNextPatternStep(){if (nTotalSteps>1)AimToPatternStep(currentPatternStep+1);};
   
 private:
   static const int nLasers = 4;
