@@ -327,9 +327,7 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
 
   printf("PHG4TpcElectronDrift::process_event\n");
 if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we have it.
-  int newkey=0;
-  //for now, clobber all the real hits, only show the ones from the laser.
-  g4hit->Reset();//1+g4hit->getmaxkey(g4hit->GetID());
+  int newkey=g4hit->getmaxkey(g4hit->GetID());
    printf("first Laser hitID is %d\n",newkey);
    PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();
     for (hiter = laserHit_begin_end.first; hiter != laserHit_begin_end.second; ++hiter){
@@ -381,6 +379,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
     if (true || Verbosity() > 100)
       std::cout << "  new hit with t0, " << t0 << " g4hitid " << hiter->first
                 << " eion " << eion << " n_electrons " << n_electrons
+		<< " layer " << hiter->second->get_layer()
                 << " entry z " << hiter->second->get_z(0) << " exit z " << hiter->second->get_z(1) << " avg z" << (hiter->second->get_z(0) + hiter->second->get_z(1)) / 2.0
                 << std::endl;
 
