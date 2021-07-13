@@ -111,7 +111,7 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   PHG4Hitv1 *hit;
   float direction=1;
   if (laser>3) direction=-1;
-  TVector3 pos(60.,0.,105.5*cm*direction);
+  TVector3 pos(60.*cm,0.*cm,105.5*cm*direction);
   TVector3 dir(0.,0.,-1.*direction);
 
 
@@ -138,7 +138,7 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
 
   //from phg4tpcsteppingaction.cc
   hit = new PHG4Hitv1();
-  hit->set_layer(-1); // dummy number
+  hit->set_layer(99); // dummy number
   //here we set the entrance values in cm
   hit->set_x(0, pos.X() / cm);
   hit->set_y(0, pos.Y() / cm);
