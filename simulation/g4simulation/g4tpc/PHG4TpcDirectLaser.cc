@@ -178,7 +178,7 @@ void PHG4TpcDirectLaser::RebuildLaserHit(float theta, float phi, int laser)
   float len=diff.Mag();
 
   //now compute the laser hit:
-  printf("PHG4TpcDirectLaser::RebuildLaserHit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)(%c hit)\n",theta,phi,laser,pos.X(),pos.Y(),pos.Z(),strike.X(),strike.Y(),strike.Z(),(strike==fc_strike?'f':'c'));
+  //printf("PHG4TpcDirectLaser::RebuildLaserHit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)(%c hit)\n",theta,phi,laser,pos.X(),pos.Y(),pos.Z(),strike.X(),strike.Y(),strike.Z(),(strike==fc_strike?'f':'c'));
 
   //from phg4tpcsteppingaction.cc
   hit = PHG4Hits[laser];//new PHG4Hitv1(); -- now handled in the constructor
