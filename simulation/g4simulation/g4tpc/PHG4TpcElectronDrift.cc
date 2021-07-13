@@ -268,7 +268,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     }
   if ( do_addDirectLaserHits)
     {
-      int newkey=1+g4hit->getmaxkey(g4hit->GetID());
+      int newkey=1+laserHits->getmaxkey(g4hit->GetID());
 
      for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
        float len=sqrt((directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))*(directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))
