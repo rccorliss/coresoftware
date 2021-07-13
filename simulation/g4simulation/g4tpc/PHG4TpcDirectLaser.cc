@@ -23,9 +23,9 @@ using namespace std;
 
 PHG4TpcDirectLaser::PHG4TpcDirectLaser()
 {
-  begin_CM = 221.4019814 * mm; // inner radius of CM
-  end_CM = 759.2138 * mm; // outer radius of CM
-  halfwidth_CM=0.5*mm;
+  begin_CM = 20. *cm; // outer radius of IFC
+  end_CM = 78. * cm; // inner radius of OFC
+  halfwidth_CM=0.5*cm;
 
   for (int i=0;i<4*2;i++){
     PHG4Hits.push_back(GenerateLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i));
@@ -111,7 +111,7 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   PHG4Hitv1 *hit;
   float direction=1;
   if (laser>3) direction=-1;
-  TVector3 pos(60.,0.,105.5*direction);
+  TVector3 pos(60.,0.,105.5*cm*direction);
   TVector3 dir(0.,0.,-1.*direction);
 
 
