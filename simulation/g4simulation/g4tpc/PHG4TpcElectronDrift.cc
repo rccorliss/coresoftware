@@ -250,7 +250,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
 
   //add CM hits if requested
   
-  if ( do_addCmHits)
+  if (false && do_addCmHits)
     {//todo:  put in the real spacing.
       for (int i=0;i<(int)(membrane->PHG4Hits.size());i++){
 	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
@@ -268,12 +268,14 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     }
   if ( do_addDirectLaserHits)
     {
+      int newkey=1+g4hit->getmaxkey(g4hit->GetID());
+
      for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
        float len=sqrt((directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))*(directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))
 		      +(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))*(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))
 		      +(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1))*(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1)));
 	directLaser->PHG4Hits[i]->set_eion(300./electrons_per_gev*len);//rcc dummy hardcoded 300 electrons per cm!
-	directLaser->PHG4Hits[i]->set_hit_id(1e8+i); //dummy hit id
+	directLaser->PHG4Hits[i]->set_hit_id(newkey+i); //dummy hit id
 	directLaser->PHG4Hits[i]->set_t(0,0.);
 	directLaser->PHG4Hits[i]->set_t(1,0.);
 	laserHits->AddHit(directLaser->PHG4Hits[i]);
