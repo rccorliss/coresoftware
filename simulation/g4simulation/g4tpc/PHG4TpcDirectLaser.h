@@ -23,16 +23,32 @@ class PHG4TpcDirectLaser {
 public:
   PHG4TpcDirectLaser(); //default constructor
 
-  double begin_CM, end_CM; // inner and outer radii of central membrane
-  double halfwidth_CM; //half the width of the CM;
+  double begin_CM, end_CM; // inner and outer radii of field cages/TPC
+  double halfwidth_CM; //half the thickness of the CM;
   double ifc,ofc;
   
   vector<PHG4Hitv1*> PHG4Hits;
+
+  void SetPhiStepping(int n, float min,float max);
+  void SetThetaStepping(int n, float min,float max);
+  int GetNpatternSteps(){return nPhiSteps*nThetaSteps;};
+  void AimToThetaPhi(float theta, float phi);
+  void AimToPatternStep(int n);
+  void AimToNextPatternStep(){AimToPatternStep(currentPatternStep+1);};
   
 private:
   static const int nLasers = 4;
   const double mm = 1.0;
   const double cm = 10.0;
+
+  int nPhiSteps=1;
+  int nThetaSteps=1;
+  int nTotalSteps=1;
+  int currentPatternStep=0;
+  float minPhi=0;
+  float maxPhi=0;
+  float minTheta=0;
+  float maxTheta=0;
 
   TVector3 GetCmStrike(TVector3 start, TVector3 direction);
   TVector3 GetFieldcageStrike(TVector3 start, TVector3 direction);
@@ -40,7 +56,7 @@ private:
   
   int nElectrons;
  
-  PHG4Hitv1* GenerateLaserHit(float theta, float phi, int laser);
+  void RebuildLaserHit(float theta, float phi, int laser);
 };
 
 

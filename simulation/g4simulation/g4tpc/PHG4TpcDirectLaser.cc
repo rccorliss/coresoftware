@@ -28,11 +28,51 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
   halfwidth_CM=0.5*cm;
 
   for (int i=0;i<4*2;i++){
-    PHG4Hits.push_back(GenerateLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i));
+    PHG4Hits.push_back(new PHG4Hitv1());//instantiate it
+    GenerateLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i)); //and then aim it at a default location.
   }
   
   
  return;
+}
+
+
+void PHG4TpcDirectLaser::SetPhiStepping(int n, float min,float max){
+  if (n<0 || max<min){
+    printf("SetPhiStepping values weird.  not setting.\n");
+    return;
+  }
+  nPhiSteps=n;
+  minPhi=min;
+  maxPhi=max;
+  nTotalSteps=nThetaSteps*nPhiSteps;
+  return;
+}
+void PHG4TpcDirectLaser::SetThetaStepping(int n, float min,float max){
+  if (n<0 || max<min){
+    printf("SetThetaStepping values weird.  not setting.\n");
+    return;
+  }
+  nThetaSteps=n;
+  minTheta=min;
+  maxTheta=max;
+  nTotalSteps=nThetaSteps*nPhiSteps;
+
+  return;
+}
+void PHG4TpcDirectLaser::AimToThetaPhi(float theta, float phi){
+    for (int i=0;i<4*2;i++){
+    RebuildLaserHit(theta,phi,i));
+  }
+return;
+}
+void PHG4TpcDirectLaser::AimToPatternStep(int n){
+  n=n%nTotalSteps;//trim against overflows
+  currentPatternStep=n;
+  int phiStep=n%nThetaSteps;
+  int thetaStep=n/nPhiSteps;
+  AimToThetaPhi((maxTheta-minTheta)/(nThetaSteps*1.)*thetaStep,(maxPhi-minPhi)/(nPhiSteps*1.)*phiStep);
+  return;
 }
 
 
@@ -106,7 +146,7 @@ TVector3  PHG4TpcDirectLaser::GetCylinderStrike(TVector3 s, TVector3 v, float ra
 
   
 
-PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int laser)
+void PHG4TpcDirectLaser::RebuildLaserHit(float theta, float phi, int laser)
 { //this function generates a PHG4 hit using coordinates from a stripe
   PHG4Hitv1 *hit;
   float direction=1;
@@ -133,11 +173,15 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
       strike=fc_strike;
   }
 
+  //find length
+  TVector3 diff=(strike-pos);
+  float len=diff.Mag();
+
   //now compute the laser hit:
-  printf("PHG4TpcDirectLaser::GenerateLaserHit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)(%c hit)\n",theta,phi,laser,pos.X(),pos.Y(),pos.Z(),strike.X(),strike.Y(),strike.Z(),(strike==fc_strike?'f':'c'));
+  printf("PHG4TpcDirectLaser::RebuildLaserHit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)(%c hit)\n",theta,phi,laser,pos.X(),pos.Y(),pos.Z(),strike.X(),strike.Y(),strike.Z(),(strike==fc_strike?'f':'c'));
 
   //from phg4tpcsteppingaction.cc
-  hit = new PHG4Hitv1();
+  hit = PHG4Hits[laser];//new PHG4Hitv1(); -- now handled in the constructor
   hit->set_layer(99); // dummy number
   //here we set the entrance values in cm
   hit->set_x(0, pos.X() / cm);
@@ -182,10 +226,13 @@ PHG4Hitv1* PHG4TpcDirectLaser::GenerateLaserHit(float theta, float phi, int lase
   //double Tpc_ElectronsPerGeV = Tpc_NTot / Tpc_dEdx*1e6; //electrons per gev.
 
   double edep = Tpc_dEdx*1e6 / Tpc_NTot; // GeV dep per electron
-  hit->set_edep(edep); // dont need get edep
-  //calculate eion - make same as edep
-  hit->set_eion(edep);// dont need get eion
+
+  float electrons_per_cm=300;//hardcoded
+  float totalE=electrons_per_cm*len/electrons_per_gev;//rcc dummy hardcoded 300 electrons per cm!
+
+  hit->set_eion(totalE);
+  hit->set_edep(totalE);
 
   
-  return hit;
+  return;
 }

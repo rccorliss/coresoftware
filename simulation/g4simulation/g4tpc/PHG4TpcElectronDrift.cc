@@ -250,7 +250,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
 
   //add CM hits if requested
   
-  if (false && do_addCmHits)
+  if (do_addCmHits)
     {//todo:  put in the real spacing.
       for (int i=0;i<(int)(membrane->PHG4Hits.size());i++){
 	membrane->PHG4Hits[i]->set_eion(300./electrons_per_gev);//rcc hardcoded 300 electrons per stripe!
@@ -270,12 +270,9 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
     {
       int newkey=0;
       if (do_addCmHits) newkey=1+laserHits->getmaxkey(laserHits->GetID());
-
+      //we link the laser hits from the directLaser into the overall laserHits collection,
+      //but note that these are not COPIES, they're pointers to the originals.
      for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
-       float len=sqrt((directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))*(directLaser->PHG4Hits[i]->get_x(0)-directLaser->PHG4Hits[i]->get_x(1))
-		      +(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))*(directLaser->PHG4Hits[i]->get_y(0)-directLaser->PHG4Hits[i]->get_y(1))
-		      +(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1))*(directLaser->PHG4Hits[i]->get_z(0)-directLaser->PHG4Hits[i]->get_z(1)));
-	directLaser->PHG4Hits[i]->set_eion(300./electrons_per_gev*len);//rcc dummy hardcoded 300 electrons per cm!
 	directLaser->PHG4Hits[i]->set_hit_id(newkey+i); //dummy hit id
 	directLaser->PHG4Hits[i]->set_t(0,0.);
 	directLaser->PHG4Hits[i]->set_t(1,0.);
@@ -333,7 +330,6 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
     for (hiter = laserHit_begin_end.first; hiter != laserHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
       PHG4Hitv1* tempHit=new PHG4Hitv1(hiter->second);
-      //tempHit->CopyFrom(hiter->second);
       g4hit->AddHit(tempHit);
       newkey++;
     }
@@ -376,7 +372,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
 	g4hit->size() - count_g4hits << " count_electrons " << count_electrons << std::endl;
     */
 
-    if (true || Verbosity() > 100)
+    if (Verbosity() > 100)
       std::cout << "  new hit with t0, " << t0 << " g4hitid " << hiter->first
                 << " eion " << eion << " n_electrons " << n_electrons
 		<< " layer " << hiter->second->get_layer()
@@ -388,7 +384,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
       continue;
     }
 
-    if (true || Verbosity() > 100)
+    if ( Verbosity() > 100)
     {
       std::cout << std::endl
                 << "electron drift: g4hit " << hiter->first << " created electrons: " << n_electrons
@@ -446,7 +442,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
         deltarnodist->Fill(radstart, rantrans);                // delta r no distortion, just diffusion+smear
       }
 
-      if (false && m_distortionMap)
+      if ( m_distortionMap)
       {
         const double x_distortion = m_distortionMap->get_x_distortion(x_start, y_start, z_start);
         const double y_distortion = m_distortionMap->get_y_distortion(x_start, y_start, z_start);
