@@ -378,7 +378,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
 	g4hit->size() - count_g4hits << " count_electrons " << count_electrons << std::endl;
     */
 
-    if (Verbosity() > 100)
+    if (true || Verbosity() > 100)
       std::cout << "  new hit with t0, " << t0 << " g4hitid " << hiter->first
                 << " eion " << eion << " n_electrons " << n_electrons
                 << " entry z " << hiter->second->get_z(0) << " exit z " << hiter->second->get_z(1) << " avg z" << (hiter->second->get_z(0) + hiter->second->get_z(1)) / 2.0
@@ -389,7 +389,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
       continue;
     }
 
-    if (Verbosity() > 100)
+    if ((true || Verbosity() > 100)
     {
       std::cout << std::endl
                 << "electron drift: g4hit " << hiter->first << " created electrons: " << n_electrons
