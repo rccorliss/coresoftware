@@ -389,7 +389,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
       continue;
     }
 
-    if ((true || Verbosity() > 100)
+    if (true || Verbosity() > 100)
     {
       std::cout << std::endl
                 << "electron drift: g4hit " << hiter->first << " created electrons: " << n_electrons
