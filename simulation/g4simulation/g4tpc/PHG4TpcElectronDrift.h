@@ -86,7 +86,7 @@ class PHG4TpcElectronDrift : public SubsysReco, public PHParameterInterface
   bool do_ElectronDriftQAHistos = false;
 
   
-  bool do_addCmHits=true;
+  bool do_addCmHits=false;
   bool do_addDirectLaserHits=false;
   bool do_autoAdvanceDirectLaser=false;
   PHG4TpcCentralMembrane * membrane=nullptr;
