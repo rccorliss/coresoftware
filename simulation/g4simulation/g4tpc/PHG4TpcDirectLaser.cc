@@ -150,17 +150,6 @@ TVector3  PHG4TpcDirectLaser::GetCylinderStrike(TVector3 s, TVector3 v, float ra
   TVector3 ret=s+v*min_t;
   return ret;
 }
-
-
-for ( it = Entities.begin(); it != Entities.end(); ) {
-   if( (*it)->getXPos() > 1.5f ) {
-      delete * it;  
-      it = Entities.erase(it);
-   }
-   else {
-      ++it;
-   }
-}
   
 
 void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
@@ -198,7 +187,6 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
   TVector3 start=pos;
   TVector3 end;
   TVector3 step=dir*maxHitLength/(dir.Mag());
-  bool stillGoing=true;
   float stepLength=0;
   for (int i=0;i<nHitSteps;i++){
     if (i+1==nHitSteps){
