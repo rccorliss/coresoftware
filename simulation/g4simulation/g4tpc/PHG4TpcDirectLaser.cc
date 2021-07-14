@@ -77,7 +77,7 @@ void PHG4TpcDirectLaser::AimToPatternStep(int n){
 }
 
 void PHG4TpcDirectLaser::ClearHits(){
-  for (int i =0; i< PHG4Hits.size();i++)
+  for (int i =0; i< (int)(PHG4Hits.size());i++)
    {
      delete (PHG4Hits[i]);
    } 
