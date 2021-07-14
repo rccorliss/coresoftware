@@ -163,8 +163,8 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
 
 
   //adjust direction:
-  dir.RotateY(theta);
-  dir.RotateZ(phi);
+  dir.RotateY(theta*direction);
+  dir.RotateZ(phi*direction);
 
   //rotate to the correct laser spot:
   pos.RotateZ(TMath::TwoPi()/4.*laser);
@@ -174,9 +174,11 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
   TVector3 cm_strike=GetCmStrike(pos,dir);
   TVector3 fc_strike=GetFieldcageStrike(pos,dir);
   TVector3 strike=cm_strike;
+  char strikeChar='c';
   if( fc_strike.Z()!=999){
     if ((fc_strike.Z()-pos.Z())/dir.Z()<(cm_strike.Z()-pos.Z())/dir.Z())
       strike=fc_strike;
+    strikeChar='f';
   }
 
   //find length
@@ -203,6 +205,9 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
     
   //now compute the laser hit:
   printf("PHG4TpcDirectLaser::Adding New Hit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)\n",theta,phi,laser,start.X()/cm,start.Y()/cm,start.Z()/cm,end.X()/cm,end.Y()/cm,end.Z()/cm);
+      if (i+1==nHitSteps){
+	printf("PHG4TpcDirectLaser::Strike %c\n",strikeChar);
+      }
 
   //from phg4tpcsteppingaction.cc
   hit = new PHG4Hitv1();
