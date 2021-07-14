@@ -37,9 +37,10 @@ public:
   void AimToNextPatternStep(){if (nTotalSteps>1)AimToPatternStep(currentPatternStep+1);};
   
 private:
-  static const int nLasers = 4;
-  const double mm = 1.0;
-  const double cm = 10.0;
+  static const int nLasers = 4; //per side
+  const double mm = 0.10;
+  const double cm = 1.0;
+  static const float maxHitLength=1.0;//1cm.
 
   int nPhiSteps=1;
   int nThetaSteps=1;
@@ -56,7 +57,8 @@ private:
   
   int nElectrons;
  
-  void RebuildLaserHit(float theta, float phi, int laser);
+  void AppendLaserTrack(float theta, float phi, int laser);
+  void ClearHits();
 };
 
 

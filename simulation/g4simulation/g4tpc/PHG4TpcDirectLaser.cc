@@ -28,8 +28,8 @@ PHG4TpcDirectLaser::PHG4TpcDirectLaser()
   halfwidth_CM=0.5*cm;
 
   for (int i=0;i<4*2;i++){
-    PHG4Hits.push_back(new PHG4Hitv1());//instantiate it
-    RebuildLaserHit(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i); //and then aim it at a default location.
+    //PHG4Hits.push_back(new PHG4Hitv1());//instantiate it
+    AppendLaserTrack(TMath::Pi()/180.*10.,TMath::Pi()/180.*90,i); //add random starting laser tracks...
   }
   
   
@@ -61,9 +61,10 @@ void PHG4TpcDirectLaser::SetThetaStepping(int n, float min,float max){
   return;
 }
 void PHG4TpcDirectLaser::AimToThetaPhi(float theta, float phi){
-    for (int i=0;i<4*2;i++){
-      RebuildLaserHit(theta,phi,i);
-    }
+  ClearHits();
+  for (int i=0;i<4*2;i++){
+    AppendLaserTrack(theta,phi,i);
+  }
 return;
 }
 void PHG4TpcDirectLaser::AimToPatternStep(int n){
@@ -75,6 +76,14 @@ void PHG4TpcDirectLaser::AimToPatternStep(int n){
   return;
 }
 
+void PHG4TpcDirectLaser::ClearHits(){
+  for (int i =0; i< PHG4Hits.size();i++)
+   {
+     delete (PHG4Hits[i]);
+   } 
+   PHG4Hits.clear();
+   return;
+}
 
 TVector3 PHG4TpcDirectLaser::GetCmStrike(TVector3 start, TVector3 direction){
   TVector3 ret;
@@ -143,11 +152,19 @@ TVector3  PHG4TpcDirectLaser::GetCylinderStrike(TVector3 s, TVector3 v, float ra
 }
 
 
-
+for ( it = Entities.begin(); it != Entities.end(); ) {
+   if( (*it)->getXPos() > 1.5f ) {
+      delete * it;  
+      it = Entities.erase(it);
+   }
+   else {
+      ++it;
+   }
+}
   
 
-void PHG4TpcDirectLaser::RebuildLaserHit(float theta, float phi, int laser)
-{ //this function generates a PHG4 hit using coordinates from a stripe
+void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
+{ //this function generates a series of PHG4 hits from the specified laser, in the specified direction.
   PHG4Hitv1 *hit;
   float direction=1;
   if (laser>3) direction=-1;
@@ -174,23 +191,41 @@ void PHG4TpcDirectLaser::RebuildLaserHit(float theta, float phi, int laser)
   }
 
   //find length
-  TVector3 diff=(strike-pos);
-  float len=diff.Mag();
+  TVector3 delta=(strike-pos);
+  float fullLength=delta.Mag();
+  int nHitSteps=fullLength/maxHitLength+1;
 
+  TVector3 start=pos;
+  TVector3 end;
+  TVector3 step=dir*maxHitLength/(dir.Mag());
+  bool stillGoing=true;
+  float stepLength=0;
+  for (int i=0;i<nHitSteps;i++){
+    if (i+1==nHitSteps){
+      //last step is the remainder size
+      end=strike;
+      delta=start-end;
+      stepLength=delta.Mag();
+    } else {
+      //all other steps are uniform length
+      end=start+step;
+      stepLength=step.Mag();
+    }
+    
   //now compute the laser hit:
   //printf("PHG4TpcDirectLaser::RebuildLaserHit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)(%c hit)\n",theta,phi,laser,pos.X(),pos.Y(),pos.Z(),strike.X(),strike.Y(),strike.Z(),(strike==fc_strike?'f':'c'));
 
   //from phg4tpcsteppingaction.cc
-  hit = PHG4Hits[laser];//new PHG4Hitv1(); -- now handled in the constructor
+  hit = new PHG4Hitv1();
   hit->set_layer(99); // dummy number
   //here we set the entrance values in cm
-  hit->set_x(0, pos.X() / cm);
-  hit->set_y(0, pos.Y() / cm);
-  hit->set_z(0, pos.Z() / cm);
+  hit->set_x(0, start.X() / cm);
+  hit->set_y(0, start.Y() / cm);
+  hit->set_z(0, start.Z() / cm);
   //and the exist values
-  hit->set_x(1, strike.X() / cm);
-  hit->set_y(1, strike.Y() / cm);
-  hit->set_z(1, strike.Z() / cm);
+  hit->set_x(1, end.X() / cm);
+  hit->set_y(1, end.Y() / cm);
+  hit->set_z(1, end.Z() / cm);
 
 
   // momentum
@@ -211,7 +246,8 @@ void PHG4TpcDirectLaser::RebuildLaserHit(float theta, float phi, int laser)
   hit->set_t(1, 1.0); // dummy number, nanosecond
 
   //calculate the total energy deposited
-  
+
+  //should calc this stuff in advance!
   double Ne_dEdx = 1.56;   // keV/cm
   double CF4_dEdx = 7.00;  // keV/cm
 
@@ -227,12 +263,14 @@ void PHG4TpcDirectLaser::RebuildLaserHit(float theta, float phi, int laser)
 
   double electrons_per_gev = Tpc_dEdx*1e6 / Tpc_NTot; // GeV dep per electron
 
-  float electrons_per_cm=300;//hardcoded
-  float totalE=electrons_per_cm*len/electrons_per_gev;//rcc dummy hardcoded 300 electrons per cm!
+  float electrons_per_length=300/cm;//hardcoded
+  float totalE=electrons_per_length*stepLength/electrons_per_gev;//rcc dummy hardcoded 300 electrons per cm!
 
   hit->set_eion(totalE);
   hit->set_edep(totalE);
 
+  PHG4Hits.push_back(hit);
+  }
   
   return;
 }
