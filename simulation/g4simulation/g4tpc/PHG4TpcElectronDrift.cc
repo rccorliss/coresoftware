@@ -307,17 +307,11 @@ int PHG4TpcElectronDrift::process_event(PHCompositeNode *topNode)
   PHG4HitContainer::ConstIterator hiter;
 
   printf("PHG4TpcElectronDrift::process_event\n");
-if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we have it.
+  if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we have it.
 
-  if (do_autoAdvanceDirectLaser){
-    directLaser->AimToNextPatternStep();
-  }
- 
-
-  
-  int newkey=g4hit->getmaxkey(g4hit->GetID());
-   printf("first Laser hitID is %d\n",newkey);
-   PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();
+    int newkey=g4hit->getmaxkey(g4hit->GetID());
+    //printf("first Laser hitID is %d\n",newkey);
+    PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();
     for (hiter = laserHit_begin_end.first; hiter != laserHit_begin_end.second; ++hiter){
       hiter->second->set_hit_id(newkey);
       PHG4Hitv1* tempHit=new PHG4Hitv1(hiter->second);
@@ -325,22 +319,25 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
       newkey++;
     }
 
- if ( do_addDirectLaserHits)
-    {
-      //we link the laser hits from the directLaser into the overall laserHits collection,
-      // note that these are COPIES,of the originals.
-     for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
-	directLaser->PHG4Hits[i]->set_hit_id(newkey); //dummy hit id
-	directLaser->PHG4Hits[i]->set_t(0,0.);
-	directLaser->PHG4Hits[i]->set_t(1,0.);
-	PHG4Hitv1* tempHit=new PHG4Hitv1(directLaser->PHG4Hits[i]);
-      g4hit->AddHit(tempHit);
-      newkey++;
+    if ( do_addDirectLaserHits)
+      {
+	
+	if (do_autoAdvanceDirectLaser){
+	  directLaser->AimToNextPatternStep();
+	}
+  
+	//we link the laser hits from the directLaser into the overall laserHits collection,
+	// note that these are COPIES,of the originals.
+	for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
+	  directLaser->PHG4Hits[i]->set_hit_id(newkey); //dummy hit id
+	  PHG4Hitv1* tempHit=new PHG4Hitv1(directLaser->PHG4Hits[i]);
+	  g4hit->AddHit(tempHit);
+	  newkey++;
+	}
       }
-    }
 
     
-       printf("last Laser hitID is %d\n",newkey);
+ //printf("last Laser hitID is %d\n",newkey);
 
   }
   
