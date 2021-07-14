@@ -334,7 +334,7 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
 	directLaser->PHG4Hits[i]->set_hit_id(newkey+i); //dummy hit id
 	directLaser->PHG4Hits[i]->set_t(0,0.);
 	directLaser->PHG4Hits[i]->set_t(1,0.);
-	PHG4Hitv1* tempHit=new PHG4Hitv1(PHG4Hits[i]);
+	PHG4Hitv1* tempHit=new PHG4Hitv1(directLaser->PHG4Hits[i]);
       g4hit->AddHit(tempHit);
       }
     }
