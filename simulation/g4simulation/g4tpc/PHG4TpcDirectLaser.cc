@@ -185,10 +185,11 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
   int nHitSteps=fullLength/maxHitLength+1;
 
   TVector3 start=pos;
-  TVector3 end;
+  TVector3 end=start;
   TVector3 step=dir*(maxHitLength/(dir.Mag()));
   float stepLength=0;
   for (int i=0;i<nHitSteps;i++){
+    start=end;//new starting point is the previous ending point.
     if (i+1==nHitSteps){
       //last step is the remainder size
       end=strike;
@@ -201,7 +202,7 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
     }
     
   //now compute the laser hit:
-  //printf("PHG4TpcDirectLaser::RebuildLaserHit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)(%c hit)\n",theta,phi,laser,pos.X(),pos.Y(),pos.Z(),strike.X(),strike.Y(),strike.Z(),(strike==fc_strike?'f':'c'));
+  //printf("PHG4TpcDirectLaser::Adding New Hit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)\n",theta,phi,laser,start.X(),start.Y(),start.Z(),end.X(),end.Y(),end.Z());
 
   //from phg4tpcsteppingaction.cc
   hit = new PHG4Hitv1();
