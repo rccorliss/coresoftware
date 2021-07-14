@@ -327,15 +327,15 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
 
  if ( do_addDirectLaserHits)
     {
-      newkey=g4hit->getmaxkey(g4hit->GetID());
       //we link the laser hits from the directLaser into the overall laserHits collection,
-      //but note that these are not COPIES, they're pointers to the originals.
+      // note that these are COPIES,of the originals.
      for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
-	directLaser->PHG4Hits[i]->set_hit_id(newkey+i); //dummy hit id
+	directLaser->PHG4Hits[i]->set_hit_id(newkey); //dummy hit id
 	directLaser->PHG4Hits[i]->set_t(0,0.);
 	directLaser->PHG4Hits[i]->set_t(1,0.);
 	PHG4Hitv1* tempHit=new PHG4Hitv1(directLaser->PHG4Hits[i]);
       g4hit->AddHit(tempHit);
+      newkey++;
       }
     }
 
