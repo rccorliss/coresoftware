@@ -186,7 +186,7 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
 
   TVector3 start=pos;
   TVector3 end;
-  TVector3 step=dir*maxHitLength/(dir.Mag());
+  TVector3 step=dir*(maxHitLength/(dir.Mag()));
   float stepLength=0;
   for (int i=0;i<nHitSteps;i++){
     if (i+1==nHitSteps){
