@@ -40,7 +40,7 @@ private:
   static const int nLasers = 4; //per side
   const double mm = 0.10;
   const double cm = 1.0;
-  static const float maxHitLength=1.0;//1cm.
+  const float maxHitLength=1.0;//1cm.
 
   int nPhiSteps=1;
   int nThetaSteps=1;
