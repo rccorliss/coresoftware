@@ -202,7 +202,7 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
     }
     
   //now compute the laser hit:
-  //printf("PHG4TpcDirectLaser::Adding New Hit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)\n",theta,phi,laser,start.X(),start.Y(),start.Z(),end.X(),end.Y(),end.Z());
+  printf("PHG4TpcDirectLaser::Adding New Hit(%1.2f,%1.2f,%d): (%1.2f,%1.2f,%1.2f) to (%1.2f,%1.2f,%1.2f)\n",theta,phi,laser,start.X()/cm,start.Y()/cm,start.Z()/cm,end.X()/cm,end.Y()/cm,end.Z()/cm);
 
   //from phg4tpcsteppingaction.cc
   hit = new PHG4Hitv1();
@@ -232,7 +232,7 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
   hit->set_py(1, 700.0);
   hit->set_pz(1, 700.0);
   
-  hit->set_t(1, 1.0); // dummy number, nanosecond
+  hit->set_t(1, 0.0); // dummy number, nanosecond
 
   //calculate the total energy deposited
 
@@ -252,7 +252,7 @@ void PHG4TpcDirectLaser::AppendLaserTrack(float theta, float phi, int laser)
 
   double electrons_per_gev = Tpc_dEdx*1e6 / Tpc_NTot; // GeV dep per electron
 
-  float electrons_per_length=300/cm;//hardcoded
+  float electrons_per_length=300./cm;//hardcoded
   float totalE=electrons_per_length*stepLength/electrons_per_gev;//rcc dummy hardcoded 300 electrons per cm!
 
   hit->set_eion(totalE);
