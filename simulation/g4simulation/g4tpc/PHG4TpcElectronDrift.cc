@@ -266,23 +266,7 @@ int PHG4TpcElectronDrift::InitRun(PHCompositeNode *topNode)
 	//cmHits->AddHit(membrane->PHG4Hits[i]);
       }
     }
-  if ( do_addDirectLaserHits)
-    {
-      int newkey=0;
-      if (do_addCmHits) newkey=1+laserHits->getmaxkey(laserHits->GetID());
-      //we link the laser hits from the directLaser into the overall laserHits collection,
-      //but note that these are not COPIES, they're pointers to the originals.
-     for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
-	directLaser->PHG4Hits[i]->set_hit_id(newkey+i); //dummy hit id
-	directLaser->PHG4Hits[i]->set_t(0,0.);
-	directLaser->PHG4Hits[i]->set_t(1,0.);
-	laserHits->AddHit(directLaser->PHG4Hits[i]);
-	//membrane->PHG4Hits[i]->set_hit_id(1e8+2*i+1);
-	//membrane->PHG4Hits[i]->set_z(0,-1.);
-	//membrane->PHG4Hits[i]->set_z(1,-1.);
-	//cmHits->AddHit(membrane->PHG4Hits[i]);
-      }
-    }
+
 
   if (Verbosity())
   {
@@ -328,6 +312,9 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
   if (do_autoAdvanceDirectLaser){
     directLaser->AimToNextPatternStep();
   }
+ 
+
+  
   int newkey=g4hit->getmaxkey(g4hit->GetID());
    printf("first Laser hitID is %d\n",newkey);
    PHG4HitContainer::ConstRange laserHit_begin_end=laserHits->getHits();
@@ -337,6 +324,22 @@ if (do_addCmHits || do_addDirectLaserHits){//add in the laser hit set, if we hav
       g4hit->AddHit(tempHit);
       newkey++;
     }
+
+ if ( do_addDirectLaserHits)
+    {
+      newkey=g4hit->getmaxkey(g4hit->GetID());
+      //we link the laser hits from the directLaser into the overall laserHits collection,
+      //but note that these are not COPIES, they're pointers to the originals.
+     for (int i=0;i<(int)(directLaser->PHG4Hits.size());i++){
+	directLaser->PHG4Hits[i]->set_hit_id(newkey+i); //dummy hit id
+	directLaser->PHG4Hits[i]->set_t(0,0.);
+	directLaser->PHG4Hits[i]->set_t(1,0.);
+	PHG4Hitv1* tempHit=new PHG4Hitv1(PHG4Hits[i]);
+      g4hit->AddHit(tempHit);
+      }
+    }
+
+    
        printf("last Laser hitID is %d\n",newkey);
 
   }
