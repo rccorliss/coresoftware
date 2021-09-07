@@ -7,6 +7,7 @@
 #include <Geant4/G4Types.hh>
 
 #include <set>
+#inclde <vector>
 #include <string>  // for string
 
 class G4LogicalVolume;
