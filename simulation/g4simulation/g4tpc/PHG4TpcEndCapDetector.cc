@@ -156,7 +156,7 @@ G4AssemblyVolume *PHG4TpcEndCapDetector::ConstructEndCapAssembly()
   std::vector<std::string>material;
   material.push_back("G4_Cu");
   thickness.push_back(0.0005*2.*cm);
-  material.push_back("G4_Kapton");
+  material.push_back("G4_KAPTON");
   thickness.push_back(0.005*cm);
   material.push_back("sPHENIX_TPC_Gas");// proper gas name, but should be pulled from params to match TpcSubsystem?
   thickness.push_back(0.2*cm);
