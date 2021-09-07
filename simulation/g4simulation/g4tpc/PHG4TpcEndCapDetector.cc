@@ -138,7 +138,7 @@ void PHG4TpcEndCapDetector::ConstructMe(G4LogicalVolume *logicWorld)
 
 G4AssemblyVolume *PHG4TpcEndCapDetector::ConstructEndCapAssembly()
 {
-  G4AssemblyVolume *assmeblyvol = new G4AssemblyVolume();
+  G4AssemblyVolume *assemblyvol = new G4AssemblyVolume();
   G4double starting_z(0);
 
   // Internal HBD structure
@@ -151,48 +151,90 @@ G4AssemblyVolume *PHG4TpcEndCapDetector::ConstructEndCapAssembly()
   //  //  GEM frames FR4 17.1 0.15x4 6.5 0.228 <- not used for GEMs trackers
   //  AddLayer("Frame0", "G10",
   //          0.15 * cm, false, 6.5);
+
+  std::vector<double>thickness;
+  std::vector<std::string>material;
+  material.push_back("G4_Cu");
+  thickness.push_back(0.0005*2.*cm);
+  material.push_back("G4_Kapton");
+  thickness.push_back(0.005*cm);
+  material.push_back(params->get_string_param("tpc_gas"));
+  thickness.push_back(0.2*cm);
+  G4Material *temp=G4Material::GetMaterial("GEMeffective");
+  if (temp==nullptr){
+    CreateCompositeMaterial("GEMeffective",material,thickness); //see new function below
+  }
+  double totalThickness=0;
+  for (int i=0;i<thickness.size();i++){
+    totalThickness+=thickness[i];
+  }
+  
   const int n_GEM_layers = m_Params->get_int_param("n_GEM_layers");
 
-  for (int gem = 1; gem <= n_GEM_layers; gem++)
-  {
-    stringstream sid;
-    sid << gem;
-
-    //  GEM Copper 1.43 0.0005x6 64 0.134
-    AddLayer(assmeblyvol, starting_z, G4String("GEMFrontCu") + G4String(sid.str()), "G4_Cu",
-             0.0005 * cm, 64);
-
-    //  GEM Kapton 28.6 0.005x3 64 0.034
-    AddLayer(assmeblyvol, starting_z, G4String("GEMKapton") + G4String(sid.str()), "G4_KAPTON",
-             0.005 * cm, 64);
-
-    //  GEM Copper 1.43 0.0005x6 64 0.134
-    AddLayer(assmeblyvol, starting_z, G4String("GEMBackCu") + G4String(sid.str()), "G4_Cu",
-             0.0005 * cm, 64);
-
-    //  GEM frames FR4 17.1 0.15x4 6.5 0.228
-    //    AddLayer(assmeblyvol,starting_z,G4String("Frame") + G4String(sid.str()), "G10", 0.15 * cm,
-    //             6.5);
-    // sPHENIX TPC air gap
-    starting_z += 0.2 * cm;
-  }
+  //instead of building this layer-by-layer, we build a single block corresponding to all the gems that were previously handled in this fashion:
+  totalThickness*=n_GEM_layers;
+  AddLayer(assemblyvol, starting_z, G4String("GEMAllParts"), "GEMeffective", totalThickness, 64); //note this slightly udnercounts the gas because the gas fill should be 100%, and slightly mispositions the inner edge of the material because the way it is made <100% in AddLayer is by making it thinner than nominally requested but centering it in the region it would have occupied.
 
   // 16 layer readout plane by TTM
   // https://indico.bnl.gov/event/8307/contributions/36744/attachments/27646/42337/R3-Review.pptx
   const int n_PCB_layers(16);
   // 35 um / layer Cu
-  AddLayer(assmeblyvol, starting_z, G4String("PCBCu"), "G4_Cu", 0.0035 * cm * n_PCB_layers, 80);
+  AddLayer(assemblyvol, starting_z, G4String("PCBCu"), "G4_Cu", 0.0035 * cm * n_PCB_layers, 80);
   // 7 mil / layer board
-  AddLayer(assmeblyvol, starting_z, "PCBBase", "FR4", 0.00254 * cm * 7 * n_PCB_layers, 100);
+  AddLayer(assemblyvol, starting_z, "PCBBase", "FR4", 0.00254 * cm * 7 * n_PCB_layers, 100);
 
-  ConstructWagonWheel(assmeblyvol, starting_z);
-  ConstructElectronics(assmeblyvol, starting_z);
+  ConstructWagonWheel(assemblyvol, starting_z);
+  ConstructElectronics(assemblyvol, starting_z);
 
-  return assmeblyvol;
+  return assemblyvol;
 }
 
+void PHG4TpcEndCapDetector ::CreateCompositeMaterial(
+  std::string compositeName,
+  std::vector<std::string> materialName,
+  std::vector<double>thickness){
+  //takes in a list of material names known to Geant already, and thicknesses, and creates a new material called compositeName.
+
+  //check that desired material name doesn't already exist
+  G4Material *tempmat = G4Material::GetMaterial(compositeName);
+  if (tempmat != nullptr)  {
+    cout << __PRETTY_FUNCTION__ << " Fatal Error: composite material " << compositeName << "already exists" << endl;
+    assert(!tempmat);
+  }
+
+  //check that both arrays have the same depth
+  assert(materialName.size()==thickness.size());
+
+  //sum up the areal density and total thickness so we can divvy it out
+  double totalArealDensity=0, totalThickness=0;
+  for (int i=0;i<thickness.size();i++){
+    tempmat = G4Material::GetMaterial(materialName[i]);
+    if (tempmat != nullptr)  {
+      cout << __PRETTY_FUNCTION__ << " Fatal Error: component material " << materialName[i] << "does not exist." << endl;
+      assert(!tempmat);
+    }
+    totalArealDensity+=tempmat->GetDensity()*thickness[i];
+    totalThickness+=thickness[i];
+  }
+
+  //register a new material with the average density of the whole:
+  double compositeDensity=totalArealDensity/totalThickness
+    G4Material* composite=new G4Material(name = compositeName, density = compositeDensity, ncomponents = thickness.size());
+
+  //now calculate the fraction due to each material, and register those 
+  for (int i=0;i<thickness.size();i++){
+    tempmat = G4Material::GetMaterial(materialName[i]); //don't need to check this, since we did in the previous loop.
+    effectiveGEM->AddMaterial(tempmat, fractionmass = thickness[i]*tempmat->GetDensity()/totalArealDensity)
+      }
+
+//how to register our finished material?
+return;
+}
+
+
+
 void PHG4TpcEndCapDetector ::AddLayer(  //
-    G4AssemblyVolume *assmeblyvol,
+    G4AssemblyVolume *assemblyvol,
     G4double &z_start,
     std::string _name,         //! name base for this layer
     std::string _material,     //! material name in G4
@@ -223,7 +265,7 @@ void PHG4TpcEndCapDetector ::AddLayer(  //
 
   G4LogicalVolume *logical_layer = new G4LogicalVolume(solid_layer, material, name_base);
 
-  assmeblyvol->AddPlacedVolume(logical_layer, g4vec, nullptr);
+  assemblyvol->AddPlacedVolume(logical_layer, g4vec, nullptr);
 
   assert(m_DisplayAction);
   m_DisplayAction->AddVolume(logical_layer, _material);

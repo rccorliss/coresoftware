@@ -68,6 +68,14 @@ class PHG4TpcEndCapDetector : public PHG4Detector
       G4double _depth,                 //! depth in G4 units
       double _percentage_filled = 100  //! percentage filled//
   );
+
+  void CreateCompositeMaterial( //
+      std::string compositeName, //! desired name for the new material
+      std::vector<std::string> materialName, //! vector of the names of the component materials in G4
+      std::vector<double>thickness //! thickness of this particular layer (assuming 100 percent filled)
+  );
+
+  
 };
 
 #endif  // PHG4TPCENDCAPDETECTOR_H
