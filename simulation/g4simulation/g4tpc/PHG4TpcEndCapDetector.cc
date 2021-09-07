@@ -224,7 +224,7 @@ void PHG4TpcEndCapDetector ::CreateCompositeMaterial(
   //now calculate the fraction due to each material, and register those 
   for (std::vector<double>::size_type i=0;i<thickness.size();i++){
     tempmat = G4Material::GetMaterial(materialName[i]); //don't need to check this, since we did in the previous loop.
-    composite->AddMaterial(tempmat, thickness[i]*tempmat->GetDensity()/totalArealDensity)
+    composite->AddMaterial(tempmat, thickness[i]*tempmat->GetDensity()/totalArealDensity);
       }
 
 //how to register our finished material?
