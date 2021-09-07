@@ -158,14 +158,14 @@ G4AssemblyVolume *PHG4TpcEndCapDetector::ConstructEndCapAssembly()
   thickness.push_back(0.0005*2.*cm);
   material.push_back("G4_Kapton");
   thickness.push_back(0.005*cm);
-  material.push_back(params->get_string_param("tpc_gas"));
+  material.push_back(m_Params->get_string_param("tpc_gas"));
   thickness.push_back(0.2*cm);
   G4Material *temp=G4Material::GetMaterial("GEMeffective");
   if (temp==nullptr){
     CreateCompositeMaterial("GEMeffective",material,thickness); //see new function below
   }
   double totalThickness=0;
-  for (int i=0;i<thickness.size();i++){
+  for (std::vector<double>::size_type i=0;i<thickness.size();i++){
     totalThickness+=thickness[i];
   }
   
@@ -207,7 +207,7 @@ void PHG4TpcEndCapDetector ::CreateCompositeMaterial(
 
   //sum up the areal density and total thickness so we can divvy it out
   double totalArealDensity=0, totalThickness=0;
-  for (int i=0;i<thickness.size();i++){
+  for (std::vector<double>::size_type i=0;i<thickness.size();i++){
     tempmat = G4Material::GetMaterial(materialName[i]);
     if (tempmat != nullptr)  {
       cout << __PRETTY_FUNCTION__ << " Fatal Error: component material " << materialName[i] << "does not exist." << endl;
@@ -218,13 +218,13 @@ void PHG4TpcEndCapDetector ::CreateCompositeMaterial(
   }
 
   //register a new material with the average density of the whole:
-  double compositeDensity=totalArealDensity/totalThickness
-    G4Material* composite=new G4Material(name = compositeName, density = compositeDensity, ncomponents = thickness.size());
+  double compositeDensity=totalArealDensity/totalThickness;
+  G4Material* composite=new G4Material(name = compositeName, density = compositeDensity, ncomponents = thickness.size());
 
   //now calculate the fraction due to each material, and register those 
-  for (int i=0;i<thickness.size();i++){
+  for (std::vector<double>::size_type i=0;i<thickness.size();i++){
     tempmat = G4Material::GetMaterial(materialName[i]); //don't need to check this, since we did in the previous loop.
-    effectiveGEM->AddMaterial(tempmat, fractionmass = thickness[i]*tempmat->GetDensity()/totalArealDensity)
+    composite->AddMaterial(tempmat, fractionmass = thickness[i]*tempmat->GetDensity()/totalArealDensity)
       }
 
 //how to register our finished material?
