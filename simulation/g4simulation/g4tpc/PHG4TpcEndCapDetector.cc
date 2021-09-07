@@ -158,7 +158,7 @@ G4AssemblyVolume *PHG4TpcEndCapDetector::ConstructEndCapAssembly()
   thickness.push_back(0.0005*2.*cm);
   material.push_back("G4_Kapton");
   thickness.push_back(0.005*cm);
-  material.push_back("G4_Cu");// temp testing.  should be:  m_Params->get_string_param("tpc_gas"));
+  material.push_back("sPHENIX_TPC_Gas");// proper gas name, but should be pulled from params to match TpcSubsystem?
   thickness.push_back(0.2*cm);
   G4Material *temp=G4Material::GetMaterial("GEMeffective");
   if (temp==nullptr){
@@ -196,9 +196,12 @@ void PHG4TpcEndCapDetector ::CreateCompositeMaterial(
   //takes in a list of material names known to Geant already, and thicknesses, and creates a new material called compositeName.
 
   //check that desired material name doesn't already exist
+  //note that this throws a warning.
+    cout << __PRETTY_FUNCTION__ << " NOTICE: Checking if material " << compositeName << " exists.  This will return a warning if it doesn't, but that is okay." << endl;
   G4Material *tempmat = G4Material::GetMaterial(compositeName);
+  
   if (tempmat != nullptr)  {
-    cout << __PRETTY_FUNCTION__ << " Fatal Error: composite material " << compositeName << "already exists" << endl;
+    cout << __PRETTY_FUNCTION__ << " Fatal Error: composite material " << compositeName << " already exists" << endl;
     assert(!tempmat);
   }
 
@@ -209,8 +212,8 @@ void PHG4TpcEndCapDetector ::CreateCompositeMaterial(
   double totalArealDensity=0, totalThickness=0;
   for (std::vector<double>::size_type i=0;i<thickness.size();i++){
     tempmat = G4Material::GetMaterial(materialName[i]);
-    if (tempmat != nullptr)  {
-      cout << __PRETTY_FUNCTION__ << " Fatal Error: component material " << materialName[i] << "does not exist." << endl;
+    if (tempmat == nullptr)  {
+      cout << __PRETTY_FUNCTION__ << " Fatal Error: component material " << materialName[i] << " does not exist." << endl;
       assert(!tempmat);
     }
     totalArealDensity+=tempmat->GetDensity()*thickness[i];
