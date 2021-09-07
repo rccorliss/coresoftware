@@ -158,7 +158,7 @@ G4AssemblyVolume *PHG4TpcEndCapDetector::ConstructEndCapAssembly()
   thickness.push_back(0.0005*2.*cm);
   material.push_back("G4_Kapton");
   thickness.push_back(0.005*cm);
-  material.push_back(m_Params->get_string_param("tpc_gas"));
+  material.push_back("G4_Cu");// temp testing.  should be:  m_Params->get_string_param("tpc_gas"));
   thickness.push_back(0.2*cm);
   G4Material *temp=G4Material::GetMaterial("GEMeffective");
   if (temp==nullptr){
