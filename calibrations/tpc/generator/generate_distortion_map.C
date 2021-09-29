@@ -46,6 +46,7 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
     printf(", eg : %s\n",((TFileInfo*)(filelist->GetList()->At(0)))->GetCurrentUrl()->GetUrl());
   } else {
     printf(" ... returning empty-handed.\n");
+  }
 
 
   SurveyFiles( filelist);
