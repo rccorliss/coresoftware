@@ -40,7 +40,12 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
   TFileCollection *filelist=new TFileCollection();
   filelist->Add(inputpattern);
   filelist->Print();
-  printf("Using pattern \"%s\", found %d files to read, eg : %s\n",inputpattern,filelist->GetList()->GetEntries(),((TFileInfo*)(filelist->GetList()->At(0)))->GetCurrentUrl()->GetUrl());//Title());//Print();
+  int nFilesToRead=filelist->GetList()->GetEntries();
+  printf("Using pattern \"%s\", found %d files to read",inputpattern,nFilesToRead);
+  if (nFilesToRead>0){
+    printf(", eg : %s\n",((TFileInfo*)(filelist->GetList()->At(0)))->GetCurrentUrl()->GetUrl());
+  } else {
+    printf(" ... returning empty-handed.\n");
 
 
   SurveyFiles( filelist);
