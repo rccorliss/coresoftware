@@ -21,7 +21,7 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
   int maxmapsperfile=2;
 
   
-  bool hasTwin=true;
+  bool hasTwin=true; //whether we treat the two TPC lookup tables as mirror images of each other, rather than handling each side of the TPC independently.  
   //bool hasSpacecharge=true;
 
   //and some parameters of the files we're loading:
@@ -110,7 +110,7 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
       if (sourcefilename.Contains("verage")){ //this is an IBF map we don't want.
 	outputfilename=Form("%s.average.%s.%s",outputfilebase,field_string,lookup_string);
       } else {
-	outputfilename=Form("%s.file%d.%s.%s.%s",outputfilebase,fileIndex,tobj->GetName(),field_string,lookup_string);
+	outputfilename=Form("%s.file%d.%s.%s.%s",outputfilebase,i,tobj->GetName(),field_string,lookup_string);
       }
       printf("%s file has %s hist.  field=%s, lookup=%s. no scaling.\n",
 	     sourcefilename.Data(),tobj->GetName(),field_string,lookup_string);
@@ -118,10 +118,10 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
       //TestSpotDistortion(tpc);
  
       //tpc->GenerateDistortionMaps(outputfilename,2,2,2,1,true);
-      tpc->GenerateSeparateDistortionMaps(outputfilename,2,2,2,1,true);
+      tpc->GenerateSeparateDistortionMaps(outputfilename.Data(),2,2,2,1,true);
       printf("distortions mapped.\n");
-      tpc->PlotFieldSlices(outputfilename,pos);
-      tpc->PlotFieldSlices(outputfilename,pos,'B');
+      tpc->PlotFieldSlices(outputfilename.Data(),pos);
+      tpc->PlotFieldSlices(outputfilename.Data(),pos,'B');
       printf("fieldslices plotted.\n");     
       printf("obj %d: getname: %s  inherits from TH3D:%d \n",j,tobj->GetName(),tobj->InheritsFrom("TH3"));
       //break; //rcc temp -- uncomment this to process one hist per file.
