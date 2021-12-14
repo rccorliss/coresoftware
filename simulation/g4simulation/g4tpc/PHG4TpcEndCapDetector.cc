@@ -322,13 +322,14 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
   }
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "All_GEM_Frames");
 
-  G4VSolid *allFrames=G4UnionSolid(name_base,unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
+  G4VSolid *allFrames=new G4UnionSolid(name_base,unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
   G4LogicalVolume *logical_volume = new G4LogicalVolume(allFrames, material, name_base);
   m_LogicalVolumesSet.insert(logical_volume);
   m_DisplayAction->AddVolume(logical_volume,material_name);
-  G4VPhysicalVolume *tpc_gem_frames = new G4PVPlacement(0, G4ThreeVector(0, 0, 0),
-                                                         logical_volume, "tpc_gem_frames",
-                                                         gemvol, false, 0, OverlapCheck());
+  //G4VPhysicalVolume *tpc_gem_frames =
+  new G4PVPlacement(0, G4ThreeVector(0, 0, 0),
+		    logical_volume, "tpc_gem_frames",
+		    gemvol, false, 0, OverlapCheck());
 
   //place the laser inlets!
   
