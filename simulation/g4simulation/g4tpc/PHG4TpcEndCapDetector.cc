@@ -153,7 +153,7 @@ G4AssemblyVolume *PHG4TpcEndCapDetector::ConstructEndCapAssembly()
   G4LogicalVolume *gemvol=AddLayer(assemblyvol, starting_z, G4String("GEMAllParts"), "GEMeffective", totalThickness, 64);  //note this slightly undercounts the gas because the gas fill should be 100%, and slightly mispositions the inner edge of the material because the way it is made <100% in AddLayer is by making it thinner than nominally requested but centering it in the region it would have occupied.
 
   //place the frame structures inside the gemvol:
-  ConstructGemFrames(gemvol);
+  ConstructGemFrames(gemvol, totalThickness);
   
   // 16 layer readout plane by TTM
   // https://indico.bnl.gov/event/8307/contributions/36744/attachments/27646/42337/R3-Review.pptx
@@ -266,7 +266,7 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
 {
   //rings corresponding to >R3, R2-R3, R1-R2, <R1
   double tpc_frame_side_gap=0.8*mm;//space between radial line and start of frame
-  double tpc_frame_side_width=2.6*mm;//thickness of frame
+  double tpc_frame_width=2.6*mm;//thickness of frame
   //double tpc_margin=0.0*mm;//extra gap between edge of frame and start of GEM holes
   
   double tpc_frame_r3_outer=758.4*mm;// inner edge of larger-r frame of r3
@@ -286,7 +286,7 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
 
     //construct the circular frames:
   std::string name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "R3_Outer_Frame");
-  G4VSolid *azimuthalR3 = new G4Tubs(name_base,tpc_frame_r3_outer,tpc_frame_r3_outer+tpc_frame_side_width,thickness / 2.,0, CLHEP::twopi);
+  G4VSolid *azimuthalR3 = new G4Tubs(name_base,tpc_frame_r3_outer,tpc_frame_r3_outer+tpc_frame_width,thickness / 2.,0, CLHEP::twopi);
  name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "R2_R3_Frames");
   G4VSolid *azimuthalR2R3 = new G4Tubs(name_base,tpc_frame_r2_outer,tpc_frame_r3_inner,thickness / 2.,0, CLHEP::twopi);
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "R1_R2_Frames");
@@ -296,12 +296,12 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
 
   //join the circular frames into a single boolean component:
 
-  G4Vsolid *union=new G4UnionSolid("tpc_intermediate1",azimuthalR3,azimuthalR2R3);
+  G4VSolid *union=new G4UnionSolid("tpc_intermediate1",azimuthalR3,azimuthalR2R3);
   union=new G4UnionSolid("tpc_intermediate2",union,azimuthalR1R2);
   union=new G4UnionSolid("tpc_intermediate3",union,azimuthalR1);
 
   //create the radial spar:
-  std::string name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "Radial_Frame");
+  name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "Radial_Frame");
   //goes clear across the beam axis:
   G4VSolid *sparFull = new G4Box(name_base,tpc_frame_width/2.0,tpc_frame_r3_outer+tpc_frame_side_width,thickness / 2.,0, CLHEP::twopi);
   //a cylinder covering all of the IFC- region.
@@ -309,15 +309,15 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
   G4VSolid *spar=new G4SubtractionSolid(name_base,sparFull,azimuthalR1blockout);
 
   //now add six of these with the proper orientation:
-  G4RotationMatrix rm=new G4RotationMatrix();
+  G4RotationMatrix *rm=new G4RotationMatrix();
   const G4double wagon_wheel_sector_phi_offset = m_Params->get_double_param("wagon_wheel_sector_phi_offset_degree") * degree;
 
   rm->RotateZ( wagon_wheel_sector_phi_offset);
   for (int i=0;i<5;i++){
     union=new G4UnionSolid("tpc_temp5",union,spar,rm,G4ThreeVector(0.,0.,0.));
-    rm->RotateZ(M_PI/12.);
+    rm->RotateZ(CLHEP::twopi/12.);
   }
-  std::string name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "All_GEM_Frames");
+  name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "All_GEM_Frames");
 
   G4vsolid allFrames=G4UnionSolid(union,spar,rm,G4ThreeVector(0.,0.,0.));
   G4LogicalVolume *logical_layer = new G4LogicalVolume(allFrames, material, name_base);
