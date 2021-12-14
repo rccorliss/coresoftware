@@ -17,12 +17,14 @@
 #include <Geant4/G4Material.hh>
 #include <Geant4/G4RotationMatrix.hh>
 #include <Geant4/G4String.hh>
+#include <Geant4/G4SubtractionSolid.hh> //for some boolean volumes work
 #include <Geant4/G4SystemOfUnits.hh>
 #include <Geant4/G4ThreeVector.hh>
 #include <Geant4/G4Transform3D.hh>
 #include <Geant4/G4Tubs.hh>
 #include <Geant4/G4TwoVector.hh>
 #include <Geant4/G4Types.hh>  // for G4double
+#include <Geant4/G4UnionSolid.hh> //for some boolean volumes work
 #include <Geant4/G4VPhysicalVolume.hh>
 
 #include <CLHEP/Vector/RotationZ.h>
@@ -292,20 +294,20 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "R1_R2_Frames");
   G4VSolid *azimuthalR1R2 = new G4Tubs(name_base,tpc_frame_r1_outer,tpc_frame_r2_inner,thickness / 2.,0, CLHEP::twopi);
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "R1_Inner_Frame");
-  G4VSolid *azimuthalR1 = new G4Tubs(name_base,tpc_frame_r1_inner-tpc_frame_side_width,tpc_frame_r1_inner,thickness / 2.,0, CLHEP::twopi);
+  G4VSolid *azimuthalR1 = new G4Tubs(name_base,tpc_frame_r1_inner-tpc_frame_width,tpc_frame_r1_inner,thickness / 2.,0, CLHEP::twopi);
 
   //join the circular frames into a single boolean component:
 
-  G4VSolid *union=new G4UnionSolid("tpc_intermediate1",azimuthalR3,azimuthalR2R3);
-  union=new G4UnionSolid("tpc_intermediate2",union,azimuthalR1R2);
-  union=new G4UnionSolid("tpc_intermediate3",union,azimuthalR1);
+  G4VSolid *unionsolid=new G4UnionSolid("tpc_intermediate1",azimuthalR3,azimuthalR2R3);
+  unionsolid=new G4UnionSolid("tpc_intermediate2",unionsolid,azimuthalR1R2);
+  unionsolid=new G4UnionSolid("tpc_intermediate3",unionsolid,azimuthalR1);
 
   //create the radial spar:
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "Radial_Frame");
   //goes clear across the beam axis:
-  G4VSolid *sparFull = new G4Box(name_base,tpc_frame_width/2.0,tpc_frame_r3_outer+tpc_frame_side_width,thickness / 2.,0, CLHEP::twopi);
+  G4VSolid *sparFull = new G4Box(name_base,tpc_frame_width/2.0,tpc_frame_r3_outer+tpc_frame_width,thickness / 2.,0, CLHEP::twopi);
   //a cylinder covering all of the IFC- region.
-  G4VSolid *azimuthalR1blockout = new G4Tubs(name_base,0,tpc_frame_r1_inner-tpc_frame_side_width,thickness,0, CLHEP::twopi); //make it twice the thickness so we don't have any edge effects in the subtraction.
+  G4VSolid *azimuthalR1blockout = new G4Tubs(name_base,0,tpc_frame_r1_inner-tpc_frame_width,thickness,0, CLHEP::twopi); //make it twice the thickness so we don't have any edge effects in the subtraction.
   G4VSolid *spar=new G4SubtractionSolid(name_base,sparFull,azimuthalR1blockout);
 
   //now add six of these with the proper orientation:
@@ -314,12 +316,12 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
 
   rm->RotateZ( wagon_wheel_sector_phi_offset);
   for (int i=0;i<5;i++){
-    union=new G4UnionSolid("tpc_temp5",union,spar,rm,G4ThreeVector(0.,0.,0.));
+    unionsolid=new G4UnionSolid("tpc_temp5",unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
     rm->RotateZ(CLHEP::twopi/12.);
   }
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "All_GEM_Frames");
 
-  G4vsolid allFrames=G4UnionSolid(union,spar,rm,G4ThreeVector(0.,0.,0.));
+  G4vsolid allFrames=G4UnionSolid(unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
   G4LogicalVolume *logical_volume = new G4LogicalVolume(allFrames, material, name_base);
   m_LogicalVolumesSet.insert(logical_layer);
   m_DisplayAction->AddVolume(logical_layer, material);
