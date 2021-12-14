@@ -15,6 +15,7 @@
 #include <Geant4/G4ExtrudedSolid.hh>
 #include <Geant4/G4LogicalVolume.hh>
 #include <Geant4/G4Material.hh>
+#include <Geant4/G4PVPlacement.hh>
 #include <Geant4/G4RotationMatrix.hh>
 #include <Geant4/G4String.hh>
 #include <Geant4/G4SubtractionSolid.hh> //for some boolean volumes work
@@ -284,7 +285,7 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
 
   //really, these are a set of 36 gently rounded, four-sided pieces with tiny gaps between them, but that's overkill for simulation.
   //instead, mock them up as four circular frames and a repeated set of three radial spurs.
-  G4Material* material = GetDetectorMaterial(material_name.str());
+  G4Material* material = GetDetectorMaterial(material_name);
 
     //construct the circular frames:
   std::string name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "R3_Outer_Frame");
@@ -324,7 +325,7 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
   G4VSolid *allFrames=G4UnionSolid(name_base,unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
   G4LogicalVolume *logical_volume = new G4LogicalVolume(allFrames, material, name_base);
   m_LogicalVolumesSet.insert(logical_volume);
-  m_DisplayAction->AddVolume(logical_volume,material_name.str());
+  m_DisplayAction->AddVolume(logical_volume,material_name);
   G4VPhysicalVolume *tpc_gem_frames = new G4PVPlacement(0, G4ThreeVector(0, 0, 0),
                                                          logical_volume, "tpc_gem_frames",
                                                          gemvol, false, 0, OverlapCheck());
