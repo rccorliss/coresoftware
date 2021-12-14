@@ -305,7 +305,7 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
   //create the radial spar:
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "Radial_Frame");
   //goes clear across the beam axis:
-  G4VSolid *sparFull = new G4Box(name_base,tpc_frame_width/2.0,tpc_frame_r3_outer+tpc_frame_width,thickness / 2.,0, CLHEP::twopi);
+  G4VSolid *sparFull = new G4Box(name_base,tpc_frame_width/2.0,tpc_frame_r3_outer+tpc_frame_width,thickness / 2.);
   //a cylinder covering all of the IFC- region.
   G4VSolid *azimuthalR1blockout = new G4Tubs(name_base,0,tpc_frame_r1_inner-tpc_frame_width,thickness,0, CLHEP::twopi); //make it twice the thickness so we don't have any edge effects in the subtraction.
   G4VSolid *spar=new G4SubtractionSolid(name_base,sparFull,azimuthalR1blockout);
@@ -314,19 +314,19 @@ void PHG4TpcEndCapDetector::ConstructGemFrames(G4LogicalVolume *gemvol, float th
   G4RotationMatrix *rm=new G4RotationMatrix();
   const G4double wagon_wheel_sector_phi_offset = m_Params->get_double_param("wagon_wheel_sector_phi_offset_degree") * degree;
 
-  rm->RotateZ( wagon_wheel_sector_phi_offset);
+  rm->rotateZ( wagon_wheel_sector_phi_offset);
   for (int i=0;i<5;i++){
     unionsolid=new G4UnionSolid("tpc_temp5",unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
-    rm->RotateZ(CLHEP::twopi/12.);
+    rm->rotateZ(CLHEP::twopi/12.);
   }
   name_base = boost::str(boost::format("%1%_Layer_%2%") % GetName() % "All_GEM_Frames");
 
-  G4vsolid allFrames=G4UnionSolid(unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
+  G4VSolid *allFrames=G4UnionSolid(unionsolid,spar,rm,G4ThreeVector(0.,0.,0.));
   G4LogicalVolume *logical_volume = new G4LogicalVolume(allFrames, material, name_base);
-  m_LogicalVolumesSet.insert(logical_layer);
-  m_DisplayAction->AddVolume(logical_layer, material);
+  m_LogicalVolumesSet.insert(logical_volume);
+  m_DisplayAction->AddVolume(logical_volume, material);
   G4VPhysicalVolume *tpc_gem_frames = new G4PVPlacement(0, G4ThreeVector(0, 0, 0),
-                                                         logical_volume, "tpc_gem_grames",
+                                                         logical_volume, "tpc_gem_frames",
                                                          gemvol, false, 0, OverlapCheck());
 
   //place the laser inlets!
