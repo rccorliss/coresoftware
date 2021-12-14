@@ -53,13 +53,15 @@ class PHG4TpcEndCapDetector : public PHG4Detector
 
   G4AssemblyVolume *ConstructEndCapAssembly();
 
+  void ConstructGemFrames(G4LogicalVolume *gemvol, float thickness);
+
   void ConstructWagonWheel(G4AssemblyVolume *assmeblyvol,
                            G4double &z_start);
 
   void ConstructElectronics(G4AssemblyVolume *assmeblyvol,
                             G4double &z_start);
 
-  void
+  G4LogicalVolume *
   AddLayer(  //
       G4AssemblyVolume *assmeblyvol,
       G4double &z_start,
