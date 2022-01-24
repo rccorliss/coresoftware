@@ -351,7 +351,7 @@ class MultiArray : public TObject
   static const int MAX_DIM = 6;
   int dim;
   int n[6];
-  int length;
+  long int length;
   T *field;
 
   MultiArray(int a = 0, int b = 0, int c = 0, int d = 0, int e = 0, int f = 0)
@@ -400,7 +400,7 @@ class MultiArray : public TObject
     n_[3] = d;
     n_[4] = e;
     n_[5] = f;
-    int index = n_[0];
+    long int index = n_[0];
     for (int i = 1; i < dim; i++)
     {
       index = (index * n[i]) + n_[i];
@@ -418,7 +418,7 @@ class MultiArray : public TObject
     n_[3] = d;
     n_[4] = e;
     n_[5] = f;
-    int index = 0;
+    long int index = 0;
     for (int i = 0; i < dim; i++)
     {
       if (n[i] <= n_[i] || n_[i] < 0)
@@ -439,7 +439,7 @@ class MultiArray : public TObject
     n_[3] = d;
     n_[4] = e;
     n_[5] = f;
-    int index = n_[0];
+    long int index = n_[0];
     for (int i = 1; i < dim; i++)
     {
       index = (index * n[i]) + n_[i];
@@ -455,7 +455,7 @@ class MultiArray : public TObject
 
   int Length()
   {
-    return length;
+    return (int) length;
   }
 
   void Set(int a, int b, int c, T in)
@@ -472,7 +472,7 @@ class MultiArray : public TObject
     n_[3] = d;
     n_[4] = e;
     n_[5] = f;
-    int index = n_[0];
+    long int index = n_[0];
     for (int i = 1; i < dim; i++)
     {
       index = (index * n[i]) + n_[i];
@@ -480,5 +480,17 @@ class MultiArray : public TObject
     field[index] = in;
     return;
   }
+
+  void SetAll(T in)
+  {
+ 
+    long int index = n_[0];
+    for (long int i = 0; i < length; i++)
+    {
+      field[i] = in;
+    }
+    return;
+  }
+  
 };
 #endif  //MULTIARRAY
