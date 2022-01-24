@@ -483,9 +483,7 @@ class MultiArray : public TObject
 
   void SetAll(T in)
   {
- 
-    long int index = n_[0];
-    for (long int i = 0; i < length; i++)
+     for (long int i = 0; i < length; i++)
     {
       field[i] = in;
     }
