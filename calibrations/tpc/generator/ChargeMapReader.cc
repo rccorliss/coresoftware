@@ -82,17 +82,19 @@ void ChargeMapReader::FillChargeHistogram(TH3* h){
   //   0     1     2     ...   n-1 
   // first|   ..|  ..  |  .. |last
   float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
+    if (DEBUG) printf("filling chargehistogram\n");
+
   dr=binWidth[0];
   dphi=binWidth[1];
   dz=binWidth[2];
   
   float phimid,rmid,zmid; //midpoints at each step.
   int i[3];
-  for ( i[0]=0;i[0]<=nBins[0];i[0]++){//r
+  for ( i[0]=0;i[0]<nBins[0];i[0]++){//r
     rmid=lowerBound[0]+(i[0]+0.5)*dr;
-    for ( i[1]=0;i[1]<=nBins[1];i[1]++){//phi
+    for ( i[1]=0;i[1]<nBins[1];i[1]++){//phi
       phimid=lowerBound[1]+(i[1]+0.5)*dphi;
-      for ( i[2]=0;i[2]<=nBins[2];i[2]++){//z
+      for ( i[2]=0;i[2]<nBins[2];i[2]++){//z
 	zmid=lowerBound[2]+(i[2]+0.5)*dz;
 	h->Fill(phimid,rmid,zmid,charge->Get(i[0],i[1],i[2]));	
       }//z
