@@ -161,34 +161,34 @@ void Test_ChargeMapReader(){
   
   c->Divide(4,2);
   int iPad=0;
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hOriginalCharge->ProjectionX("_phi",sliceBin[0][1],sliceBin[0][1],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
   hResampledCharge->ProjectionX("_phir",sliceBin[1][1],sliceBin[1][1],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionX()->Draw("same,hist");
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hOriginalCharge->ProjectionY("_r",sliceBin[0][0],sliceBin[0][0],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
   hResampledCharge->ProjectionY("_rr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionY()->Draw("same,hist");
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hOriginalCharge->ProjectionZ("_z",sliceBin[0][0],sliceBin[0][0],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
   hResampledCharge->ProjectionZ("_zr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionZ()->Draw("same,hist");
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hFracChargeDiff->Draw();
 
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hOriginalDensity->ProjectionX("_phiD",sliceBin[0][1],sliceBin[0][1],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
   hResampledDensity->ProjectionX("_phiDr",sliceBin[1][1],sliceBin[1][1],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionX()->Draw("same,hist");
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hOriginalDensity->ProjectionY("_rD",sliceBin[0][0],sliceBin[0][0],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
   hResampledDensity->ProjectionY("_rDr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionY()->Draw("same,hist");
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hOriginalDensity->ProjectionZ("_zD",sliceBin[0][0],sliceBin[0][0],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
   hResampledDensity->ProjectionZ("_zDr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionZ()->Draw("same,hist");
-  c->cd(++iPad);
+  c->cd(++iPad);printf("pad %d\n",iPad);
   hFracDensityDiff->Draw();
  
 
