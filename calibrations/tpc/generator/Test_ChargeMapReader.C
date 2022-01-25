@@ -142,7 +142,7 @@ void Test_ChargeMapReader(){
   }
 
   
-  TCanvas *c=new TCanvas("c","c",1000,1000);
+  TCanvas *c=new TCanvas("c","c",1600,800);
   hOriginalCharge->SetName("hOriginalCharge");
   hOriginalCharge->SetTitle("hOriginalCharge");
   hOriginalDensity->SetName("hOriginalDensity");
@@ -170,8 +170,8 @@ void Test_ChargeMapReader(){
   hResampledCharge->ProjectionY("_rr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionY()->Draw("same,hist");
   c->cd(++iPad);
-  hOriginalCharge->ProjectionZ("_z",sliceBin[0][1],sliceBin[0][1],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
-  hResampledCharge->ProjectionZ("_zr",sliceBin[1][1],sliceBin[1][1],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
+  hOriginalCharge->ProjectionZ("_z",sliceBin[0][0],sliceBin[0][0],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
+  hResampledCharge->ProjectionZ("_zr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionZ()->Draw("same,hist");
   c->cd(++iPad);
   hFracChargeDiff->Draw();
@@ -185,8 +185,8 @@ void Test_ChargeMapReader(){
   hResampledDensity->ProjectionY("_rr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionY()->Draw("same,hist");
   c->cd(++iPad);
-  hOriginalDensity->ProjectionZ("_z",sliceBin[0][1],sliceBin[0][1],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
-  hResampledDensity->ProjectionZ("_zr",sliceBin[1][1],sliceBin[1][1],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
+  hOriginalDensity->ProjectionZ("_z",sliceBin[0][0],sliceBin[0][0],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
+  hResampledDensity->ProjectionZ("_zr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionZ()->Draw("same,hist");
   c->cd(++iPad);
   hFracDensityDiff->Draw();
