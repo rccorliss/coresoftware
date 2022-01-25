@@ -1,5 +1,5 @@
 #include "ChargeMapReader.h"
-
+#include <cassert>
 
 ChargeMapReader::ChargeMapReader():
   ChargeMapReader(20,20.0,78.0,20,0,TMath::TwoPi,40,-105.5,105.5){
@@ -188,7 +188,7 @@ bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
 bool ChargeMapReader::SetOutputParameters(int _n0, float _rmin, float _rmax, int _n1, float _phimin, float _phimax, int _n2,float _zmin, float _zmax){
   //change all the parameters of our output array and rebuild the array from scratch.
   if (!(_rmax>_rmin) || !(_phimax>_phimin) || !(_zmax>_zmin) ) return false; // the bounds are not well-ordered.
-  if (nr<1|| nphi<1 || nz<1) return false; //must be at least one bin wide.
+  if (_nr<1|| _nphi<1 || _nz<1) return false; //must be at least one bin wide.
 
   nBins[0]=_n0;
   nBins[1]=_n1;
@@ -259,7 +259,7 @@ bool ChargeMapReader::SetOutputBounds(float _rmin, float _rmax, float _phimin, f
 
 bool ChargeMapReader::SetOutputBins(int _nr, int _nphi, int _nz){
   //change the number of bins of our output array and rebuild the array from scratch, leaving the bounds alone.
-  if (nr<1|| nphi<1 || nz<1) return false; //must be at least one bin wide.
+  if (_nr<1|| _nphi<1 || _nz<1) return false; //must be at least one bin wide.
   nBins[0]=_nr;
   nBins[1]=_nphi;
   nBins[2]=_nz;
@@ -284,20 +284,16 @@ bool ChargeMapReader::SetOutputBins(int _nr, int _nphi, int _nz){
 }
 
 float ChargeMapReader::GetChargeInBin(int r, int phi, int z){
-  assert(r>0 && r<nr);
-  assert(phi>0 && phi<nphi);
-  assert(z>0 && z<nz);
+  assert(r>0 && r<nBins[0]);
+  assert(phi>0 && phi<nBins[1]);
+  assert(z>0 && z<nBins[2]);
 
   return charge->At(r,phi,z);
 }
 
 
 float ChargeMapReader::GetChargeAtPosition(float r, float phi, float z){
-
-  assert(r>0 && r<nr);
-  assert(phi>0 && phi<nphi);
-  assert(z>0 && z<nz);
-  //bounds checking are handled by the binwise function, so no need to do so here:
+ //bounds checking are handled by the binwise function, so no need to do so here:
   return GetChargeInBin((r-lowerBound[0])/binWidth[0],(phi-lowerBound[1])/binWidth[1],(z-lowerBound[2])/binWidth[2]);
 }
 
