@@ -4,6 +4,8 @@
 #include "TMath.h"
 #include <cassert>
 
+#define DEBUG true
+
 ChargeMapReader::ChargeMapReader():
   ChargeMapReader(20,20.0,78.0,20,0,TMath::TwoPi(),40,-105.5,105.5){
   printf("made a new ChargeMapReader with default values -- cascading to next constructor\n");
@@ -11,7 +13,8 @@ ChargeMapReader::ChargeMapReader():
 }
 
 ChargeMapReader::ChargeMapReader(int _nr, float _rmin, float _rmax, int _nphi, float _phimin, float _phimax, int _nz,float _zmin, float _zmax){
-  printf("made a new ChargeMapReader with defined values\n");
+  printf("made a new ChargeMapReader with defined values:\n %d %.25 %.2f\n %d %.25 %.2f\n %d %.25 %.2f\n",
+	  _nr,  _rmin,  _rmax,  _nphi,  _phimin,  _phimax,  _nz, _zmin,  _zmax);
   SetOutputParameters( _nr,  _rmin,  _rmax,  _nphi,  _phimin,  _phimax,  _nz, _zmin,  _zmax);
   return;
 }
@@ -238,9 +241,13 @@ bool ChargeMapReader::SetOutputParameters(int _nr, float _rmin, float _rmax, int
 
   //if the array exists, delete it.
   if (charge!=nullptr){
+    if (DEBUG) printf("charge array existed.  deleting\n");
     delete charge;
     charge=nullptr;
   }
+  if (DEBUG) printf("building new charge array\n");
+  if (DEBUG) printf("should have %d elements\n",nBins[0]*nBins[1]*nBins[2]);
+
   charge=new MultiArray<float>(nBins[0],nBins[1],nBins[2]);
 
   if (hChargeDensity!=nullptr){
