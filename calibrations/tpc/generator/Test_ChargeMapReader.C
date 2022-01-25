@@ -53,7 +53,7 @@ void CompareHistograms(TH3* hLead, TH3* hFollow, TH1* hOutput){
   }
   return;
 }
-void Test_ChargeMapReader.C(){
+void Test_ChargeMapReader(){
 
   TFile *originalFile=TFile::Open("/sphenix/user/shulga/Work/IBF/DistortionMap/Files/Summary_hist_mdc2_UseFieldMaps_AA_event_0_bX10556072.root","READ");
   TH3* hOriginalCharge=(TH3*)(originalFile->Get("_h_SC_ibf_0")); //this is only the IBF, so don't be surprised if it looks flatter than expected.
