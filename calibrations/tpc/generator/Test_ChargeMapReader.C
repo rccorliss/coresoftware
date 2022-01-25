@@ -79,14 +79,18 @@ void Test_ChargeMapReader(){
 
   //chargemapreader takes parameters in r,phi,z because that's sane.
   ChargeMapReader *r=new ChargeMapReader(nbins[1],low[1],high[1],nbins[0],low[0],high[0],nbins[2],low[2],high[2]);
+  printf("Macro requesting r to readSourceCharge\n");
   r->ReadSourceCharge(hOriginalCharge);
+  printf("Returned to macro\n");
   return;
 
   //get the density map from the reader, and populate the resampled charge as well:
   TH3* hOriginalDensity=r->GetDensityHistogram();
   //but it fills output histograms in phi,r,z, because that's convention.
   TH3F* hResampledCharge=new TH3F("hResampledCharge","Resampled Charge using ChargeMapReader",nbins[0],low[0],high[0],nbins[1],low[1],high[1],nbins[2],low[2],high[2]);
+  printf("Macro requesting r to fillChargeHistogram\n");
   r->FillChargeHistogram(hResampledCharge);
+  printf("Returned to macro\n");
 
 
   //build a new reader so we can re-use the density map generation.  Binning doesn't matter here.
