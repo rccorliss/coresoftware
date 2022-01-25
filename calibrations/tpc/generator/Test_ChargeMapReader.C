@@ -94,16 +94,32 @@ void Test_ChargeMapReader(){
   
   //build a new reader so we can re-use the density map generation.  Binning doesn't matter here.
     printf("Macro building rSneaky\n");
-  ChargeMapReader *rSneaky=new ChargeMapReader(2,low[1],high[1],2,low[0],high[0],2,low[2],high[2]);
+  ChargeMapReader *rSneaky=new ChargeMapReader(nbins[1],low[1],high[1],nbins[0],low[0],high[0],nbins[2],low[2],high[2]);
   rSneaky->ReadSourceCharge(hResampledCharge);
   TH3* hResampledDensity=rSneaky->GetDensityHistogram();
   printf("Returned to macro\n");
 
+  //build a third reader to make sure same-in makes same-out
+  printf("Macro building rCheck\n");
+  TH3F* hCheckCharge=new TH3F("hCheckCharge","Check Charge using ChargeMapReader",nbins[0],low[0],high[0],nbins[1],low[1],high[1],nbins[2],low[2],high[2]);
+  rSneaky->FillChargeHistogram(hCheckCharge);
+  ChargeMapReader *rCheck=new ChargeMapReader(nbins[1],low[1],high[1],nbins[0],low[0],high[0],nbins[2],low[2],high[2]);
+  rSneaky->ReadSourceCharge(hCheckCharge);
+  TH3* hCheckDensity=rCheck->GetDensityHistogram();
+  printf("Returned to macro\n");
+
+
+  
+
   TH1F* hFracChargeDiff=new TH1F("hFracChargeDiff","(Resampled-Original)/(Original) charge, should differ",100,-2,2);
   TH1F* hFracDensityDiff=new TH1F("hFracDensityDiff","(Resampled-Original)/(Original) density, should be the same",100,-2,2);
-  
+  TH1F* hFracChargeDiffCheck=new TH1F("hFracChargeDiffCheck","(Check-Original)/(Original) charge, should differ",100,-2,2);
+  TH1F* hFracDensityDiffCheck=new TH1F("hFracDensityDiffCheck","(Check-Original)/(Original) density, should be the same",100,-2,2);
+ 
   CompareHistograms(hOriginalDensity,hResampledDensity,hFracDensityDiff);
   CompareHistograms(hOriginalCharge,hResampledCharge,hFracChargeDiff);
+  CompareHistograms(hOriginalDensity,hCheckDensity,hFracDensityDiffCheck);
+  CompareHistograms(hOriginalCharge,hResampledCharge,hFracChargeDiffCheck);
 
   TCanvas *c=new TCanvas("c","c",1000,1000);
   hOriginalCharge->SetName("hOriginalCharge");
@@ -114,29 +130,39 @@ void Test_ChargeMapReader(){
   hResampledDensity->SetLineColor(kRed);
   hResampledDensity->SetName("hResampledDensity");
   hResampledDensity->SetTitle("hResampledDensity");
+    hCheckCharge->SetLineColor(kBlue);
+  hCheckDensity->SetLineColor(kBlue);
+  hCheckDensity->SetName("hCheckDensity");
+  hCheckDensity->SetTitle("hCheckDensity");
  
   c->Divide(4,2);
   c->cd(1);
   hOriginalCharge->ProjectionX()->Draw("hist");
   hResampledCharge->ProjectionX()->Draw("same,hist");
+  hCheckCharge->ProjectionX()->Draw("same,hist");
   c->cd(2);
   hOriginalCharge->ProjectionY()->Draw("hist");
   hResampledCharge->ProjectionY()->Draw("same,hist");
+  hCheckCharge->ProjectionY()->Draw("same,hist");
   c->cd(3);
   hOriginalCharge->ProjectionZ()->Draw("hist");
   hResampledCharge->ProjectionZ()->Draw("same,hist");
+  hCheckCharge->ProjectionZ()->Draw("same,hist");
   c->cd(4);
   hFracChargeDiff->Draw();
   
   c->cd(5);
   hOriginalDensity->ProjectionX()->Draw("hist");
   hResampledDensity->ProjectionX()->Draw("same,hist");
+  hCheckDensity->ProjectionX()->Draw("same,hist");
   c->cd(6);
   hOriginalDensity->ProjectionY()->Draw("hist");
   hResampledDensity->ProjectionY()->Draw("same,hist");
+  hCheckDensity->ProjectionY()->Draw("same,hist");
   c->cd(7);
   hOriginalDensity->ProjectionZ()->Draw("hist");
   hResampledDensity->ProjectionZ()->Draw("same,hist");
+  hCheckDensity->ProjectionZ()->Draw("same,hist");
   c->cd(8);
   hFracDensityDiff->Draw();
 
