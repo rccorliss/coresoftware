@@ -220,6 +220,7 @@ bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
   hSourceCharge=sourceHist; //note that this means we don't own this histogram!
   if (hSourceCharge==nullptr) return false;
   RegenerateDensity();
+  RegenerateCharge();
 
   return true;
 }
