@@ -134,7 +134,7 @@ void Test_ChargeMapReader(){
   resampledax[1]=hResampledCharge->GetYaxis();
   resampledax[2]=hResampledCharge->GetZaxis();
 
-  pos[]=(2.2,500,500);//phi,r,z
+  float pos[]={2.2,500,500};//phi,r,z
   int sliceBin[2][3];
   for (int i=0;i<3;i++){
     sliceBin[0][i]=ax[i]->FindBin(pos[i]);
