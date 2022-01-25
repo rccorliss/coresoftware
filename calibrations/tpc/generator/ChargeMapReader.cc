@@ -3,7 +3,7 @@
 #include <cassert>
 
 ChargeMapReader::ChargeMapReader():
-  ChargeMapReader(20,20.0,78.0,20,0,TMath::TwoPi,40,-105.5,105.5){
+  ChargeMapReader(20,20.0,78.0,20,0,TMath::TwoPi(),40,-105.5,105.5){
   printf("made a new ChargeMapReader with default values -- cascading to next constructor\n");
   return;
 }
@@ -82,13 +82,14 @@ void ChargeMapReader::RegenerateCharge(){
   dz=upperBound[2]-lowerBound[2];
   
   float phimid,rmid,zmid; //midpoints at each step.
-  for (int i[0]=0;i<=nBins[0];i[0]++){//r
+  int i[3];
+  for ( i[0]=0;i<=nBins[0];i[0]++){//r
     rmid=lowerBound[0]+(i[0]+0.5)*dr;
     float rlow=lowerBound[0]+dr*i;
     float volume=dz*dphi*(rlow+0.5*dr)*dr; //note that since we have equal bin widths, the volume term depends only on r.
-    for (int i[1]=0;i<=nBins[1];i[1]++){//phi
+    for ( i[1]=0;i<=nBins[1];i[1]++){//phi
       phimid=lowerBound[1]+(i[1]+0.5)*dphi;
-      for (int i[2]=0;i<=nBins[2];i[2]++){//z
+      for ( i[2]=0;i<=nBins[2];i[2]++){//z
 	zmid=lowerBound[2]+(i[2]+0.5)*dz;
 	if (CanInterpolateAt(rmid,phimid,zmid)){ //interpolate if we can
 	  charge->Set(i[0],i[1],i[2],
@@ -138,18 +139,18 @@ void ChargeMapReader::RegenerateDensity(){
   int i[3];
   float low[3],high[3];
   float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
-  for (int i[0]=1i<=nbins[0];i[0]++){//phi
+  for ( i[0]=1i<=nbins[0];i[0]++){//phi
     a=0;
     low[a]=ax[a]->GetBinLowEdge(i[a]);
     high[a]=ax[a]->GetBinUpEdge(i[a]);
     dphi=high[a]-low[a];
-    for (int i[1]=1i<=nbins[1];i[1]++){//r
+    for ( i[1]=1i<=nbins[1];i[1]++){//r
       a=1;
       low[a]=ax[a]->GetBinLowEdge(i[a]);
       high[a]=ax[a]->GetBinUpEdge(i[a]);
       dr=high[a]-low[a];
       float rphiterm=dphi*(low[1]+0.5*dr)*dr;
-      for (int i[2]=1i<=nbins[2];i[2]++){//z
+      for ( i[2]=1i<=nbins[2];i[2]++){//z
 	a=1;
 	low[a]=ax[a]->GetBinLowEdge(i[a]);
 	high[a]=ax[a]->GetBinUpEdge(i[a]);
