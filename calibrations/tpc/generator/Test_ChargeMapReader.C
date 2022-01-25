@@ -100,7 +100,7 @@ void Test_ChargeMapReader(){
   printf("Returned to macro\n");
 
   //build a third reader to make sure same-in makes same-out
-  checkConsistency=false;
+  bool checkConsistency=false;
   TH3F* hCheckCharge;
   TH3* hCheckDensity;
   if (checkConsistency){
