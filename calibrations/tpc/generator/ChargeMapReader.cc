@@ -325,6 +325,7 @@ float ChargeMapReader::GetChargeInBin(int r, int phi, int z){
   assert(r>0 && r<nBins[0]);
   assert(phi>0 && phi<nBins[1]);
   assert(z>0 && z<nBins[2]);
+  if (DEBUG) printf("getting chrage in array element %d %d %d\n",r,phi,z);
 
   return charge->Get(r,phi,z);
 }
