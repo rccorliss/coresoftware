@@ -126,6 +126,11 @@ void ChargeMapReader::RegenerateCharge(){
       for ( i[2]=0;i[2]<=nBins[2];i[2]++){//z
 	zmid=lowerBound[2]+(i[2]+0.5)*dz;
 	if (CanInterpolateAt(rmid,phimid,zmid)){ //interpolate if we can
+	      if (DEBUG) printf("function said we could interpolate at (r,phi,z)=(%.2f, %.2f,%.2f), bounds are:\n");
+	      if (DEBUG) printf("  r: %.2f < %.2f < %.2f\n",hChargeDensity->GetYaxis()->GetXmin(),rmid,hChargeDensity->GetYaxis()->GetXmax());
+	      if (DEBUG) printf("  p: %.2f < %.2f < %.2f\n",hChargeDensity->GetXaxis()->GetXmin(),rmid,hChargeDensity->GetXaxis()->GetXmax());
+	      if (DEBUG) printf("  z: %.2f < %.2f < %.2f\n",hChargeDensity->GetZaxis()->GetXmin(),rmid,hChargeDensity->GetZaxis()->GetXmax());
+
 	  charge->Set(i[0],i[1],i[2],
 		      hChargeDensity->Interpolate(phimid,rmid,zmid)*volume);
 	} else { //otherwise, just take the central value and assume it's flat.  Better than a zero.
