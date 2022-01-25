@@ -287,7 +287,7 @@ float ChargeMapReader::GetChargeInBin(int r, int phi, int z){
   assert(phi>0 && phi<nBins[1]);
   assert(z>0 && z<nBins[2]);
 
-  return charge->At(r,phi,z);
+  return charge->Get(r,phi,z);
 }
 
 

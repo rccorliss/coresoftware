@@ -18,10 +18,10 @@ class ChargeMapReader
   TH3* hChargeDensity=nullptr;
   bool chargeHistExists=true;
   bool chargeArrayExists=false;
-  int nBins[]={1,1,1};//r,phi,z bins of the output fixed-width array
-  float lowerBound[]={0,0,0};
-  float upperBound[]={999,999,999};
-  float binWidth[]={999,999,999};
+  int nBins[3]={1,1,1};//r,phi,z bins of the output fixed-width array
+  float lowerBound[3]={0,0,0};
+  float upperBound[3]={999,999,999};
+  float binWidth[3]={999,999,999};
 
   bool CanInterpolateAt(float r, float phi, float z);//checks whether it is okay to interpolate at this position in the charge density hist
   void RegenerateCharge();//internal function to revise the internal array whenever the bounds change etc.
@@ -35,4 +35,4 @@ class ChargeMapReader
   bool SetOutputBins(int _nr, int _nphi, int _nz);
   float GetChargeInBin(int r, int phi, int z);
   float GetChargeAtPosition(float r, float phi, float z);
-}
+};
