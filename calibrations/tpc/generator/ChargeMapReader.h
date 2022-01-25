@@ -28,10 +28,6 @@ class ChargeMapReader
   void RegenerateDensity();//internal function to rebuild the charge density map when the input map changes.
 
  public:
-  ChargeMapReader();
-  ChargeMapReader(int _nr, float _rmin, float _rmax, int _nphi, float _phimin, float _phimax, int _nz,float _zmin, float _zmax);
-
-  ~ChargeMapReader();
   bool ReadSourceCharge(const char* filename, const char* histname);
   bool ReadSourceCharge(TH3* sourceHist);
   bool SetOutputParameters(int _nr, float _rmin, float _rmax, int _nphi, float _phimin, float _phimax, int _nz,float _zmin, float _zmax);
