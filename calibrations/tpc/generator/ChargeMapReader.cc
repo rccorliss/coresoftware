@@ -65,10 +65,10 @@ bool ChargeMapReader::CanInterpolateAt(float x, float y, float z, TH3* h){
     float high=ax[i]->GetBinUpEdge(axbin);
     float binmid=0.5*(high+low);
  
-    if (axbin==1 && pos[i]<binmid){
+    if (axbin==1 && pos[i]<=binmid){
       return false; //we're in the first bin, but below the midpoint, so we would interpolate out of bounds
     }
-    if (axbin==nbins[i] && pos[i]>binmid){
+    if (axbin==nbins[i] && pos[i]>=binmid){
       return false; //we're in the last bin, but above the midpoint, so we would interpolate out of bounds
     }
   }
@@ -128,8 +128,8 @@ void ChargeMapReader::RegenerateCharge(){
 	if (CanInterpolateAt(rmid,phimid,zmid)){ //interpolate if we can
 	  if (DEBUG) printf("function said we could interpolate at (r,phi,z)=(%.2f, %.2f,%.2f), bounds are:\n",rmid,phimid,zmid);
 	      if (DEBUG) printf("  r: %.2f < %.2f < %.2f\n",hChargeDensity->GetYaxis()->GetXmin(),rmid,hChargeDensity->GetYaxis()->GetXmax());
-	      if (DEBUG) printf("  p: %.2f < %.2f < %.2f\n",hChargeDensity->GetXaxis()->GetXmin(),rmid,hChargeDensity->GetXaxis()->GetXmax());
-	      if (DEBUG) printf("  z: %.2f < %.2f < %.2f\n",hChargeDensity->GetZaxis()->GetXmin(),rmid,hChargeDensity->GetZaxis()->GetXmax());
+	      if (DEBUG) printf("  p: %.2f < %.2f < %.2f\n",hChargeDensity->GetXaxis()->GetXmin(),phimid,hChargeDensity->GetXaxis()->GetXmax());
+	      if (DEBUG) printf("  z: %.2f < %.2f < %.2f\n",hChargeDensity->GetZaxis()->GetXmin(),zmid,hChargeDensity->GetZaxis()->GetXmax());
 
 	  charge->Set(i[0],i[1],i[2],
 		      hChargeDensity->Interpolate(phimid,rmid,zmid)*volume);
