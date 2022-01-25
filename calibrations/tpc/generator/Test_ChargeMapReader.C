@@ -8,7 +8,7 @@
 
 R__LOAD_LIBRARY(build/.libs/libfieldsim)
 
-void CompareHistograms(TH3* hLead, TH3* hFollow, TH1* hOutput){
+void CompareHistograms(TH3* hLead, TH3* hFollow, TH1* hOutput, TH3* hRatio, TH2* hVersus){
   TAxis *ax[3]={nullptr,nullptr,nullptr};
   ax[0]=hLead->GetXaxis();
   ax[1]=hLead->GetYaxis();
@@ -48,7 +48,8 @@ void CompareHistograms(TH3* hLead, TH3* hFollow, TH1* hOutput){
 	} else { //if interpolation would fail, fall back to the next best thing:
 	  followValue=hFollow->GetBinContent(hLead->FindBin(mid[0],mid[1],mid[2]));//take the exact center of the bin.
 	}
-	hOutput->Fill((followValue/leadValue-1));
+	hOutput->Fill(followValue/leadValue-1.);
+	if (hRatio!=nullptr){ hRatio->Fill(mid[0],mid[1],mid[2]
       }
     }
   }

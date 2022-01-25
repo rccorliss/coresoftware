@@ -164,9 +164,11 @@ class AnnularFieldSim
   MultiArray<TVector3> *Epartial_phislice;  //electric field in a 2D phi-slice from the full 3D region.
   MultiArray<TVector3> *Eexternal;          //externally applied electric field in each f-bin in the roi
   MultiArray<TVector3> *Bfield;             //magnetic field in each f-bin in the roi
-  MultiArray<double> *q;                    //space charge in each f-bin in the whole volume
-  MultiArray<double> *q_local;              //temporary holder of space charge in each f-bin and summed bin of the high-res region.
-  MultiArray<double> *q_lowres;             //space charge in each l-bin. = sums over sets of f-bins.
+
+  ChargeMapReader *q; // //class to read and report charge.
+  //  MultiArray<double> *q;                    //space charge in each f-bin in the whole volume
+  //  MultiArray<double> *q_local;              //temporary holder of space charge in each f-bin and summed bin of the high-res region.
+  //  MultiArray<double> *q_lowres;             //space charge in each l-bin. = sums over sets of f-bins.
 
  public:
   //constructors with history for backwards compatibility

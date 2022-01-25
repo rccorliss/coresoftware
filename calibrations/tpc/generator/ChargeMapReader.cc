@@ -106,7 +106,7 @@ void ChargeMapReader::RegenerateCharge(){
   //Builds the charge 3D array from the charge density map.
   //either the density map has changed, or the binning of the output has changed (hopefully not the latter, because that's a very unusual thing to change mid-run.
   //we want to rebuild the charge per bin of our output representation in any case.  Generally, we will interpolate from the charge density that we know we have, but we need to be careful not to ask to interpolate in regions where that is not allowed.
-    if (DEBUG) printf("regenerating charge array contents\n");
+  if (DEBUG) printf("regenerating charge array contents with scale=%1.2f\n",  inputAxisScale);
 
   //   0     1     2     ...   n-1 
   // first|   ..|  ..  |  .. |last
@@ -115,16 +115,17 @@ void ChargeMapReader::RegenerateCharge(){
   dphi=binWidth[1];
   dz=binWidth[2];
   
-  float phimid,rmid,zmid; //midpoints at each step.
+  float phimid,rmid,zmid; //position of the center of each fixed-width array bin, in the input histogram units
+  //note that since we computed density using the hist units, we must use those units for the volume term again here.
   int i[3];
   for ( i[0]=0;i[0]<=nBins[0];i[0]++){//r
-    rmid=lowerBound[0]+(i[0]+0.5)*dr;
+    rmid=(lowerBound[0]+(i[0]+0.5)*dr)/inputAxisScale;
     float rlow=lowerBound[0]+dr*i[0];
     float volume=dz*dphi*(rlow+0.5*dr)*dr; //note that since we have equal bin widths, the volume term depends only on r.
     for ( i[1]=0;i[1]<=nBins[1];i[1]++){//phi
       phimid=lowerBound[1]+(i[1]+0.5)*dphi;
       for ( i[2]=0;i[2]<=nBins[2];i[2]++){//z
-	zmid=lowerBound[2]+(i[2]+0.5)*dz;
+	zmid=(lowerBound[2]+(i[2]+0.5)*dz)/inputAxisScale;
 	if (CanInterpolateAt(rmid,phimid,zmid)){ //interpolate if we can
 	  if (0) {
 	    printf("function said we could interpolate at (r,phi,z)=(%.2f, %.2f,%.2f), bounds are:\n",rmid,phimid,zmid);
@@ -183,6 +184,8 @@ void ChargeMapReader::RegenerateDensity(){
   int i[3],a;
   float low[3],high[3];
   float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
+  //note that all of this is done in the native units of the source data, specifically, the volume element is in hist units, not our internal units.
+  
   for ( i[0]=1;i[0]<=nbins[0];i[0]++){//phi
     a=0;
     low[a]=ax[a]->GetBinLowEdge(i[a]);
@@ -212,8 +215,9 @@ void ChargeMapReader::RegenerateDensity(){
   return;
 }
 
-bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histname){
+bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histname, float axisScale){
   //load the charge-per-bin data from the specified file.
+  inputAxisScale=axisScale;
   TFile *inputFile=TFile::Open(filename,"READ");
   hSourceCharge=(TH3*)(inputFile->Get(histname));
   if (hSourceCharge==nullptr) return false;
@@ -224,9 +228,9 @@ bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histnam
 }
 
 
-bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
+bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist, float axisScale){
   if (DEBUG) printf("reading charge from %s\n",sourceHist->GetName());
-
+  inputAxisScale=axisScale;
   hSourceCharge=sourceHist; //note that this means we don't own this histogram!
   if (hSourceCharge==nullptr) return false;
   RegenerateDensity();
@@ -340,6 +344,26 @@ bool ChargeMapReader::SetOutputBins(int _nr, int _nphi, int _nz){
   return true;
 }
 
+
+
+void ChargeMapReader::AddChargeInBin(int r, int phi, int z, float q){
+  assert(r>0 && r<nBins[0]);
+  assert(phi>0 && phi<nBins[1]);
+  assert(z>0 && z<nBins[2]);
+  if (DEBUG) printf("adding charge in array element %d %d %d to %.2E\n",r,phi,z,q);
+
+  charge->Add(r,phi,z,q);
+  return;
+}
+
+
+void ChargeMapReader::AddChargeAtPosition(float r, float phi, float z, float q){
+ //bounds checking are handled by the binwise function, so no need to do so here:
+  AddChargeInBin((r-lowerBound[0])/binWidth[0],(phi-lowerBound[1])/binWidth[1],(z-lowerBound[2])/binWidth[2],q);
+  return;
+}
+
+
 float ChargeMapReader::GetChargeInBin(int r, int phi, int z){
   assert(r>0 && r<nBins[0]);
   assert(phi>0 && phi<nBins[1]);
@@ -355,3 +379,20 @@ float ChargeMapReader::GetChargeAtPosition(float r, float phi, float z){
   return GetChargeInBin((r-lowerBound[0])/binWidth[0],(phi-lowerBound[1])/binWidth[1],(z-lowerBound[2])/binWidth[2]);
 }
 
+
+void ChargeMapReader::SetChargeInBin(int r, int phi, int z, float q){
+  assert(r>0 && r<nBins[0]);
+  assert(phi>0 && phi<nBins[1]);
+  assert(z>0 && z<nBins[2]);
+  if (DEBUG) printf("setting charge in array element %d %d %d to %.2E\n",r,phi,z,q);
+
+  charge->Set(r,phi,z,q);
+  return;
+}
+
+
+void ChargeMapReader::SetChargeAtPosition(float r, float phi, float z, float q){
+ //bounds checking are handled by the binwise function, so no need to do so here:
+  SetChargeInBin((r-lowerBound[0])/binWidth[0],(phi-lowerBound[1])/binWidth[1],(z-lowerBound[2])/binWidth[2],q);
+  return;
+}

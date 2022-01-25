@@ -109,8 +109,9 @@ AnnularFieldSim::AnnularFieldSim(float in_innerRadius, float in_outerRadius, flo
   printf("f-bin size:  r=%f,phi=%f, z=%f, wanted %f,%f\n", step.Perp(), step.Phi(), (rmax - rmin) / nr, (phispan / nphi), (zmax - zmin) / nz);
 
   //create an array to store the charge in each f-bin
-  q = new MultiArray<double>(nr, nphi, nz);
-  q->SetAll(0);
+  // q = new MultiArray<double>(nr, nphi, nz);
+  //q->SetAll(0);
+  q=new ChargeMapReader(nr,rmin,rmax,nphi,0,phispan,nz,zmin,zmax);
   sprintf(chargestring, "No spacecharge present.");
 
   //load parameters of our region of interest
@@ -847,7 +848,8 @@ void AnnularFieldSim::load_analytic_spacecharge(float scalefactor = 1)
         //if(debugFlag()) printf("%d: AnnularFieldSim::load_analytic_spacecharge adding Q=%f into cell (%d,%d,%d)\n",__LINE__,qbin,i,j,k,localr,localphi,localz);
         localcharge = vol * aliceModel->Rho(pos);  //TODO:  figure out what units this is in.
         totalcharge += localcharge;
-        q->Add(ifr, ifphi, ifz, localcharge);  //scalefactor must be applied to charge _and_ field, and so is handled in the aliceModel code.
+        //q->Add(ifr, ifphi, ifz, localcharge);  //scalefactor must be applied to charge _and_ field, and so is handled in the aliceModel code.
+        q->AddChargeInBin(ifr, ifphi, ifz, localcharge);  //scalefactor must be applied to charge _and_ field, and so is handled in the aliceModel code.
       }
     }
   }
@@ -870,7 +872,7 @@ void AnnularFieldSim::load_analytic_spacecharge(float scalefactor = 1)
         for (int ifz = 0; ifz < nz; ifz++)
         {
           int z_low = ifz / z_spacing;
-          q_lowres->Add(r_low, phi_low, z_low, q->Get(ifr, ifphi, ifz));
+          q_lowres->Add(r_low, phi_low, z_low, q->GetChargeInBin(ifr, ifphi, ifz));
         }
       }
     }
@@ -1171,6 +1173,13 @@ void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, in
 
 void AnnularFieldSim::load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
 {
+  //new plan:  use ChargeMapReader:
+  q->ReadSourceCharge(hist,cmscale);
+  return;
+
+  /*
+commenting this out for now, until we see if it works.
+  
   //load spacecharge densities from a histogram, where scalefactor translates into local units of C/cm^3
   //and cmscale translate (hist coord) --> (hist position in cm)
   //noting that the histogram limits may differ from the simulation size, and have different granularity
@@ -1204,8 +1213,9 @@ void AnnularFieldSim::load_spacecharge(TH3F *hist, float zoffset, float chargesc
   printf("We are interested in z bins %d to %d,  %f<z<%f\n", hnzmin, hnzmax, hnzmin * hzstep + hzmin, hnzmax * hzstep + hzmin);
 
   //clear the previous spacecharge dist:
+  
   for (int i = 0; i < q->Length(); i++)
-    *(q->GetFlat(i)) = 0;
+   *(q->GetFlat(i)) = 0;
 
   //loop over every bin and add that to the internal model:
   //note that bin 0 is the underflow, so we need the +1 internally
@@ -1316,10 +1326,14 @@ void AnnularFieldSim::load_spacecharge(TH3F *hist, float zoffset, float chargesc
   }
 
   return;
+  */
 }
 
 void AnnularFieldSim::add_testcharge(float r, float phi, float z, float coulombs)
 {
+  q->AddChargeAtPosition(r,phi,z, coulombs * C);
+  return;
+  /*
   int rcell, phicell, zcell;
 
   //translate to which cell we're in:
@@ -1345,6 +1359,7 @@ void AnnularFieldSim::add_testcharge(float r, float phi, float z, float coulombs
   }
 
   return;
+  */
 }
 
 /*
@@ -2066,7 +2081,7 @@ TVector3 AnnularFieldSim::sum_full3d_field_at(int r, int phi, int z)
         }
         //sum+=*partial[x][phi][z][ix][iphi][iz] * *q[ix][iphi][iz];
         if (r == ir && phi == iphi && z == iz) continue;  //dont' compute self-to-self field.
-        sum += Epartial->Get(r - rmin_roi, phi - phimin_roi, z - zmin_roi, ir, iphi, iz) * q->Get(ir, iphi, iz);
+        sum += Epartial->Get(r - rmin_roi, phi - phimin_roi, z - zmin_roi, ir, iphi, iz) * q->GetChargeInBin(ir, iphi, iz);
       }
     }
   }
@@ -2136,7 +2151,7 @@ TVector3 AnnularFieldSim::sum_local_field_at(int r, int phi, int z)
         if (zbin < 0) zbin = 0;
         if (zbin >= nz_high) zbin = nz_high - 1;
         //printf("filtering in local highres block\n");
-        q_local->Add(rbin, phibin, zbin, q->Get(ir, phiFilt, iz));
+        q_local->Add(rbin, phibin, zbin, q->GetChargeInBin(ir, phiFilt, iz));
         //printf("done filtering in local highres block\n");
       }
     }
@@ -2370,7 +2385,7 @@ TVector3 AnnularFieldSim::sum_phislice_field_at(int r, int phi, int z)
         unitField = Epartial_phislice->Get(r - rmin_roi, 0, z - zmin_roi, ir, phirel, iz);
         unitField.RotateZ(rotphi);  //previously was rotate by the step.Phi()*phi.    //annoying that I can't rename this to 'rotated field' here without unnecessary overhead.
 
-        sum += unitField * q->Get(ir, iphi, iz);
+        sum += unitField * q->GetChargeInBin(ir, iphi, iz);
         ;
 
         /*
@@ -3897,6 +3912,9 @@ TVector3 AnnularFieldSim::GetBFieldAt(TVector3 pos)
 
 float AnnularFieldSim::GetChargeAt(TVector3 pos)
 {
+  return q->GetChargeAtPosition(pos.Perp(),pos.Phi()+TMath::Pi(),pos.Z()); //because tvectors take position to be -phi to phi.
+  //actually, we should probably just yield to that assumption in more places to speed this up.
+  /*
   //assume pos is in native units (see header)
   int r, p, z;
 
@@ -3907,4 +3925,5 @@ float AnnularFieldSim::GetChargeAt(TVector3 pos)
   BoundsCase zbound = GetZindexAndCheckBounds(pos.Z(), &z);  //==BoundsCase::OutOfBounds) return zero_vector;
   if (zbound == OutOfBounds && hasTwin) return twin->GetChargeAt(pos);
   return q->Get(r, p, z);
+  */
 }
