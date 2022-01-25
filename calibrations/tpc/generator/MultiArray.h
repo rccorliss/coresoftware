@@ -3,6 +3,8 @@
 #define MULTIARRAY
 
 #include <cassert>
+#include <cstdlib>  // for malloc
+
 
 template <class T>
 class MultiArray
