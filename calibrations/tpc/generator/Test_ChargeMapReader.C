@@ -177,16 +177,16 @@ void Test_ChargeMapReader(){
   hFracChargeDiff->Draw();
 
   c->cd(++iPad);
-  hOriginalDensity->ProjectionX("_phi",sliceBin[0][1],sliceBin[0][1],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
-  hResampledDensity->ProjectionX("_phir",sliceBin[1][1],sliceBin[1][1],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
+  hOriginalDensity->ProjectionX("_phiD",sliceBin[0][1],sliceBin[0][1],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
+  hResampledDensity->ProjectionX("_phiDr",sliceBin[1][1],sliceBin[1][1],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionX()->Draw("same,hist");
   c->cd(++iPad);
-  hOriginalDensity->ProjectionY("_r",sliceBin[0][0],sliceBin[0][0],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
-  hResampledDensity->ProjectionY("_rr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
+  hOriginalDensity->ProjectionY("_rD",sliceBin[0][0],sliceBin[0][0],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
+  hResampledDensity->ProjectionY("_rDr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionY()->Draw("same,hist");
   c->cd(++iPad);
-  hOriginalDensity->ProjectionZ("_z",sliceBin[0][0],sliceBin[0][0],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
-  hResampledDensity->ProjectionZ("_zr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
+  hOriginalDensity->ProjectionZ("_zD",sliceBin[0][0],sliceBin[0][0],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
+  hResampledDensity->ProjectionZ("_zDr",sliceBin[1][0],sliceBin[1][0],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
   if (checkConsistency) hCheckDensity->ProjectionZ()->Draw("same,hist");
   c->cd(++iPad);
   hFracDensityDiff->Draw();
