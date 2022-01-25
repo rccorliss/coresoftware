@@ -48,7 +48,7 @@ void CompareHistograms(TH3* hLead, TH3* hFollow, TH1* hOutput){
 	} else { //if interpolation would fail, fall back to the next best thing:
 	  followValue=hFollow->GetBinContent(hLead->FindBin(mid[0],mid[1],mid[2]));//take the exact center of the bin.
 	}
-	hOutput->Fill((leadValue-followValue)/leadValue);
+	hOutput->Fill((followValue/leadValue-1));
       }
     }
   }
@@ -99,15 +99,22 @@ void Test_ChargeMapReader(){
   TH3* hResampledDensity=rSneaky->GetDensityHistogram();
   printf("Returned to macro\n");
 
-  TH1F* hFracChargeDiff=new TH1F("hFracChargeDiff","(Resampled-Original)/(Original) charge, should differ",100,-1,2);
-  TH1F* hFracDensityDiff=new TH1F("hFracDensityDiff","(Resampled-Original)/(Original) density, should be the same",100,-1,2);
+  TH1F* hFracChargeDiff=new TH1F("hFracChargeDiff","(Resampled-Original)/(Original) charge, should differ",100,-2,2);
+  TH1F* hFracDensityDiff=new TH1F("hFracDensityDiff","(Resampled-Original)/(Original) density, should be the same",100,-2,2);
   
   CompareHistograms(hOriginalDensity,hResampledDensity,hFracDensityDiff);
   CompareHistograms(hOriginalCharge,hResampledCharge,hFracChargeDiff);
 
   TCanvas *c=new TCanvas("c","c",1000,1000);
-  hResampledCharge->SetLineColor(kRed);
+  hOriginalCharge->SetName("hOriginalCharge");
+  hOriginalCharge->SetTitle("hOriginalCharge");
+  hOriginalDensity->SetName("hOriginalDensity");
+  hOriginalDensity->SetTitle("hOriginalDensity");
+   hResampledCharge->SetLineColor(kRed);
   hResampledDensity->SetLineColor(kRed);
+  hResampledDensity->SetName("hResampledDensity");
+  hResampledDensity->SetTitle("hResampledDensity");
+ 
   c->Divide(4,2);
   c->cd(1);
   hOriginalCharge->ProjectionX()->Draw("hist");

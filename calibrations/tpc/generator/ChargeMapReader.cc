@@ -195,7 +195,7 @@ void ChargeMapReader::RegenerateDensity(){
       dr=high[a]-low[a];
       float rphiterm=dphi*(low[1]+0.5*dr)*dr;
       for ( i[2]=1;i[2]<=nbins[2];i[2]++){//z
-	a=1;
+	a=2;
 	low[a]=ax[a]->GetBinLowEdge(i[a]);
 	high[a]=ax[a]->GetBinUpEdge(i[a]);
 	dz=high[a]-low[a];
