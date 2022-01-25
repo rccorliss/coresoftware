@@ -1,6 +1,5 @@
 class TH3;
 class TTree;
-class TVector;
 
 #include <MultiArray.h>
 
@@ -29,7 +28,7 @@ class ChargeMapReader
   void RegenerateDensity();//internal function to rebuild the charge density map when the input map changes.
 
  public:
-  bool CanInterpolateAt(float r, float phi, float z, TH3* h);//checks whether it is okay to interpolate at this position in the supplied hist (a convenient utility)
+  static bool CanInterpolateAt(float r, float phi, float z, TH3* h);//checks whether it is okay to interpolate at this position in the supplied hist (a convenient utility)
     
   void FillChargeHistogram(TH3* h);//fill the supplied histogram with the charge in the array.
   float GetChargeInBin(int r, int phi, int z);

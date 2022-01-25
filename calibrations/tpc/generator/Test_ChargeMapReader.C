@@ -6,7 +6,7 @@
 #include "TAxis.h" //this prevents a lazy binding issue and/or is a magic spell.
 #include "TCanvas.h" //this prevents a lazy binding issue and/or is a magic spell.
 
-R__LOAD_LIBRARY(.libs/libfieldsim)
+R__LOAD_LIBRARY(build/.libs/libfieldsim)
 
 void CompareHistograms(TH3* hLead, TH3* hFollow, TH1* hOutput){
   TAxis *ax[3]={nullptr,nullptr,nullptr};
@@ -21,7 +21,8 @@ void CompareHistograms(TH3* hLead, TH3* hFollow, TH1* hOutput){
 
     //   0     1     2   ...   n-1    n    n+1
   // under|first|   ..|  ..  |  .. |last| over
-  int i[3],a;
+  int i[3];
+  int a;
   float low[3],high[3],mid[3];
   float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
   for ( i[0]=1;i[0]<=nbins[0];i[0]++){//phi
@@ -72,8 +73,8 @@ void Test_ChargeMapReader(){
   // under|first|   ..|  ..  |  .. |last| over
   for (int i=0;i<3;i++){
     nbins[i]=ax[i]->GetNbins();//number of bins, not counting under and overflow.
-    low[i]=ax[a]->GetBinLowEdge(1);
-    high[i]=ax[a]->GetBinUpEdge(nbins[i]);
+    low[i]=ax[i]->GetBinLowEdge(1);
+    high[i]=ax[i]->GetBinUpEdge(nbins[i]);
   }
 
   //chargemapreader takes parameters in r,phi,z because that's sane.
