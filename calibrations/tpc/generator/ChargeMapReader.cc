@@ -215,7 +215,7 @@ bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histnam
 
 
 bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
-  if (DEBUG) printf("reading charge from %s\n",sourceHist->GetName().Data());
+  if (DEBUG) printf("reading charge from %s\n",sourceHist->GetName());
 
   hSourceCharge=sourceHist; //note that this means we don't own this histogram!
   if (hSourceCharge==nullptr) return false;
