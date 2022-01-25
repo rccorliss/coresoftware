@@ -11,7 +11,6 @@
 
 #include <cassert>
 
-template <class T>
 class AnalyticFieldModel;
 class TH3F;
 class TTree;
