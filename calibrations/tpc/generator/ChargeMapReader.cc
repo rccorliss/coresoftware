@@ -1,4 +1,5 @@
 #include "ChargeMapReader.h"
+#include "TH3.h"
 #include <cassert>
 
 ChargeMapReader::ChargeMapReader():
