@@ -44,7 +44,7 @@ class MultiArray
     return;
   };
   
-  void Add(int a, int b, int c, int d, int e, int f, T in  {
+  void Add(int a, int b, int c, int d, int e, int f, T in ) {
     int n_[6];
      n_[0] = a; n_[1] = b; n_[2] = c; n_[3] = d; n_[4] = e; n_[5] = f;
    long int index = n_[0];
