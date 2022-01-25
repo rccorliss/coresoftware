@@ -126,10 +126,12 @@ void ChargeMapReader::RegenerateCharge(){
       for ( i[2]=0;i[2]<=nBins[2];i[2]++){//z
 	zmid=lowerBound[2]+(i[2]+0.5)*dz;
 	if (CanInterpolateAt(rmid,phimid,zmid)){ //interpolate if we can
-	  if (DEBUG) printf("function said we could interpolate at (r,phi,z)=(%.2f, %.2f,%.2f), bounds are:\n",rmid,phimid,zmid);
-	      if (DEBUG) printf("  r: %.2f < %.2f < %.2f\n",hChargeDensity->GetYaxis()->GetXmin(),rmid,hChargeDensity->GetYaxis()->GetXmax());
-	      if (DEBUG) printf("  p: %.2f < %.2f < %.2f\n",hChargeDensity->GetXaxis()->GetXmin(),phimid,hChargeDensity->GetXaxis()->GetXmax());
-	      if (DEBUG) printf("  z: %.2f < %.2f < %.2f\n",hChargeDensity->GetZaxis()->GetXmin(),zmid,hChargeDensity->GetZaxis()->GetXmax());
+	  if (0) {
+	    printf("function said we could interpolate at (r,phi,z)=(%.2f, %.2f,%.2f), bounds are:\n",rmid,phimid,zmid);
+	    printf("  r: %.2f < %.2f < %.2f\n",hChargeDensity->GetYaxis()->GetXmin(),rmid,hChargeDensity->GetYaxis()->GetXmax());
+	    printf("  p: %.2f < %.2f < %.2f\n",hChargeDensity->GetXaxis()->GetXmin(),phimid,hChargeDensity->GetXaxis()->GetXmax());
+	    printf("  z: %.2f < %.2f < %.2f\n",hChargeDensity->GetZaxis()->GetXmin(),zmid,hChargeDensity->GetZaxis()->GetXmax());
+	  }
 
 	  charge->Set(i[0],i[1],i[2],
 		      hChargeDensity->Interpolate(phimid,rmid,zmid)*volume);
@@ -141,7 +143,8 @@ void ChargeMapReader::RegenerateCharge(){
     }//phi
   }//r
 
-  
+      if (DEBUG) printf("done regenerating charge array contents\n");
+
   return;
 }
 
