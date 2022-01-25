@@ -13,7 +13,7 @@ ChargeMapReader::ChargeMapReader():
 }
 
 ChargeMapReader::ChargeMapReader(int _nr, float _rmin, float _rmax, int _nphi, float _phimin, float _phimax, int _nz,float _zmin, float _zmax){
-  printf("made a new ChargeMapReader with defined values:\n %d %.25 %.2f\n %d %.25 %.2f\n %d %.25 %.2f\n",
+  printf("made a new ChargeMapReader with defined values:\n %d %.2f %.2f\n %d %.2f %.2f\n %d %.2f %.2f\n",
 	  _nr,  _rmin,  _rmax,  _nphi,  _phimin,  _phimax,  _nz, _zmin,  _zmax);
   SetOutputParameters( _nr,  _rmin,  _rmax,  _nphi,  _phimin,  _phimax,  _nz, _zmin,  _zmax);
   return;
