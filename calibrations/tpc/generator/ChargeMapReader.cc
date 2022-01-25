@@ -1,0 +1,303 @@
+#include "ChargeMapReader.h"
+
+
+ChargeMapReader::ChargeMapReader():
+  ChargeMapReader(20,20.0,78.0,20,0,TMath::TwoPi,40,-105.5,105.5){
+  printf("made a new ChargeMapReader with default values -- cascading to next constructor\n");
+  return;
+}
+
+ChargeMapReader::ChargeMapReader(int _nr, float _rmin, float _rmax, int _n1, float _phimin, float _phimax, int _n2,float _zmin, float _zmax){
+  printf("made a new ChargeMapReader with defined values\n");
+  SetOutputBins( _nr,  _rmin,  _rmax,  _n1,  _phimin,  _phimax,  _n2, _zmin,  _zmax);
+  return;
+}
+
+ChargeMapReader::~ChargeMapReader(){
+  //printf("deleting histograms in ChargeMapReader\n");
+  //we don't explicitly malloc() anything, so we shouldn't need to free() anything.  
+  return;
+}
+
+
+bool ChargeMapReader::CanInterpolateAt(float r, float phi, float z){
+  if (hChargeDensity==nullptr) return false;
+  float pos[3]={phi,r,z};
+  //todo: is it worth keeping these values somewhere for ease of access?
+  TAxis *ax[3]={nullptr,nullptr,nullptr};
+  ax[0]=hChargeDensity->GetXaxis();
+  ax[1]=hChargeDensity->GetYaxis();
+  ax[2]=hChargeDensity->GetZaxis();
+
+  int nbins[3];
+  for (int i=0;i<3;i++){
+    nbins[i]=ax[i]->GetNbins();//number of bins, not counting under and overflow.
+    if (nbins[i]==1) return false; //if there's only one non over/under bin, then no place is safe to interpolate.
+  }
+  
+   //   0     1     2   ...   n-1    n    n+1
+  // under|first|   ..|  ..  |  .. |last| over
+  for (int i=0;i<3;i++){//check each axis:
+    int axbin=ax[i]->FindBin(pos[i]);
+    
+    if (axbin<1 || axbin>nbins[i]) {
+      return false; //before the first bin, or after the last bin
+    }
+    if (axbin>1 && axbin<nbins[i]) {
+      continue;      //if we're in a middle bin, we're fine on this axis.
+    }
+
+    //now we need to check if we're in the safe parts of the first and last bins:
+    float low=ax[1]->GetBinLowEdge(axbin);
+    float high=ax[1]->GetBinUpEdge(axbin);
+    float binwidth=high-low;
+ 
+    float binrelative=(pos[i]-low)/binwidth;
+    if (axbin==1 && binrelative<0.5){
+      return false; //we're in the first bin, but below the midpoint, so we would interpolate out of bounds
+    }
+    if (axbin==nbins[i] && binrelative<0.5){
+      return false; //we're in the last bin, but above the midpoint, so we would interpolate out of bounds
+    }
+  }
+  
+  // if we get here, we are in the okay-range of all three axes.
+  return true;
+}
+
+
+
+void ChargeMapReader::RegenerateCharge(){
+  //Builds the charge 3D array from the charge density map.
+  //either the density map has changed, or the binning of the output has changed (hopefully not the latter, because that's a very unusual thing to change mid-run.
+  //we want to rebuild the charge per bin of our output representation in any case.  Generally, we will interpolate from the charge density that we know we have, but we need to be careful not to ask to interpolate in regions where that is not allowed.
+  
+  //   0     1     2     ...   n-1 
+  // first|   ..|  ..  |  .. |last
+  int i[3];
+  float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
+  dr=upperBound[0]-lowerBound[0];
+  dphi=upperBound[1]-lowerBound[1];
+  dz=upperBound[2]-lowerBound[2];
+  
+  float phimid,rmid,zmid; //midpoints at each step.
+  for (int i[0]=0;i<=nBins[0];i[0]++){//r
+    rmid=lowerBound[0]+(i[0]+0.5)*dr;
+    float rlow=lowerBound[0]+dr*i;
+    float volume=dz*dphi*(rlow+0.5*dr)*dr; //note that since we have equal bin widths, the volume term depends only on r.
+    for (int i[1]=0;i<=nBins[1];i[1]++){//phi
+      phimid=lowerBound[1]+(i[1]+0.5)*dphi;
+      for (int i[2]=0;i<=nBins[2];i[2]++){//z
+	zmid=lowerBound[2]+(i[2]+0.5)*dz;
+	if (CanInterpolateAt(rmid,phimid,zmid)){ //interpolate if we can
+	  charge->Set(i[0],i[1],i[2],
+		      hChargeDensity->Interpolate(phimid,rmid,zmid)*volume);
+	} else { //otherwise, just take the central value and assume it's flat.  Better than a zero.
+	  charge->Set(i[0],i[1],i[2],
+		      hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid,rmid,zmid))*volume);
+	}
+      }//z
+    }//phi
+  }//r
+
+  
+  return;
+}
+
+
+
+void ChargeMapReader::RegenerateDensity(){
+  //assume the input map has changed, so we need to rebuild our internal representation of the density.
+
+
+  //if we have one already, delete it.  
+  if (hChargeDensity!=nullptr){
+    delete hChargeDensity;
+  }
+
+  //clone this from the source histogram, which we assume is open.
+  hChargeDensity=(TH3*)(hSourceCharge->Clone("hChargeDensity"));
+
+  //then go through it, bin by bin, and replace each bin content with the corresponding density, so we can interpolate correctly.
+  //TODO:  Does this mean we once again need 'guard' bins?  Gross.
+
+    
+  TAxis *ax[3]={nullptr,nullptr,nullptr};
+  ax[0]=hChargeDensity->GetXaxis();
+  ax[1]=hChargeDensity->GetYaxis();
+  ax[2]=hChargeDensity->GetZaxis();
+
+  int nbins[3];
+  for (int i=0;i<3;i++){
+    nbins[i]=ax[i]->GetNbins();//number of bins, not counting under and overflow.
+  }
+
+    //   0     1     2   ...   n-1    n    n+1
+  // under|first|   ..|  ..  |  .. |last| over
+  int i[3];
+  float low[3],high[3];
+  float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
+  for (int i[0]=1i<=nbins[0];i[0]++){//phi
+    a=0;
+    low[a]=ax[a]->GetBinLowEdge(i[a]);
+    high[a]=ax[a]->GetBinUpEdge(i[a]);
+    dphi=high[a]-low[a];
+    for (int i[1]=1i<=nbins[1];i[1]++){//r
+      a=1;
+      low[a]=ax[a]->GetBinLowEdge(i[a]);
+      high[a]=ax[a]->GetBinUpEdge(i[a]);
+      dr=high[a]-low[a];
+      float rphiterm=dphi*(low[1]+0.5*dr)*dr;
+      for (int i[2]=1i<=nbins[2];i[2]++){//z
+	a=1;
+	low[a]=ax[a]->GetBinLowEdge(i[a]);
+	high[a]=ax[a]->GetBinUpEdge(i[a]);
+	dz=high[a]-low[a];
+	//float volume=dz*dphi*(low[1]+0.5*dr)*dr;
+	float volume=dz*rphiterm;
+	int globalBin=hSourceCharge->GetBin(i[0],i[1],i[2]);
+	float q=hSourceCharge->GetBinContent(globalBin);
+	hChargeDensity->SetBinContent(globalBin,q/volume);
+      }
+    }
+  }
+  return;
+}
+
+bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histname){
+  //load the charge-per-bin data from the specified file.
+  TFile *inputFile=TFile::Open(filename,"READ");
+  hSourceCharge=(TH3*)(inputFile->Get(histname));
+  if (hSourceCharge==nullptr) return false;
+  RegenerateDensity();
+  inputFile->Close();
+  //after this, the source histogram doesn't exist anymore.
+  return true;
+}
+
+
+bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
+  hSourceCharge=sourceHist; //note that this means we don't own this histogram!
+  if (hSourceCharge==nullptr) return false;
+  RegenerateDensity();
+
+  return true;
+}
+
+
+bool ChargeMapReader::SetOutputParameters(int _n0, float _rmin, float _rmax, int _n1, float _phimin, float _phimax, int _n2,float _zmin, float _zmax){
+  //change all the parameters of our output array and rebuild the array from scratch.
+  if (!(_rmax>_rmin) || !(_phimax>_phimin) || !(_zmax>_zmin) ) return false; // the bounds are not well-ordered.
+  if (nr<1|| nphi<1 || nz<1) return false; //must be at least one bin wide.
+
+  nBins[0]=_n0;
+  nBins[1]=_n1;
+  nBins[2]=_n2;
+  lowerBound[0]=_rmin;
+  lowerBound[1]=_phimin;
+  lowerBound[2]=_zmin;
+  upperBound[0]=_rmax;
+  upperBound[1]=_phimax;
+  upperBound[2]=_zmax;
+
+  
+  for (int i=0;i<3;i++)
+    binWidth[i]=(upperBound[i]-lowerBound[i])/(1.0*nBins[i]);
+
+
+  //if the array exists, delete it.
+  if (charge!=nullptr){
+    delete charge;
+    charge=nullptr;
+  }
+  charge=new MultiArray<double>(nBins[0],nBins[1],nBins[2]);
+
+  if (hChargeDensity!=nullptr){
+    RegenerateCharge(); //fill the array with the charge data if available
+  } else {
+    charge->SetAll(0); //otherwise set the array to all zeroes.
+  }
+  return true;
+}
+
+bool ChargeMapReader::SetOutputBounds(float _rmin, float _rmax, float _phimin, float _phimax, float _zmin, float _zmax){
+  //change all the bounds of our output array and rebuild the array from scratch, leaving the original binning
+
+  if (!(_rmax>_rmin) || !(_phimax>_phimin) || !(_zmax>_zmin) ) return false; // the bounds are not well-ordered.
+
+ nBins[0]=_n0;
+  nBins[1]=_n1;
+  nBins[2]=_n2;
+  lowerBound[0]=_rmin;
+  lowerBound[1]=_phimin;
+  lowerBound[2]=_zmin;
+  upperBound[0]=_rmax;
+  upperBound[1]=_phimax;
+  upperBound[2]=_zmax;
+
+  for (int i=0;i<3;i++)
+    binWidth[i]=(upperBound[i]-lowerBound[i])/(1.0*nBins[i]);
+
+
+  //if the array exists, delete it.
+  if (charge!=nullptr){
+    delete charge;
+    charge=nullptr;
+  }
+  charge=new MultiArray<double>(nBins[0],nBins[1],nBins[2]);
+
+  if (hChargeDensity!=nullptr){
+    RegenerateCharge(); //fill the array with the charge data if available
+  } else {
+    charge->SetAll(0); //otherwise set the array to all zeroes.
+  }
+  return true;
+  
+   
+  return true;
+}
+
+bool ChargeMapReader::SetOutputBins(int _nr, int _nphi, int _nz){
+  //change the number of bins of our output array and rebuild the array from scratch, leaving the bounds alone.
+  if (nr<1|| nphi<1 || nz<1) return false; //must be at least one bin wide.
+  nBins[0]=_nr;
+  nBins[1]=_nphi;
+  nBins[2]=_nz;
+ 
+  for (int i=0;i<3;i++)
+    binWidth[i]=(upperBound[i]-lowerBound[i])/(1.0*nBins[i]);
+
+
+  //if the array exists, delete it.
+  if (charge!=nullptr){
+    delete charge;
+    charge=nullptr;
+  }
+  charge=new MultiArray<float>(nBins[0],nBins[1],nBins[2]);
+
+  if (hChargeDensity!=nullptr){
+    RegenerateCharge(); //fill the array with the charge data if available
+  } else {
+    charge->SetAll(0); //otherwise set the array to all zeroes.
+  }
+  return true;
+}
+
+float ChargeMapReader::GetChargeInBin(int r, int phi, int z){
+  assert(r>0 && r<nr);
+  assert(phi>0 && phi<nphi);
+  assert(z>0 && z<nz);
+
+  return charge->At(r,phi,z);
+}
+
+
+float ChargeMapReader::GetChargeAtPosition(float r, float phi, float z){
+
+  assert(r>0 && r<nr);
+  assert(phi>0 && phi<nphi);
+  assert(z>0 && z<nz);
+  //bounds checking are handled by the binwise function, so no need to do so here:
+  return GetChargeInBin((r-lowerBound[0])/binWidth[0],(phi-lowerBound[1])/binWidth[1],(z-lowerBound[2])/binWidth[2]);
+}
+

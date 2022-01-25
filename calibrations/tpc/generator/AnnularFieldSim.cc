@@ -110,8 +110,7 @@ AnnularFieldSim::AnnularFieldSim(float in_innerRadius, float in_outerRadius, flo
 
   //create an array to store the charge in each f-bin
   q = new MultiArray<double>(nr, nphi, nz);
-  for (int i = 0; i < q->Length(); i++)
-    *(q->GetFlat(i)) = 0;
+  q->SetAll(0);
   sprintf(chargestring, "No spacecharge present.");
 
   //load parameters of our region of interest

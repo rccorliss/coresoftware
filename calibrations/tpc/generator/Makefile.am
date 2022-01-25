@@ -18,6 +18,7 @@ AM_LDFLAGS = \
 libfieldsim_la_SOURCES = \
   AnnularFieldSim.cc \
   AnalyticFieldModel.cc \
+  ChargeMapReacer.cc \
   Rossegger.cc \
   src.f \
   airy.f \
@@ -26,6 +27,7 @@ libfieldsim_la_SOURCES = \
 pkginclude_HEADERS = \
   AnnularFieldSim.h \
   AnalyticFieldModel.h \
+  ChargeMapReacer.h \
   Rossegger.h
 
 BUILT_SOURCES = \
