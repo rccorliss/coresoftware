@@ -210,7 +210,7 @@ bool ChargeMapReader::SetOutputParameters(int _nr, float _rmin, float _rmax, int
     delete charge;
     charge=nullptr;
   }
-  charge=new MultiArray<double>(nBins[0],nBins[1],nBins[2]);
+  charge=new MultiArray<float>(nBins[0],nBins[1],nBins[2]);
 
   if (hChargeDensity!=nullptr){
     RegenerateCharge(); //fill the array with the charge data if available
@@ -241,7 +241,7 @@ bool ChargeMapReader::SetOutputBounds(float _rmin, float _rmax, float _phimin, f
     delete charge;
     charge=nullptr;
   }
-  charge=new MultiArray<double>(nBins[0],nBins[1],nBins[2]);
+  charge=new MultiArray<float>(nBins[0],nBins[1],nBins[2]);
 
   if (hChargeDensity!=nullptr){
     RegenerateCharge(); //fill the array with the charge data if available
