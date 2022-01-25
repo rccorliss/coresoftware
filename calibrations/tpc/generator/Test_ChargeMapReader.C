@@ -138,11 +138,14 @@ void Test_ChargeMapReader(){
   hResampledDensity->SetLineColor(kRed);
   hResampledDensity->SetName("hResampledDensity");
   hResampledDensity->SetTitle("hResampledDensity");
+  if (checkConsistency) {
     hCheckCharge->SetLineColor(kBlue);
-  hCheckDensity->SetLineColor(kBlue);
-  hCheckDensity->SetName("hCheckDensity");
-  hCheckDensity->SetTitle("hCheckDensity");
- 
+    hCheckDensity->SetLineColor(kBlue);
+    hCheckDensity->SetName("hCheckDensity");
+    hCheckDensity->SetTitle("hCheckDensity");
+  }
+
+  
   c->Divide(4,2);
   c->cd(1);
   hOriginalCharge->ProjectionX()->Draw("hist");
