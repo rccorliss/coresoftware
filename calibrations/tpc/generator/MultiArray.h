@@ -1,8 +1,11 @@
 
 #ifndef MULTIARRAY
 #define MULTIARRAY
+
+#include <cassert>
+
 template <class T>
-class MultiArray : public TObject
+class MultiArray
 {
   //class to hold an up-to-six dimensional array of whatever T is.  Any indices not used are flattened.  This should probably be replaced with sets of TH3s... but the intention was to take advantage of indices for all elements being the same, to avoid unpacking and re-packing TVectors, etc, and to get rid of any other overhead that might be showing up in the TH3 implementation.
   //it does make it more annoying to interpolate, though.
