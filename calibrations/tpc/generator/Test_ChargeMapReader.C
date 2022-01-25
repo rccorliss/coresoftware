@@ -91,10 +91,12 @@ void Test_ChargeMapReader(){
   r->FillChargeHistogram(hResampledCharge);
   printf("Returned to macro\n");
 
-  return;
+  
   //build a new reader so we can re-use the density map generation.  Binning doesn't matter here.
+    printf("Macro building rSneaky\n");
   ChargeMapReader *rSneaky=new ChargeMapReader(2,low[1],high[1],2,low[0],high[0],2,low[2],high[2]);
   TH3* hResampledDensity=rSneaky->GetDensityHistogram();
+  printf("Returned to macro\n");
 
   TH1F* hFracChargeDiff=new TH1F("hFracChargeDiff","(Resampled-Original)/(Original) charge, should differ",100,-1,2);
   TH1F* hFracDensityDiff=new TH1F("hFracDensityDiff","(Resampled-Original)/(Original) density, should be the same",100,-1,2);
@@ -131,5 +133,7 @@ void Test_ChargeMapReader(){
   hFracDensityDiff->Draw();
 
   c->SaveAs("Test_ChargeMapReader.output.pdf");
+  
+  printf("All done.  Errors past here are root's problem.\n");
   return;
 }
