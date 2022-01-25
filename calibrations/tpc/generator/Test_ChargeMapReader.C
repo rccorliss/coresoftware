@@ -76,7 +76,7 @@ void Test_ChargeMapReader(){
     low[i]=ax[i]->GetBinLowEdge(1);
     high[i]=ax[i]->GetBinUpEdge(nbins[i]);
   }
-  printf("Original bins: %d x %x x %d.  New bins = %d x %d x %d\n", nbins[0],nbins[1],nbins[2], nbins[0],nbins[1],nbins[2]);
+  printf("Original bins: %d x %d x %d.  New bins = %d x %d x %d\n", nbins[0],nbins[1],nbins[2], nbins[0],nbins[1],nbins[2]);
   //chargemapreader takes parameters in r,phi,z because that's sane.
   ChargeMapReader *r=new ChargeMapReader(nbins[1],low[1],high[1],nbins[0],low[0],high[0],nbins[2],low[2],high[2]);
   printf("Macro requesting r to readSourceCharge\n");
@@ -128,6 +128,19 @@ void Test_ChargeMapReader(){
     CompareHistograms(hOriginalDensity,hCheckDensity,hFracDensityDiffCheck);
     CompareHistograms(hOriginalCharge,hResampledCharge,hFracChargeDiffCheck);
   }
+
+ TAxis *resampledax[3]={nullptr,nullptr,nullptr};
+  resampledax[0]=hResampledCharge->GetXaxis();
+  resampledax[1]=hResampledCharge->GetYaxis();
+  resampledax[2]=hResampledCharge->GetZaxis();
+
+  pos[]=(2.2,500,500);//phi,r,z
+  int sliceBin[2][3];
+  for (int i=0;i<3;i++){
+    sliceBin[0][i]=ax[i]->FindBin(pos[i]);
+    sliceBin[1][i]=resampledax[i]->FindBin(pos[i]);
+  }
+
   
   TCanvas *c=new TCanvas("c","c",1000,1000);
   hOriginalCharge->SetName("hOriginalCharge");
@@ -148,16 +161,16 @@ void Test_ChargeMapReader(){
   
   c->Divide(4,2);
   c->cd(1);
-  hOriginalCharge->ProjectionX()->Draw("hist");
-  hResampledCharge->ProjectionX()->Draw("same,hist");
+  hOriginalCharge->ProjectionX(sliceBin[0][1],sliceBin[0][1],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
+  hResampledCharge->ProjectionX(sliceBin[1][1],sliceBin[1][1],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionX()->Draw("same,hist");
   c->cd(2);
-  hOriginalCharge->ProjectionY()->Draw("hist");
-  hResampledCharge->ProjectionY()->Draw("same,hist");
+  hOriginalCharge->ProjectionY(sliceBin[0][0],sliceBin[0][0],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
+  hResampledCharge->ProjectionY(sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionY()->Draw("same,hist");
   c->cd(3);
-  hOriginalCharge->ProjectionZ()->Draw("hist");
-  hResampledCharge->ProjectionZ()->Draw("same,hist");
+  hOriginalCharge->ProjectionZ(sliceBin[0][1],sliceBin[0][1],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
+  hResampledCharge->ProjectionZ(sliceBin[1][1],sliceBin[1][1],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionZ()->Draw("same,hist");
   c->cd(4);
   hFracChargeDiff->Draw();
