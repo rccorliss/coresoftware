@@ -161,16 +161,16 @@ void Test_ChargeMapReader(){
   
   c->Divide(4,2);
   c->cd(1);
-  hOriginalCharge->ProjectionX(sliceBin[0][1],sliceBin[0][1],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
-  hResampledCharge->ProjectionX(sliceBin[1][1],sliceBin[1][1],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
+  hOriginalCharge->ProjectionX("_phi",sliceBin[0][1],sliceBin[0][1],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
+  hResampledCharge->ProjectionX("_phi",sliceBin[1][1],sliceBin[1][1],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionX()->Draw("same,hist");
   c->cd(2);
-  hOriginalCharge->ProjectionY(sliceBin[0][0],sliceBin[0][0],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
-  hResampledCharge->ProjectionY(sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
+  hOriginalCharge->ProjectionY("_r",sliceBin[0][0],sliceBin[0][0],sliceBin[0][2],sliceBin[0][2])->Draw("hist");
+  hResampledCharge->ProjectionY("_r",sliceBin[1][0],sliceBin[1][0],sliceBin[1][2],sliceBin[1][2])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionY()->Draw("same,hist");
   c->cd(3);
-  hOriginalCharge->ProjectionZ(sliceBin[0][1],sliceBin[0][1],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
-  hResampledCharge->ProjectionZ(sliceBin[1][1],sliceBin[1][1],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
+  hOriginalCharge->ProjectionZ("_z",sliceBin[0][1],sliceBin[0][1],sliceBin[0][1],sliceBin[0][1])->Draw("hist");
+  hResampledCharge->ProjectionZ("_z",sliceBin[1][1],sliceBin[1][1],sliceBin[1][1],sliceBin[1][1])->Draw("same,hist");
   if (checkConsistency) hCheckCharge->ProjectionZ()->Draw("same,hist");
   c->cd(4);
   hFracChargeDiff->Draw();
