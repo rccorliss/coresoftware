@@ -1,5 +1,6 @@
 #include "ChargeMapReader.h"
 #include "TH3.h"
+#include "TFile.h"
 #include "TMath.h"
 #include <cassert>
 
@@ -11,7 +12,7 @@ ChargeMapReader::ChargeMapReader():
 
 ChargeMapReader::ChargeMapReader(int _nr, float _rmin, float _rmax, int _nphi, float _phimin, float _phimax, int _nz,float _zmin, float _zmax){
   printf("made a new ChargeMapReader with defined values\n");
-  SetOutputBins( _nr,  _rmin,  _rmax,  _nphi,  _phimin,  _phimax,  _nz, _zmin,  _zmax);
+  SetOutputParameters( _nr,  _rmin,  _rmax,  _nphi,  _phimin,  _phimax,  _nz, _zmin,  _zmax);
   return;
 }
 
@@ -85,7 +86,7 @@ void ChargeMapReader::RegenerateCharge(){
   int i[3];
   for ( i[0]=0;i[0]<=nBins[0];i[0]++){//r
     rmid=lowerBound[0]+(i[0]+0.5)*dr;
-    float rlow=lowerBound[0]+dr*i;
+    float rlow=lowerBound[0]+dr*i[0];
     float volume=dz*dphi*(rlow+0.5*dr)*dr; //note that since we have equal bin widths, the volume term depends only on r.
     for ( i[1]=0;i[1]<=nBins[1];i[1]++){//phi
       phimid=lowerBound[1]+(i[1]+0.5)*dphi;
@@ -136,7 +137,7 @@ void ChargeMapReader::RegenerateDensity(){
 
     //   0     1     2   ...   n-1    n    n+1
   // under|first|   ..|  ..  |  .. |last| over
-  int i[3];
+  int i[3],a;
   float low[3],high[3];
   float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
   for ( i[0]=1;i[0]<=nbins[0];i[0]++){//phi
