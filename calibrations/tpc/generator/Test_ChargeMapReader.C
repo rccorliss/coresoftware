@@ -80,6 +80,7 @@ void Test_ChargeMapReader(){
   //chargemapreader takes parameters in r,phi,z because that's sane.
   ChargeMapReader *r=new ChargeMapReader(nbins[1],low[1],high[1],nbins[0],low[0],high[0],nbins[2],low[2],high[2]);
   r->ReadSourceCharge(hOriginalCharge);
+  return;
 
   //get the density map from the reader, and populate the resampled charge as well:
   TH3* hOriginalDensity=r->GetDensityHistogram();

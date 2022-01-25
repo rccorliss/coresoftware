@@ -27,15 +27,15 @@ ChargeMapReader::~ChargeMapReader(){
 
 
 bool ChargeMapReader::CanInterpolateAt(float r, float phi, float z){
-  return CanInterpolateAt(r,phi,z,hChargeDensity);
+  return CanInterpolateAt(phi,r,z,hChargeDensity);
 
 }
 
 
 //a convenient method to check whether it's safe to interpolate for a particular histogram.
-bool ChargeMapReader::CanInterpolateAt(float r, float phi, float z, TH3* h){
+bool ChargeMapReader::CanInterpolateAt(float x, float y, float z, TH3* h){
   if (h==nullptr) return false;
-  float pos[3]={phi,r,z};
+  float pos[3]={x,y,z};
   //todo: is it worth keeping these values somewhere for ease of access?
   TAxis *ax[3]={nullptr,nullptr,nullptr};
   ax[0]=h->GetXaxis();
@@ -61,15 +61,14 @@ bool ChargeMapReader::CanInterpolateAt(float r, float phi, float z, TH3* h){
     }
 
     //now we need to check if we're in the safe parts of the first and last bins:
-    float low=ax[1]->GetBinLowEdge(axbin);
-    float high=ax[1]->GetBinUpEdge(axbin);
-    float binwidth=high-low;
+    float low=ax[i]->GetBinLowEdge(axbin);
+    float high=ax[i]->GetBinUpEdge(axbin);
+    float binmid=0.5*(high+low);
  
-    float binrelative=(pos[i]-low)/binwidth;
-    if (axbin==1 && binrelative<0.5){
+    if (axbin==1 && pos[i]<binmid){
       return false; //we're in the first bin, but below the midpoint, so we would interpolate out of bounds
     }
-    if (axbin==nbins[i] && binrelative<0.5){
+    if (axbin==nbins[i] && pos[i]>binmid){
       return false; //we're in the last bin, but above the midpoint, so we would interpolate out of bounds
     }
   }
