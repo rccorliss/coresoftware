@@ -82,7 +82,6 @@ void Test_ChargeMapReader(){
   printf("Macro requesting r to readSourceCharge\n");
   r->ReadSourceCharge(hOriginalCharge);
   printf("Returned to macro\n");
-  return;
 
   //get the density map from the reader, and populate the resampled charge as well:
   TH3* hOriginalDensity=r->GetDensityHistogram();
@@ -92,7 +91,7 @@ void Test_ChargeMapReader(){
   r->FillChargeHistogram(hResampledCharge);
   printf("Returned to macro\n");
 
-
+  return;
   //build a new reader so we can re-use the density map generation.  Binning doesn't matter here.
   ChargeMapReader *rSneaky=new ChargeMapReader(2,low[1],high[1],2,low[0],high[0],2,low[2],high[2]);
   TH3* hResampledDensity=rSneaky->GetDensityHistogram();
