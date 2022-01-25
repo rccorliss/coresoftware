@@ -157,6 +157,7 @@ void ChargeMapReader::RegenerateDensity(){
 
   //if we have one already, delete it.  
   if (hChargeDensity!=nullptr){
+    if (DEBUG) printf("deleting old density histogram\n");
     delete hChargeDensity;
   }
 
@@ -206,6 +207,8 @@ void ChargeMapReader::RegenerateDensity(){
       }
     }
   }
+      if (DEBUG) printf("done regenerating density histogram\n");
+
   return;
 }
 
@@ -228,6 +231,8 @@ bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
   if (hSourceCharge==nullptr) return false;
   RegenerateDensity();
   RegenerateCharge();
+  
+  if (DEBUG) printf("done reading charge from %s\n",sourceHist->GetName());
 
   return true;
 }
@@ -265,6 +270,7 @@ bool ChargeMapReader::SetOutputParameters(int _nr, float _rmin, float _rmax, int
   charge=new MultiArray<float>(nBins[0],nBins[1],nBins[2]);
 
   if (hChargeDensity!=nullptr){
+    if (DEBUG) printf("charge density data exists, regenerating charge\n");
     RegenerateCharge(); //fill the array with the charge data if available
   } else {
     charge->SetAll(0); //otherwise set the array to all zeroes.
