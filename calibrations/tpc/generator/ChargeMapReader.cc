@@ -145,6 +145,7 @@ void ChargeMapReader::RegenerateCharge(){
 
 void ChargeMapReader::RegenerateDensity(){
   //assume the input map has changed, so we need to rebuild our internal representation of the density.
+    if (DEBUG) printf("regenerating density histogram\n");
 
 
   //if we have one already, delete it.  
@@ -214,6 +215,8 @@ bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histnam
 
 
 bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
+  if (DEBUG) printf("reading charge from %s\n",sourceHist->GetName().Data());
+
   hSourceCharge=sourceHist; //note that this means we don't own this histogram!
   if (hSourceCharge==nullptr) return false;
   RegenerateDensity();
@@ -327,7 +330,7 @@ float ChargeMapReader::GetChargeInBin(int r, int phi, int z){
   assert(r>0 && r<nBins[0]);
   assert(phi>0 && phi<nBins[1]);
   assert(z>0 && z<nBins[2]);
-  if (DEBUG) printf("getting chrage in array element %d %d %d\n",r,phi,z);
+  if (DEBUG) printf("getting charge in array element %d %d %d\n",r,phi,z);
 
   return charge->Get(r,phi,z);
 }
