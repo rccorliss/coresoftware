@@ -7,9 +7,9 @@ ChargeMapReader::ChargeMapReader():
   return;
 }
 
-ChargeMapReader::ChargeMapReader(int _nr, float _rmin, float _rmax, int _n1, float _phimin, float _phimax, int _n2,float _zmin, float _zmax){
+ChargeMapReader::ChargeMapReader(int _nr, float _rmin, float _rmax, int _nphi, float _phimin, float _phimax, int _nz,float _zmin, float _zmax){
   printf("made a new ChargeMapReader with defined values\n");
-  SetOutputBins( _nr,  _rmin,  _rmax,  _n1,  _phimin,  _phimax,  _n2, _zmin,  _zmax);
+  SetOutputBins( _nr,  _rmin,  _rmax,  _nphi,  _phimin,  _phimax,  _nz, _zmin,  _zmax);
   return;
 }
 
@@ -185,14 +185,14 @@ bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist){
 }
 
 
-bool ChargeMapReader::SetOutputParameters(int _n0, float _rmin, float _rmax, int _n1, float _phimin, float _phimax, int _n2,float _zmin, float _zmax){
+bool ChargeMapReader::SetOutputParameters(int _nr, float _rmin, float _rmax, int _nphi, float _phimin, float _phimax, int _nz,float _zmin, float _zmax){
   //change all the parameters of our output array and rebuild the array from scratch.
   if (!(_rmax>_rmin) || !(_phimax>_phimin) || !(_zmax>_zmin) ) return false; // the bounds are not well-ordered.
   if (_nr<1|| _nphi<1 || _nz<1) return false; //must be at least one bin wide.
 
-  nBins[0]=_n0;
-  nBins[1]=_n1;
-  nBins[2]=_n2;
+  nBins[0]=_nr;
+  nBins[1]=_nphi;
+  nBins[2]=_nz;
   lowerBound[0]=_rmin;
   lowerBound[1]=_phimin;
   lowerBound[2]=_zmin;
@@ -225,9 +225,6 @@ bool ChargeMapReader::SetOutputBounds(float _rmin, float _rmax, float _phimin, f
 
   if (!(_rmax>_rmin) || !(_phimax>_phimin) || !(_zmax>_zmin) ) return false; // the bounds are not well-ordered.
 
- nBins[0]=_n0;
-  nBins[1]=_n1;
-  nBins[2]=_n2;
   lowerBound[0]=_rmin;
   lowerBound[1]=_phimin;
   lowerBound[2]=_zmin;

@@ -2,8 +2,7 @@ class TH3F;
 class TTree;
 class TVector;
 
-class MultiArray;
-
+#include <MultiArray.h>
 
 //since we are never in the position of adding very large numbers to very small, floats are sufficient precision here.
 class ChargeMapReader

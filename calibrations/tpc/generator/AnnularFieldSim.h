@@ -1,4 +1,5 @@
 #include "Rossegger.h"
+#include "MultiArray.h" //for TH3 alternative
 
 #include <TObject.h>  // for TObject
 #include <TVector3.h>
@@ -11,7 +12,6 @@
 #include <cassert>
 
 template <class T>
-class MultiArray;
 class AnalyticFieldModel;
 class TH3F;
 class TTree;
@@ -340,155 +340,3 @@ class AnnularFieldSim
     return;
   };  //various constants to match internal representation to the familiar formula.  Adding in these factors suggests I should switch to a unitful calculation throughout...
 };
-
-#ifndef MULTIARRAY
-#define MULTIARRAY
-template <class T>
-class MultiArray : public TObject
-{
-  //class to hold an up-to-six dimensional array of whatever T is.  Any indices not used are flattened.  This should probably be replaced with sets of TH3s...
- public:
-  static const int MAX_DIM = 6;
-  int dim;
-  int n[6];
-  long int length;
-  T *field;
-
-  MultiArray(int a = 0, int b = 0, int c = 0, int d = 0, int e = 0, int f = 0)
-  {
-    int n_[6];
-    for (int i = 0; i < MAX_DIM; i++)
-      n[i] = 0;
-    n_[0] = a;
-    n_[1] = b;
-    n_[2] = c;
-    n_[3] = d;
-    n_[4] = e;
-    n_[5] = f;
-    length = 1;
-    dim = MAX_DIM;
-    for (int i = 0; i < dim; i++)
-    {
-      if (n_[i] < 1)
-      {
-        dim = i;
-        break;
-      }
-      n[i] = n_[i];
-      length *= n[i];
-    }
-    field = static_cast<T *>(malloc(length * sizeof(T)));
-    //field=(T)( malloc(length*sizeof(T) ));
-    //for (int i=0;i<length;i++) field[i].SetXYZ(0,0,0);
-  }
-  ~MultiArray()
-  {
-    free(field);
-  }
-
-  void Add(int a, int b, int c, T in)
-  {
-    Add(a, b, c, 0, 0, 0, in);
-    return;
-  };
-  void Add(int a, int b, int c, int d, int e, int f, T in)
-  {
-    int n_[6];
-    n_[0] = a;
-    n_[1] = b;
-    n_[2] = c;
-    n_[3] = d;
-    n_[4] = e;
-    n_[5] = f;
-    long int index = n_[0];
-    for (int i = 1; i < dim; i++)
-    {
-      index = (index * n[i]) + n_[i];
-    }
-    field[index] = field[index] + in;
-    return;
-  }
-
-  T Get(int a = 0, int b = 0, int c = 0, int d = 0, int e = 0, int f = 0)
-  {
-    int n_[6];
-    n_[0] = a;
-    n_[1] = b;
-    n_[2] = c;
-    n_[3] = d;
-    n_[4] = e;
-    n_[5] = f;
-    long int index = 0;
-    for (int i = 0; i < dim; i++)
-    {
-      if (n[i] <= n_[i] || n_[i] < 0)
-      {  //check bounds
-        printf("asking for el %d %d %d %d %d %d.  %dth element is outside of bounds 0<x<%d\n", n_[0], n_[1], n_[2], n_[3], n_[4], n_[5], n_[i], n[i]);
-        assert(false);
-      }
-      index = (index * n[i]) + n_[i];
-    }
-    return field[index];
-  }
-  T *GetPtr(int a = 0, int b = 0, int c = 0, int d = 0, int e = 0, int f = 0)
-  {  //faster for repeated access.
-    int n_[6];
-    n_[0] = a;
-    n_[1] = b;
-    n_[2] = c;
-    n_[3] = d;
-    n_[4] = e;
-    n_[5] = f;
-    long int index = n_[0];
-    for (int i = 1; i < dim; i++)
-    {
-      index = (index * n[i]) + n_[i];
-    }
-    return &(field[index]);
-  }
-
-  T *GetFlat(int a = 0)
-  {
-    if (a >= length) assert(false);  //check bounds
-    return &(field[a]);
-  }
-
-  int Length()
-  {
-    return (int) length;
-  }
-
-  void Set(int a, int b, int c, T in)
-  {
-    Set(a, b, c, 0, 0, 0, in);
-    return;
-  };
-  void Set(int a, int b, int c, int d, int e, int f, T in)
-  {
-    int n_[6];
-    n_[0] = a;
-    n_[1] = b;
-    n_[2] = c;
-    n_[3] = d;
-    n_[4] = e;
-    n_[5] = f;
-    long int index = n_[0];
-    for (int i = 1; i < dim; i++)
-    {
-      index = (index * n[i]) + n_[i];
-    }
-    field[index] = in;
-    return;
-  }
-
-  void SetAll(T in)
-  {
-     for (long int i = 0; i < length; i++)
-    {
-      field[i] = in;
-    }
-    return;
-  }
-  
-};
-#endif  //MULTIARRAY

@@ -28,6 +28,7 @@ pkginclude_HEADERS = \
   AnnularFieldSim.h \
   AnalyticFieldModel.h \
   ChargeMapReader.h \
+  MultiArray.h \
   Rossegger.h
 
 BUILT_SOURCES = \
