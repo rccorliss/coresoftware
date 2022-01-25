@@ -105,7 +105,8 @@ void ChargeMapReader::RegenerateCharge(){
   //Builds the charge 3D array from the charge density map.
   //either the density map has changed, or the binning of the output has changed (hopefully not the latter, because that's a very unusual thing to change mid-run.
   //we want to rebuild the charge per bin of our output representation in any case.  Generally, we will interpolate from the charge density that we know we have, but we need to be careful not to ask to interpolate in regions where that is not allowed.
-  
+    if (DEBUG) printf("regenerating charge array contents\n");
+
   //   0     1     2     ...   n-1 
   // first|   ..|  ..  |  .. |last
   float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
@@ -255,6 +256,8 @@ bool ChargeMapReader::SetOutputParameters(int _nr, float _rmin, float _rmax, int
   } else {
     charge->SetAll(0); //otherwise set the array to all zeroes.
   }
+  if (DEBUG) printf("finished building array\n");
+
   return true;
 }
 
