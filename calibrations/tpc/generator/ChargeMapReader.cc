@@ -24,13 +24,20 @@ ChargeMapReader::~ChargeMapReader(){
 
 
 bool ChargeMapReader::CanInterpolateAt(float r, float phi, float z){
-  if (hChargeDensity==nullptr) return false;
+  return CanInterpolateAt(r,phi,z,hChargeDensity);
+
+}
+
+
+//a convenient method to check whether it's safe to interpolate for a particular histogram.
+bool ChargeMapReader::CanInterpolateAt(float r, float phi, float z, TH3* h){
+  if (h==nullptr) return false;
   float pos[3]={phi,r,z};
   //todo: is it worth keeping these values somewhere for ease of access?
   TAxis *ax[3]={nullptr,nullptr,nullptr};
-  ax[0]=hChargeDensity->GetXaxis();
-  ax[1]=hChargeDensity->GetYaxis();
-  ax[2]=hChargeDensity->GetZaxis();
+  ax[0]=h->GetXaxis();
+  ax[1]=h->GetYaxis();
+  ax[2]=h->GetZaxis();
 
   int nbins[3];
   for (int i=0;i<3;i++){
@@ -68,7 +75,28 @@ bool ChargeMapReader::CanInterpolateAt(float r, float phi, float z){
   return true;
 }
 
-
+void ChargeMapReader::FillChargeHistogram(TH3* h){
+  //   0     1     2     ...   n-1 
+  // first|   ..|  ..  |  .. |last
+  float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
+  dr=binWidth[0];
+  dphi=binWidth[1];
+  dz=binWidth[2];
+  
+  float phimid,rmid,zmid; //midpoints at each step.
+  int i[3];
+  for ( i[0]=0;i[0]<=nBins[0];i[0]++){//r
+    rmid=lowerBound[0]+(i[0]+0.5)*dr;
+    for ( i[1]=0;i[1]<=nBins[1];i[1]++){//phi
+      phimid=lowerBound[1]+(i[1]+0.5)*dphi;
+      for ( i[2]=0;i[2]<=nBins[2];i[2]++){//z
+	zmid=lowerBound[2]+(i[2]+0.5)*dz;
+	h->Fill(phimid,rmid,zmid,charge->Get(i[0],i[1],i[2]));	
+      }//z
+    }//phi
+  }//r  
+  return;
+}
 
 void ChargeMapReader::RegenerateCharge(){
   //Builds the charge 3D array from the charge density map.
@@ -78,9 +106,9 @@ void ChargeMapReader::RegenerateCharge(){
   //   0     1     2     ...   n-1 
   // first|   ..|  ..  |  .. |last
   float dphi,dr,dz; //bin widths in each dimension.  Got too confusing to make these an array.
-  dr=upperBound[0]-lowerBound[0];
-  dphi=upperBound[1]-lowerBound[1];
-  dz=upperBound[2]-lowerBound[2];
+  dr=binWidth[0];
+  dphi=binWidth[1];
+  dz=binWidth[2];
   
   float phimid,rmid,zmid; //midpoints at each step.
   int i[3];
