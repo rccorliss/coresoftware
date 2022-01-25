@@ -104,7 +104,7 @@ void Test_ChargeMapReader(){
   TH3F* hCheckCharge=new TH3F("hCheckCharge","Check Charge using ChargeMapReader",nbins[0],low[0],high[0],nbins[1],low[1],high[1],nbins[2],low[2],high[2]);
   rSneaky->FillChargeHistogram(hCheckCharge);
   ChargeMapReader *rCheck=new ChargeMapReader(nbins[1],low[1],high[1],nbins[0],low[0],high[0],nbins[2],low[2],high[2]);
-  rSneaky->ReadSourceCharge(hCheckCharge);
+  rCheck->ReadSourceCharge(hCheckCharge);
   TH3* hCheckDensity=rCheck->GetDensityHistogram();
   printf("Returned to macro\n");
 
