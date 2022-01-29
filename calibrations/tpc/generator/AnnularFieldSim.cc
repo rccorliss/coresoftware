@@ -2544,7 +2544,7 @@ TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int st
   return accumulated_distortion;
 }
 
-void AnnularFieldSim::PlotFieldSlices(const std::string &filebase, TVector3 pos, char which)
+void AnnularFieldSim::PlotFieldSlices(const char *filebase, TVector3 pos, char which)
 {
   bool mapEfield = true;
   if (which == 'B')
@@ -2565,7 +2565,7 @@ void AnnularFieldSim::PlotFieldSlices(const std::string &filebase, TVector3 pos,
   printf("plotting field slices for %c field...\n", which);
   std::cout << "file=" << filebase << std::endl;
   ;
-  TString plotfilename = TString::Format("%s.%cfield_slices.pdf", filebase.c_str(), which);
+  TString plotfilename = TString::Format("%s.%cfield_slices.pdf", filebase, which);
   TVector3 inner = GetInnerEdge();
   TVector3 outer = GetOuterEdge();
   TVector3 step = GetFieldStep();
