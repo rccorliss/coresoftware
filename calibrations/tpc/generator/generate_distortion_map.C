@@ -254,11 +254,11 @@ AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge){
   sprintf(field_string,"flat_B%2.1f_E%2.1f",tpc_magField,tpc_cmVolt/tpc_z);
 
   if (realE){
-    tpc->loadEfield("externalEfield.ttree.root","fTree");
+    tpc->loadEfield("/sphenix/user/rcorliss/field/externalEfield.ttree.root","fTree");
     sprintf(field_string,"realE_B%2.1f_E%2.1f",tpc_magField,tpc_cmVolt/tpc_z);
   }
    if (realB){
-    tpc->load3dBfield("sphenix3dmaprhophiz.root","fieldmap",1,-1.4/1.5);
+    tpc->load3dBfield("/sphenix/user/rcorliss/field/sphenix3dmaprhophiz.root","fieldmap",1,-1.4/1.5);
         //tpc->loadBfield("sPHENIX.2d.root","fieldmap");
     sprintf(field_string,"realB_B%2.1f_E%2.1f",tpc_magField,tpc_cmVolt/tpc_z);
   } 
