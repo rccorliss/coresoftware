@@ -13,20 +13,74 @@ AnnularFieldSim *SetupDigitalCurrentSphenixTpc(bool twinMe=false, bool useSpacec
 void TestSpotDistortion(AnnularFieldSim *t);
 void   SurveyFiles(TFileCollection* filelist);
 
+void generate_distortion_map(const char *inputname, const char *outputname, const char *ibfName, const char *primName, bool hasSpacecharge=true){
+  printf("generating single distortion map.  Caution:  This is vastly less efficient than re-using the tpc model once it is set up\n");
+  
+  bool hasTwin=true; //this flag prompts the code to build both a positive-half and a negative-half for the TPC, reusing as much of the calculations as possible.  It is more efficient to 'twin' one half of the TPC than to recalculate/store the greens functions for both.
 
+  //and some parameters of the files we're loading:
+  bool usesChargeDensity=false; //true if source hists contain charge density per bin.  False if hists are charge per bin.
+  float tpc_chargescale=1.6e-19;//Coulombs per bin unit.
+  float spacecharge_cm_per_axis_unit=0.1;//cm per histogram axis unit, matching the MDC2 sample from Evgeny.
+  
+  //file names we'll be filling as we go:
+  TFile *infile;
+ 
+  TString sourcefilename=inputname;
+  TString outputfilename=outputname;
+
+  //now build the time-consuming part:
+  //AnnularFieldSim *tpc=SetupDefaultSphenixTpc(hasTwin,hasSpacecharge);//loads the lookup, fields, etc.
+  AnnularFieldSim *tpc;
+    tpc=SetupDefaultSphenixTpc(hasTwin,hasSpacecharge);//loads the lookup, fields, etc.
+ 
+  //and the location to plot the fieldslices about:
+ TVector3 pos=0.5*(tpc->GetOuterEdge()+tpc->GetInnerEdge());;
+  pos.SetPhi(3.14159);
+
+  infile=TFile::Open(sourcefilename.Data(),"READ");
+
+  //the totla charge is prim + IBF
+  TH3* hCharge=(TH3*)(infile->Get(ibfName));
+  hCharge->Add((TH3*)(infile->Get(primName)));
+	       
+  //load the spacecharge into the distortion map generator:
+  //  void load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity);
+  tpc->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
+  if (hasTwin) tpc->twin->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
+
+  //build the electric fieldmap from the chargemap
+  tpc->populate_fieldmap();
+  if (hasTwin)  tpc->twin->populate_fieldmap();
+
+  //build the distortion maps from the fieldmaps and save it to the output filename.
+  tpc->GenerateSeparateDistortionMaps(outputfilename,2,2,2,1,true);
+  printf("distortions mapped.\n");
+  tpc->PlotFieldSlices(outputfilename,pos, 'E'); //plot the electric field
+  tpc->PlotFieldSlices(outputfilename,pos,'B'); //plot the magnetic field
+  printf("fieldslices plotted.\n");
+  
+  infile->Close();
+
+  return;
+  
+}
+
+  
 void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.root", const char *outputfilebase="./apr07_maps/apr07", bool hasSpacecharge=true, bool isDigitalCurrent=false){
+  
 
   int maxmaps=10;
   int maxmapsperfile=2;
 
   
-  bool hasTwin=true;
+  bool hasTwin=true; //this flag prompts the code to build both a positive-half and a negative-half for the TPC, reusing as much of the calculations as possible.  It is more efficient to 'twin' one half of the TPC than to recalculate/store the greens functions for both.
   //bool hasSpacecharge=true;
 
   //and some parameters of the files we're loading:
   bool usesChargeDensity=false; //true if source hists contain charge density per bin.  False if hists are charge per bin.
   float tpc_chargescale=1.6e-19;//Coulombs per bin unit.
-  float spacecharge_cm_per_axis_unit=100;//cm per histogram axis unit.
+  float spacecharge_cm_per_axis_unit=0.1;//cm per histogram axis unit, matching the MDC2 sample from Evgeny.
   
   //file names we'll be filling as we go:
   TFile *infile;
@@ -42,7 +96,7 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
   printf("Using pattern \"%s\", found %d files to read, eg : %s\n",inputpattern,filelist->GetList()->GetEntries(),((TFileInfo*)(filelist->GetList()->At(0)))->GetCurrentUrl()->GetUrl());//Title());//Print();
 
 
-  SurveyFiles( filelist);
+  // SurveyFiles( filelist);
 
   //now build the time-consuming part:
   //AnnularFieldSim *tpc=SetupDefaultSphenixTpc(hasTwin,hasSpacecharge);//loads the lookup, fields, etc.
@@ -83,7 +137,7 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
       bool isHist=tobj->InheritsFrom("TH3");
       if (!isHist) continue;
       TString objname=tobj->GetName();
-      if (objname.Contains("IBF")) continue; //this is an IBF map we don't want.
+      if (objname.Contains("IBF")) continue; //this is an IBF-only map we don't want.
       //assume this histogram is a charge map.
       //load just the averages:
       if (hasSpacecharge){
@@ -92,16 +146,18 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
 	  if (hasTwin) tpc->twin->load_and_resample_spacecharge(8,36,40,sourcefilename.Data(),tobj->GetName(),0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
 
 	}
+
+	//load the spacecharge into the distortion map generator:
 	tpc->load_spacecharge(sourcefilename.Data(),tobj->GetName(),0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
 	if (hasTwin) tpc->twin->load_spacecharge(sourcefilename.Data(),tobj->GetName(),0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
 
 	//or load just the average:
 	//tpc->load_spacecharge(sourcefilename.Data(),"h_Charge_0",0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
-	printf("Sanity check:  Q has %d elements and dim=%d\n",tpc->q->Length(), tpc->q->dim);
-	totalQ=0;
-	for (int k=0;k<tpc->q->Length();k++){
-	  totalQ+=*(tpc->q->GetFlat(k));
-	}
+	//printf("Sanity check:  Q has %d elements and dim=%d\n",tpc->q->Length(), tpc->q->dim);
+	//totalQ=0;
+	//for (int k=0;k<tpc->q->Length();k++){
+	//  totalQ+=*(tpc->q->GetFlat(k));
+	//}
 	printf("Sanity check:  Total Q in reported region is %E C\n",totalQ);
       }
       tpc->populate_fieldmap();
