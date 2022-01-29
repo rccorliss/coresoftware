@@ -55,7 +55,7 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
   if (hasTwin)  tpc->twin->populate_fieldmap();
 
   //build the distortion maps from the fieldmaps and save it to the output filename.
-  tpc->GenerateSeparateDistortionMaps(outputfilename,2,2,2,1,true);
+  tpc->GenerateSeparateDistortionMaps(outputfilename.c_str(),2,2,2,1,true);
   printf("distortions mapped.\n");
   tpc->PlotFieldSlices(outputfilename,pos, 'E'); //plot the electric field
   tpc->PlotFieldSlices(outputfilename,pos,'B'); //plot the magnetic field
