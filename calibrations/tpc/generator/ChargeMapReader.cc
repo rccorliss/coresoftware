@@ -106,7 +106,7 @@ void ChargeMapReader::RegenerateCharge(){
   //Builds the charge 3D array from the charge density map.
   //either the density map has changed, or the binning of the output has changed (hopefully not the latter, because that's a very unusual thing to change mid-run.
   //we want to rebuild the charge per bin of our output representation in any case.  Generally, we will interpolate from the charge density that we know we have, but we need to be careful not to ask to interpolate in regions where that is not allowed.
-  if (DEBUG) printf("regenerating charge array contents with scale=%1.2f\n",  inputAxisScale);
+  if (DEBUG) printf("regenerating charge array contents with axis scale=%1.2E and charge scale=%1.2E\n",  inputAxisScale, inputChargeScale);
 
   //   0     1     2     ...   n-1 
   // first|   ..|  ..  |  .. |last
@@ -122,6 +122,7 @@ void ChargeMapReader::RegenerateCharge(){
     rmid=(lowerBound[0]+(i[0]+0.5)*dr)/inputAxisScale;
     float rlow=lowerBound[0]+dr*i[0];
     float volume=dz*dphi*(rlow+0.5*dr)*dr; //note that since we have equal bin widths, the volume term depends only on r.
+    float scaleFactor=volume*inputChargeScale; //and the total scale factor is the volume term times the charge scale factor
     for ( i[1]=0;i[1]<=nBins[1];i[1]++){//phi
       phimid=lowerBound[1]+(i[1]+0.5)*dphi;
       for ( i[2]=0;i[2]<=nBins[2];i[2]++){//z
@@ -135,10 +136,10 @@ void ChargeMapReader::RegenerateCharge(){
 	  }
 
 	  charge->Set(i[0],i[1],i[2],
-		      hChargeDensity->Interpolate(phimid,rmid,zmid)*volume);
+		      hChargeDensity->Interpolate(phimid,rmid,zmid)*scaleFactor);
 	} else { //otherwise, just take the central value and assume it's flat.  Better than a zero.
 	  charge->Set(i[0],i[1],i[2],
-		      hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid,rmid,zmid))*volume);
+		      hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid,rmid,zmid))*scaleFactor);
 	}
       }//z
     }//phi
@@ -215,9 +216,10 @@ void ChargeMapReader::RegenerateDensity(){
   return;
 }
 
-bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histname, float axisScale){
+bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histname, float axisScale, float contentScale){
   //load the charge-per-bin data from the specified file.
   inputAxisScale=axisScale;
+  inputChargeScale=contentScale;
   TFile *inputFile=TFile::Open(filename,"READ");
   hSourceCharge=(TH3*)(inputFile->Get(histname));
   if (hSourceCharge==nullptr) return false;
@@ -228,9 +230,10 @@ bool ChargeMapReader::ReadSourceCharge(const char* filename, const char* histnam
 }
 
 
-bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist, float axisScale){
+bool ChargeMapReader::ReadSourceCharge(TH3 *sourceHist, float axisScale, float contentScale){
   if (DEBUG) printf("reading charge from %s\n",sourceHist->GetName());
   inputAxisScale=axisScale;
+  inputChargeScale=contentScale;
   hSourceCharge=sourceHist; //note that this means we don't own this histogram!
   if (hSourceCharge==nullptr) return false;
   RegenerateDensity();

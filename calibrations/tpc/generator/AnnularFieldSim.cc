@@ -1175,7 +1175,15 @@ void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, in
 void AnnularFieldSim::load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
 {
   //new plan:  use ChargeMapReader:
-  q->ReadSourceCharge(hist,cmscale);
+  if (abs(zoffset)>0.001) {
+    printf("nonzero zoffset given (%E) but new spacecharge loader can't deal with that.  Failing.\n",zoffset);
+    assert(false);
+  }
+  if (isChargeDensity) {
+    printf("Input dataset is flagged as recording density not total charge, but new loader can't deal with that  Failing..\n");
+    assert(false);
+  }
+  q->ReadSourceCharge(hist,cmscale,chargescale);
   return;
 
   /*

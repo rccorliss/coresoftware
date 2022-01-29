@@ -18,6 +18,7 @@ class ChargeMapReader
   bool chargeHistExists=true;
   bool chargeArrayExists=false;
   float inputAxisScale=1;//multiply the r and z dimensions of the input histogram by this, when filling our internal array.  So if the input histogram is in mm and we want to fill our array in cm, inputUnit=0.1;
+  float inputChargeScale=1;//multiply the content the input histogram bins by this, when filling our internal array.
   int nBins[3]={1,1,1};//r,phi,z bins of the output fixed-width array
   float lowerBound[3]={0,0,0};
   float upperBound[3]={999,999,999};
@@ -41,8 +42,8 @@ class ChargeMapReader
   float GetChargeAtPosition(float r, float phi, float z);
   TH3 * GetDensityHistogram(){return hChargeDensity;} //returns the charge density hist if we still have it.
   
-  bool ReadSourceCharge(const char* filename, const char* histname, float axisScale=1.);
-  bool ReadSourceCharge(TH3* sourceHist, float axisScale=1.);
+  bool ReadSourceCharge(const char* filename, const char* histname, float axisScale=1., float contentScale=1.);
+  bool ReadSourceCharge(TH3* sourceHist, float axisScale=1., float contentScale=1.);
 
   void SetChargeInBin(int r, int phi, int z, float q);
   void SetChargeAtPosition(float r, float phi, float z, float q);
