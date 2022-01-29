@@ -27,8 +27,8 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
   //file names we'll be filling as we go:
   TFile *infile;
  
-  std::string sourcefilename=inputname;
-  std::string outputfilename=outputname;
+  TString sourcefilename=inputname;
+  TString outputfilename=outputname;
 
   //now build the time-consuming part:
   //AnnularFieldSim *tpc=SetupDefaultSphenixTpc(hasTwin,hasSpacecharge);//loads the lookup, fields, etc.
@@ -39,7 +39,7 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
  TVector3 pos=0.5*(tpc->GetOuterEdge()+tpc->GetInnerEdge());;
   pos.SetPhi(3.14159);
 
-  infile=TFile::Open(sourcefilename.c_str(),"READ");
+  infile=TFile::Open(sourcefilename.Data(),"READ");
 
   //the totla charge is prim + IBF
   TH3* hCharge=(TH3*)(infile->Get(ibfName));
@@ -55,10 +55,10 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
   if (hasTwin)  tpc->twin->populate_fieldmap();
 
   //build the distortion maps from the fieldmaps and save it to the output filename.
-  tpc->GenerateSeparateDistortionMaps(outputfilename.c_str(),2,2,2,1,true);
+  tpc->GenerateSeparateDistortionMaps(outputfilename.Data(),2,2,2,1,true);
   printf("distortions mapped.\n");
-  tpc->PlotFieldSlices(outputfilename,pos, 'E'); //plot the electric field
-  tpc->PlotFieldSlices(outputfilename,pos,'B'); //plot the magnetic field
+  tpc->PlotFieldSlices(outputfilename.Data(),pos, 'E'); //plot the electric field
+  tpc->PlotFieldSlices(outputfilename.Data(),pos,'B'); //plot the magnetic field
   printf("fieldslices plotted.\n");
   
   infile->Close();
@@ -176,8 +176,8 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
       //tpc->GenerateDistortionMaps(outputfilename,2,2,2,1,true);
       tpc->GenerateSeparateDistortionMaps(outputfilename,2,2,2,1,true);
       printf("distortions mapped.\n");
-      tpc->PlotFieldSlices(outputfilename,pos);
-      tpc->PlotFieldSlices(outputfilename,pos,'B');
+      tpc->PlotFieldSlices(outputfilename.Data(),pos);
+      tpc->PlotFieldSlices(outputfilename.Data(),pos,'B');
       printf("fieldslices plotted.\n");     
       printf("obj %d: getname: %s  inherits from TH3D:%d \n",j,tobj->GetName(),tobj->InheritsFrom("TH3"));
       //break; //rcc temp -- uncomment this to process one hist per file.
