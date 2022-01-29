@@ -57,8 +57,8 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
   //build the distortion maps from the fieldmaps and save it to the output filename.
   tpc->GenerateSeparateDistortionMaps(outputfilename,2,2,2,1,true);
   printf("distortions mapped.\n");
-  tpc->PlotFieldSlices(outputfilename,pos, 'E'); //plot the electric field
-  tpc->PlotFieldSlices(outputfilename,pos,'B'); //plot the magnetic field
+  tpc->PlotFieldSlices(outputfilename.Data(),pos, 'E'); //plot the electric field
+  tpc->PlotFieldSlices(outputfilename.Data(),pos,'B'); //plot the magnetic field
   printf("fieldslices plotted.\n");
   
   infile->Close();
