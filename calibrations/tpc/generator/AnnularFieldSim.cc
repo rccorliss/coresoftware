@@ -13,6 +13,7 @@
 #include <TStyle.h>
 #include <TTree.h>
 #include <TVector3.h>
+#include "ChargeMapReader.h"
 
 #include <boost/format.hpp>
 
