@@ -1079,7 +1079,7 @@ void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, in
   return;
 }
 
-void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, int new_nz, TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
+void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, int new_nz, TH3 *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
 {
   //load spacecharge densities from a histogram, where scalefactor translates into local units of C/cm^3
   //and cmscale translate (hist coord) --> (hist position in cm)
