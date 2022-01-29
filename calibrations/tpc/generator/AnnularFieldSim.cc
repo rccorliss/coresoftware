@@ -1057,7 +1057,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 void AnnularFieldSim::load_spacecharge(const std::string &filename, const std::string &histname, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
 {
   TFile *f = TFile::Open(filename.c_str());
-  TH3F *scmap = (TH3F *) f->Get(histname.c_str());
+  TH3 *scmap = (TH3*) f->Get(histname.c_str());
   std::cout << "Loading spacecharge from '" << filename
             << "'.  Seeking histname '" << histname << "'" << std::endl;
   chargefilename = filename + ":" + histname;
@@ -1070,7 +1070,7 @@ void AnnularFieldSim::load_spacecharge(const std::string &filename, const std::s
 void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, int new_nz, const std::string &filename, const std::string &histname, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
 {
   TFile *f = TFile::Open(filename.c_str());
-  TH3F *scmap = (TH3F *) f->Get(histname.c_str());
+  TH3 *scmap = (TH3*) f->Get(histname.c_str());
   std::cout << "Resampling spacecharge from '" << filename
             << "'.  Seeking histname '" << histname << "'" << std::endl;
   chargefilename = filename + ":" + histname;
@@ -1172,7 +1172,7 @@ void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, in
   load_spacecharge(resampled, zoffset, chargescale, cmscale, true);
 }
 
-void AnnularFieldSim::load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
+void AnnularFieldSim::load_spacecharge(TH3 *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
 {
   //new plan:  use ChargeMapReader:
   if (abs(zoffset)>0.001) {
