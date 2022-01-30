@@ -2398,7 +2398,7 @@ TVector3 AnnularFieldSim::sum_phislice_field_at(int r, int phi, int z)
         
 	if(!(el%percent)) {printf("summing phislices %d%%:  ",(int)(el/percent));
 	  printf("unit field at (r=%d,p=%d,z=%d) from  (ir=%d,ip=%d,iz=%d) is (%E,%E,%E) (xyz), q=%E\n",
-		 r,phi,z,ir,iphi,iz,unitField.X(),unitField.Y(),unitField.Z(),q->Get(ir,iphi,iz));
+		 r,phi,z,ir,iphi,iz,unitField.X(),unitField.Y(),unitField.Z(),q->GetChargeInBin(ir,iphi,iz));
 	}
 	el++;
 	
