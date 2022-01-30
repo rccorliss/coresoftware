@@ -2370,8 +2370,9 @@ TVector3 AnnularFieldSim::sum_phislice_field_at(int r, int phi, int z)
   TVector3 slicepos = GetRoiCellCenter(r - rmin_roi, 0, z - zmin_roi);
   float rotphi = pos.Phi() - slicepos.Phi();  //probably this is phi*step.Phi();
 
-  unsigned long long totalelements=nr*nphi*nz;
-  unsigned long long percent=totalelements/100;
+  //caution:  if you print progress of each of these, it will print a great deal of data, since this is called per-bin
+  //unsigned long long totalelements=nr*nphi*nz;
+  // unsigned long long percent=totalelements/100;
 
 
   unsigned long long el=0;
@@ -2395,13 +2396,13 @@ TVector3 AnnularFieldSim::sum_phislice_field_at(int r, int phi, int z)
         sum += unitField * q->GetChargeInBin(ir, iphi, iz);
         ;
 
-        
+        /*
 	if(!(el%percent)) {printf("summing phislices %d%%:  ",(int)(el/percent));
 	  printf("unit field at (r=%d,p=%d,z=%d) from  (ir=%d,ip=%d,iz=%d) is (%E,%E,%E) (xyz), q=%E\n",
 		 r,phi,z,ir,iphi,iz,unitField.X(),unitField.Y(),unitField.Z(),q->GetChargeInBin(ir,iphi,iz));
 	}
 	el++;
-	
+	*/
       }
     }
   }
