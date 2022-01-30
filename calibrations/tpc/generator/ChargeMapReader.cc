@@ -4,7 +4,7 @@
 #include "TMath.h"
 #include <cassert>
 
-#define DEBUG true
+#define DEBUG false
 
 ChargeMapReader::ChargeMapReader():
   ChargeMapReader(20,20.0,78.0,20,0,TMath::TwoPi(),40,-105.5,105.5){
