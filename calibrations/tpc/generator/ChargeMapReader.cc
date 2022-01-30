@@ -368,17 +368,17 @@ void ChargeMapReader::AddChargeAtPosition(float r, float phi, float z, float q){
 
 
 float ChargeMapReader::GetChargeInBin(int r, int phi, int z){
-  if (!(r>0 && r<nBins[0])){
+   if (!(r>=0 && r<nBins[0])){
     printf("requested rbin %d, but bounds are %d to %d. Failing.\n",r,0,nBins[0]);
-    assert(r>0 && r<nBins[0]);
+    assert(r>=0 && r<nBins[0]);
   }
-  if (!(phi>0 && phi<nBins[1])){
+  if (!(phi>=0 && phi<nBins[1])){
     printf("requested phibin %d, but bounds are %d to %d. Failing.\n",phi,0,nBins[1]);
-    assert(phi>0 && phi<nBins[1]);
+    assert(phi>=0 && phi<nBins[1]);
   }
-  if (!(z>0 && z<nBins[2])){
+  if (!(z>=0 && z<nBins[2])){
     printf("requested rbin %d, but bounds are %d to %d. Failing.\n",z,0,nBins[2]);
-    assert(z>0 && z<nBins[2]);
+    assert(z>=0 && z<nBins[2]);
   }
 
   if (DEBUG) printf("getting charge in array element %d %d %d\n",r,phi,z);
@@ -394,17 +394,17 @@ float ChargeMapReader::GetChargeAtPosition(float r, float phi, float z){
 
 
 void ChargeMapReader::SetChargeInBin(int r, int phi, int z, float q){
-  if (!(r>0 && r<nBins[0])){
+  if (!(r>=0 && r<nBins[0])){
     printf("requested rbin %d, but bounds are %d to %d. Failing.\n",r,0,nBins[0]);
-    assert(r>0 && r<nBins[0]);
+    assert(r>=0 && r<nBins[0]);
   }
-  if (!(phi>0 && phi<nBins[1])){
+  if (!(phi>=0 && phi<nBins[1])){
     printf("requested phibin %d, but bounds are %d to %d. Failing.\n",phi,0,nBins[1]);
-    assert(phi>0 && phi<nBins[1]);
+    assert(phi>=0 && phi<nBins[1]);
   }
-  if (!(z>0 && z<nBins[2])){
+  if (!(z>=0 && z<nBins[2])){
     printf("requested rbin %d, but bounds are %d to %d. Failing.\n",z,0,nBins[2]);
-    assert(z>0 && z<nBins[2]);
+    assert(z>=0 && z<nBins[2]);
   }
   if (DEBUG) printf("setting charge in array element %d %d %d to %.2E\n",r,phi,z,q);
 
