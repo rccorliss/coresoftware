@@ -2375,7 +2375,7 @@ TVector3 AnnularFieldSim::sum_phislice_field_at(int r, int phi, int z)
   // unsigned long long percent=totalelements/100;
 
 
-  unsigned long long el=0;
+  //unsigned long long el=0;
 
   TVector3 sum(0, 0, 0);
   TVector3 unrotatedField(0, 0, 0);
