@@ -104,7 +104,7 @@ class AnnularFieldSim
   std::string Bfieldname;
   std::string Efieldname;
   //  char fieldstring[300],Bfieldname[100],Efieldname[100];
-  std::string chargefilename;
+  std::string chargesourcename;
   char chargestring[300] = {0};  //, chargefilename[100];
   float Enominal = NAN;          //magnitude of the nominal field on which drift speed is based, in V/cm.
   float Bnominal;                //magnitude of the nominal magnetic field on which drift speed is based, in Tesla.
