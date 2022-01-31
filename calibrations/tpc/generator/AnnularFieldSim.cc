@@ -338,6 +338,8 @@ TVector3 AnnularFieldSim::calc_unit_field(TVector3 at, TVector3 from)
 
 double AnnularFieldSim::FilterPhiPos(double phi)
 {
+  //this primarily takes the region [-pi,0] and maps it to [pi,2pi] by adding 2pi to it.
+  //if math has pushed us past 2pi, it also subtracts to try to get us in range.
   double p = phi;
   if (p >= phispan)
   {
@@ -742,7 +744,7 @@ TVector3 AnnularFieldSim::interpolatedFieldIntegral(float zdest, TVector3 start,
   int zi, zf;
   double startz, endz;
   BoundsCase startBound, endBound;
-  //rccargh
+
   //make sure 'zi' is always the smaller of the two numbers, for handling the partial-steps.
   if (dir > 0)
   {
@@ -1060,9 +1062,9 @@ void AnnularFieldSim::load_spacecharge(const std::string &filename, const std::s
   TH3 *scmap = (TH3*) f->Get(histname.c_str());
   std::cout << "Loading spacecharge from '" << filename
             << "'.  Seeking histname '" << histname << "'" << std::endl;
-  chargefilename = filename + ":" + histname;
-  //  sprintf(chargefilename,"%s:%s",filename,histname);
-  load_spacecharge(scmap, zoffset, chargescale, cmscale, isChargeDensity);
+  chargesourcename = filename + ":" + histname;
+  //  sprintf(chargesourcename,"%s:%s",filename,histname);
+  load_spacecharge(scmap, zoffset, chargescale, cmscale, isChargeDensity, chargesourcename);
   f->Close();
   return;
 }
@@ -1073,7 +1075,7 @@ void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, in
   TH3 *scmap = (TH3*) f->Get(histname.c_str());
   std::cout << "Resampling spacecharge from '" << filename
             << "'.  Seeking histname '" << histname << "'" << std::endl;
-  chargefilename = filename + ":" + histname;
+  chargesourcename = filename + ":" + histname;
   load_and_resample_spacecharge(new_nphi, new_nr, new_nz, scmap, zoffset, chargescale, cmscale, isChargeDensity);
   f->Close();
   return;
@@ -1172,7 +1174,7 @@ void AnnularFieldSim::load_and_resample_spacecharge(int new_nphi, int new_nr, in
   load_spacecharge(resampled, zoffset, chargescale, cmscale, true);
 }
 
-void AnnularFieldSim::load_spacecharge(TH3 *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity)
+void AnnularFieldSim::load_spacecharge(TH3 *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity, const char* inputchargestring)
 {
   //new plan:  use ChargeMapReader:
   if (abs(zoffset)>0.001) {
@@ -1185,7 +1187,7 @@ void AnnularFieldSim::load_spacecharge(TH3 *hist, float zoffset, float chargesca
   }
   q->ReadSourceCharge(hist,cmscale,chargescale);
   
-  sprintf(chargestring, "SC from file: %s.");
+  sprintf(chargestring, "SC loaded externally: %s.",inputchargestring);
   return;
 
   /*
@@ -1311,7 +1313,7 @@ commenting this out for now, until we see if it works.
   printf("AnnularFieldSim::load_spacecharge:  Total charge Q=%E Coulombs\n", totalcharge / C);
 
   sprintf(chargestring, "SC from file: %s. Qtot=%E Coulombs.  native dims: (%d,%d,%d)(%2.1fcm,%2.1f,%2.1fcm)-(%2.1fcm,%2.1f,%2.1fcm)",
-          chargefilename.c_str(), totalcharge / C, hrn, hphin, hzn, hrmin, hphimin, hzmin, hrmax, hphimax, hzmax);
+          chargesourcename.c_str(), totalcharge / C, hrn, hphin, hzn, hrmin, hphimin, hzmin, hrmax, hphimax, hzmax);
 
   if (lookupCase == HybridRes)
   {
@@ -2525,7 +2527,7 @@ TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int st
   for (int i = 0; i < steps; i++)
   {
     //check if we are in bounds
-    if (GetRindexAndCheckBounds(position.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(FilterPhiPos(position.Phi()), &pt) != InBounds || (zBound == OutOfBounds))//rcchere
+    if (GetRindexAndCheckBounds(position.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(FilterPhiPos(position.Phi()), &pt) != InBounds || (zBound == OutOfBounds))
     {
       printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) with drift_step=%f, at step %d, asked to swim particle from (%f,%f,%f) (rphiz)=(%f,%f,%f)which is outside the ROI.\n", start.X(), start.Y(), start.Z(), start.Perp(), start.Phi(), start.Z(), zstep, i, position.X(), position.Y(), position.Z(), position.Perp(), position.Phi(), position.Z());
       printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp() + rmin, rmax_roi * step.Perp() + rmin, phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
@@ -2588,7 +2590,7 @@ void AnnularFieldSim::PlotFieldSlices(const char *filebase, TVector3 pos, char w
     //axtop[2]=axtop[5]=(float)(twin->GetOuterEdge().Z());
     axbot[2] = axbot[5] = (float) (twin->GetInnerEdge().Z());
   }
-
+  printf("rpz bounds are %f<r%f\t %f<phi%f\t %f<z%f\n",axbot[0],axtop[0],axbot[1],axtop[1],axbot[2],axtop[2]);
   float axstep[6];
   for (int i = 0; i < 6; i++)
   {
@@ -2623,10 +2625,10 @@ void AnnularFieldSim::PlotFieldSlices(const char *filebase, TVector3 pos, char w
 
   float rpz_coord[3];
   for (int ax = 0; ax < 3; ax++)
-  {
+    {//we have three sets of 'slices'.  the R slice is a 2d plot in phi-z, etc.
     rpz_coord[ax] = axisval[ax] + axstep[ax] / 2;
     for (int i = 0; i < axn[ax + 1]; i++)
-    {
+      {//for each slice, loop over the bins of the 2d plot:
       rpz_coord[(ax + 1) % 3] = axbot[ax + 1] + (i + 0.5) * axstep[ax + 1];
       for (int j = 0; j < axn[ax + 2]; j++)
       {
@@ -3928,7 +3930,15 @@ TVector3 AnnularFieldSim::GetBFieldAt(TVector3 pos)
 
 float AnnularFieldSim::GetChargeAt(TVector3 pos)
 {
-  return q->GetChargeAtPosition(pos.Perp(),pos.Phi()+TMath::Pi(),pos.Z()); //because tvectors take position to be -phi to phi.
+  int z;
+  BoundsCase zbound = GetZindexAndCheckBounds(pos.Z(), &z);  //==BoundsCase::OutOfBounds) return zero_vector;
+  if (zbound == OutOfBounds){
+    if (hasTwin) return twin->GetChargeAt(pos);
+    printf("Caution:  tried to read charge at zbin=%d!  No twin available to handle this\n",z);
+    return -999;
+  }
+  
+  return q->GetChargeAtPosition(pos.Perp(),FilterPhiPos(pos.Phi()),pos.Z()); //because tvectors take position to be -phi to phi, we always have to filter.
   //actually, we should probably just yield to that assumption in more places to speed this up.
   /*
   //assume pos is in native units (see header)

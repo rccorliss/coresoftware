@@ -44,10 +44,11 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
   //the total charge is prim + IBF
   TH3* hCharge=(TH3*)(infile->Get(ibfName));
   hCharge->Add((TH3*)(infile->Get(primName)));
+  TString chargestring=Form("%s:(%s+%s)",sourcefilename,ibfName,primName);
 	       
   //load the spacecharge into the distortion map generator:
   //  void load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity);
-  tpc->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
+  tpc->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity, chargestring.Data());
   if (hasTwin) tpc->twin->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
 
   //build the electric fieldmap from the chargemap
