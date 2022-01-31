@@ -107,6 +107,13 @@ void ChargeMapReader::RegenerateCharge(){
   //either the density map has changed, or the binning of the output has changed (hopefully not the latter, because that's a very unusual thing to change mid-run.
   //we want to rebuild the charge per bin of our output representation in any case.  Generally, we will interpolate from the charge density that we know we have, but we need to be careful not to ask to interpolate in regions where that is not allowed.
   if (DEBUG) printf("regenerating charge array contents with axis scale=%1.2E and charge scale=%1.2E\n",  inputAxisScale, inputChargeScale);
+  if (hChargeDensity==nullptr){
+    //we don't have charge information, so set everything to zeroes
+    printf("no charge data found.  Setting all charges to 0.0\n");
+    charge->SetAll(0); //otherwise set the array to all zeroes.
+    return;
+  }
+
 
   //   0     1     2     ...   n-1 
   // first|   ..|  ..  |  .. |last
@@ -161,6 +168,11 @@ void ChargeMapReader::RegenerateDensity(){
   if (hChargeDensity!=nullptr){
     if (DEBUG) printf("deleting old density histogram\n");
     delete hChargeDensity;
+  }
+  if (hSourceCharge==nullptr) {
+    //the source data doesn't exist, so we will fail if we try to clone
+    printf("no source charge data file is open, or the histogram was not found.\n"};
+    return false;
   }
 
   //clone this from the source histogram, which we assume is open.

@@ -2867,7 +2867,10 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   unsigned long long totalelements = nrh;
   totalelements *= nph;
   totalelements *= nzh;  //breaking up this multiplication prevents a 32bit math overflow
-  unsigned long long percent = totalelements / 100 * debug_npercent;
+  if (hasTwin) totalelements *=2;//if we have a twin, we have twice as many z bins as we thought.
+
+  unsigned long long percent = totalelements / 100;
+  unsigned long long waypoint = percent * debug_npercent;
   printf("total elements = %llu\n", totalelements);
 
   int el = 0;
@@ -3023,9 +3026,9 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hDiffDist[2][2]->Fill(partR, partP, diffdistZ);
           }
 
-          if (!(el % percent))
+          if (!(el % waypoint))
           {
-            printf("generating distortions %d%%:  ", (int) (debug_npercent * (el / percent)));
+            printf("generating distortions %d%%:  ", (int) (el / percent));
             printf("distortion at (ir=%d,ip=%d,iz=%d) is (%E,%E,%E)\n",
                    ir, ip, iz, distortR, distortP, distortZ);
           }
