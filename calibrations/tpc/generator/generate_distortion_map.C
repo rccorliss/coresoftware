@@ -41,7 +41,7 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
 
   infile=TFile::Open(sourcefilename.Data(),"READ");
 
-  //the totla charge is prim + IBF
+  //the total charge is prim + IBF
   TH3* hCharge=(TH3*)(infile->Get(ibfName));
   hCharge->Add((TH3*)(infile->Get(primName)));
 	       

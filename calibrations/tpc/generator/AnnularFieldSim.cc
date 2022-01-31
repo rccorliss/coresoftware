@@ -491,7 +491,7 @@ TVector3 AnnularFieldSim::analyticFieldIntegral(float zdest, TVector3 start, Mul
 
   int r, phi;
   bool rOkay = (GetRindexAndCheckBounds(start.Perp(), &r) == InBounds);
-  bool phiOkay = (GetPhiIndexAndCheckBounds(start.Phi(), &phi) == InBounds);
+  bool phiOkay = (GetPhiIndexAndCheckBounds(FilterPhiPos(start.Phi()), &phi) == InBounds);
 
   //bool isE=(field==Efield);
   //bool isB=(field==Bfield);
@@ -555,7 +555,7 @@ TVector3 AnnularFieldSim::fieldIntegral(float zdest, TVector3 start, MultiArray<
 
   int r, phi;
   bool rOkay = (GetRindexAndCheckBounds(start.Perp(), &r) == InBounds);
-  bool phiOkay = (GetPhiIndexAndCheckBounds(start.Phi(), &phi) == InBounds);
+  bool phiOkay = (GetPhiIndexAndCheckBounds(FilterPhiPos(start.Phi()), &phi) == InBounds);
 
   if (!rOkay || !phiOkay)
   {
@@ -1184,6 +1184,8 @@ void AnnularFieldSim::load_spacecharge(TH3 *hist, float zoffset, float chargesca
     assert(false);
   }
   q->ReadSourceCharge(hist,cmscale,chargescale);
+  
+  sprintf(chargestring, "SC from file: %s.");
   return;
 
   /*
@@ -2432,7 +2434,7 @@ TVector3 AnnularFieldSim::swimToInAnalyticSteps(float zdest, TVector3 start, int
       //printf("AnnularFieldSIm::swimToInAnalyticSteps requests z-nudge from z=%f to %f\n", ret.Z(), ret.Z()+ALMOST_ZERO);//nudge it in z:
       ret.SetZ(ret.Z() + ALMOST_ZERO);
     }
-    if (GetRindexAndCheckBounds(ret.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(ret.Phi(), &pt) != InBounds || (zBound == OutOfBounds))
+    if (GetRindexAndCheckBounds(ret.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(FilterPhiPos(ret.Phi()), &pt) != InBounds || (zBound == OutOfBounds))
     {
       printf(
           "AnnularFieldSim::swimToInAnalyticSteps at step %d,"
@@ -2487,7 +2489,7 @@ TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int st
       }
     }
     //otherwise, we're not in the twin, and default to our usual gripe:
-    printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) asked to drift to z=%f, which is outside the ROI.  hasTwin= %d.  Returning zero_vector.\n", start.X(), start.Y(), start.Z(), start.Perp(), start.Phi(), start.Z(), zdest, (int) hasTwin);
+    printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) asked to drift to z=%f, which is outside the ROI.  hasTwin= %d.  Returning zero_vector.\n", start.X(), start.Y(), start.Z(), start.Perp(), FilterPhiPos(start.Phi()), start.Z(), zdest, (int) hasTwin);
     printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp() + rmin, rmax_roi * step.Perp() + rmin, phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
     return zero_vector;
   }
@@ -2499,7 +2501,7 @@ TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int st
   zBound = GetZindexAndCheckBounds(start.Z(), &zt);
   if (zBound == OutOfBounds)
   {
-    printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) asked to drift from z=%f, which is outside the ROI.  Returning zero_vector.\n", start.X(), start.Y(), start.Z(), start.Perp(), start.Phi(), start.Z(), start.Z());
+    printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) asked to drift from z=%f, which is outside the ROI.  Returning zero_vector.\n", start.X(), start.Y(), start.Z(), start.Perp(), FilterPhiPos(start.Phi()), start.Z(), start.Z());
     printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp() + rmin, rmax_roi * step.Perp() + rmin, phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
     return zero_vector;
   }
@@ -2523,7 +2525,7 @@ TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int st
   for (int i = 0; i < steps; i++)
   {
     //check if we are in bounds
-    if (GetRindexAndCheckBounds(position.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(position.Phi(), &pt) != InBounds || (zBound == OutOfBounds))
+    if (GetRindexAndCheckBounds(position.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(FilterPhiPos(position.Phi()), &pt) != InBounds || (zBound == OutOfBounds))//rcchere
     {
       printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) with drift_step=%f, at step %d, asked to swim particle from (%f,%f,%f) (rphiz)=(%f,%f,%f)which is outside the ROI.\n", start.X(), start.Y(), start.Z(), start.Perp(), start.Phi(), start.Z(), zstep, i, position.X(), position.Y(), position.Z(), position.Perp(), position.Phi(), position.Z());
       printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp() + rmin, rmax_roi * step.Perp() + rmin, phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
@@ -2561,7 +2563,7 @@ void AnnularFieldSim::PlotFieldSlices(const char *filebase, TVector3 pos, char w
     sprintf(units, "T");
   }
 
-  printf("plotting field slices for %c field...\n", which);
+  printf("plotting field slices for %c field, slicing at (%1.2F,%1.2f,%1.2f)...\n", which, pos.Perp(),FilterPhiPos(pos.Phi()),pos.Z());
   std::cout << "file=" << filebase << std::endl;
   ;
   TString plotfilename = TString::Format("%s.%cfield_slices.pdf", filebase, which);
@@ -2575,7 +2577,7 @@ void AnnularFieldSim::PlotFieldSlices(const char *filebase, TVector3 pos, char w
   TH2F *hCharge[3];
   TH1F *hEfieldComp[3][3];
   char axis[] = "rpzrpz";
-  float axisval[] = {(float) pos.Perp(), (float) pos.Phi(), (float) pos.Z(), (float) pos.Perp(), (float) pos.Phi(), (float) pos.Z()};
+  float axisval[] = {(float) pos.Perp(), (float) FilterPhiPos(pos.Phi()), (float) pos.Z(), (float) pos.Perp(), (float) FilterPhiPos(pos.Phi()), (float) pos.Z()};
   int axn[] = {nr_roi, nphi_roi, nz_roi, nr_roi, nphi_roi, nz_roi};
   float axtop[] = {(float) outer.Perp(), 2 * M_PI, (float) outer.Z(), (float) outer.Perp(), 2 * M_PI, (float) outer.Z()};
   float axbot[] = {(float) inner.Perp(), 0, (float) inner.Z(), (float) inner.Perp(), 0, (float) inner.Z()};
@@ -2635,10 +2637,11 @@ void AnnularFieldSim::PlotFieldSlices(const char *filebase, TVector3 pos, char w
         {
           printf("sampling rpz=(%f,%f,%f)=(%f,%f,%f) after conversion to xyz=(%f,%f,%f)\n",
                  rpz_coord[0], rpz_coord[1], rpz_coord[2],
-                 lpos.Perp(), lpos.Phi(), lpos.Z(), lpos.X(), lpos.Y(), lpos.Z());
+                 lpos.Perp(), FilterPhiPos(lpos.Phi()), lpos.Z(), lpos.X(), lpos.Y(), lpos.Z());
         }
         if (mapEfield)
         {
+	  //GetFieldAt automatically asks the twin if we are out of bounds here.
           field = GetFieldAt(lpos) * (1.0 * cm / V);  //get units so we're drawing in V/cm when we draw.
         }
         else
@@ -2717,7 +2720,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   //plus an additional step in each direction so interpolation can work at the edges
   TVector3 lowerEdge = GetRoiCellCenter(rmin_roi, phimin_roi, zmin_roi);
   TVector3 upperEdge = GetRoiCellCenter(rmax_roi - 1, phimax_roi - 1, zmax_roi - 1);
-  int nph = nphi * p_subsamples + 2;  //nuber of phibins in the histogram
+  int nph = nphi * p_subsamples + 2;  //number of phibins in the histogram
   int nrh = nr * r_subsamples + 2;    //number of r bins in the histogram
   int nzh = nz * z_subsamples + 2;    //number of z you get the idea.
 
@@ -2975,7 +2978,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
           }
 
           //now we fill particular slices for integral visualizations:
-          if (ir == xi[0])
+          if (ir == xi[0] && side==0)
           {  //r slice
             //printf("ir=%d, r=%f (pz)=(%d,%d), distortR=%2.2f, distortP=%2.2f\n",ir,partR,ip,iz,distortR,distortP);
             hIntDist[0][0]->Fill(partP, partZ, distortR);
@@ -2985,7 +2988,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hDiffDist[0][1]->Fill(partP, partZ, diffdistP);
             hDiffDist[0][2]->Fill(partP, partZ, diffdistZ);
           }
-          if (ip == xi[1])
+          if (ip == xi[1]&& side==0)
           {  //phi slice
             //printf("ip=%d, p=%f (rz)=(%d,%d), distortR=%2.2f, distortP=%2.2f\n",ip,partP,ir,iz,distortR,distortP);
             hIntDist[1][0]->Fill(partZ, partR, distortR);
@@ -2995,7 +2998,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hDiffDist[1][1]->Fill(partZ, partR, diffdistP);
             hDiffDist[1][2]->Fill(partZ, partR, diffdistZ);
 
-            if (iz == xi[2])
+            if (iz == xi[2] && side==0)
             {  //z slices of phi slices= r line at mid phi, mid z:
               hRDist[0][0]->Fill(partR, distortR);
               hRDist[0][1]->Fill(partR, distortP);
@@ -3004,7 +3007,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
               hRDiffDist[0][1]->Fill(partR, diffdistP);
               hRDiffDist[0][2]->Fill(partR, diffdistZ);
             }
-            if (hasTwin && iz == twinz)
+            if (hasTwin && iz == twinz && side==1)
             {  //z slices of phi slices= r line at mid phi, mid z:
               hRDist[1][0]->Fill(partR, distortR);
               hRDist[1][1]->Fill(partR, distortP);
@@ -3014,7 +3017,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
               hRDiffDist[1][2]->Fill(partR, diffdistZ);
             }
           }
-          if (iz == xi[2])
+          if (iz == xi[2] && side==0)
           {  //z slice
             //printf("iz=%d, z=%f (rp)=(%d,%d), distortR=%2.2f, distortP=%2.2f\n",iz,partZ,ir,ip,distortR,distortP);
 
@@ -3155,11 +3158,12 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   textpad->Draw();
   canvas->SaveAs(diffSummaryFilename.Data());
 
-  //  printf("map:%s.\n",distortionFilename.Data());
+  printf("saving map histograms to:%s.\n",distortionFilename.Data());
 
   outf->cd();
   for (int i = 0; i < nSides; i++)
   {
+    printf("Saving side '%s'\n",side[i].Data());
     for (int j = 0; j < 5; j++)
     {
       hSeparatedMapComponent[i][j]->GetSumw2()->Set(0);
@@ -3183,13 +3187,15 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   hIntDistortionR->Write();
   hIntDistortionP->Write();
   hIntDistortionZ->Write();
-  if (andCartesian)
+  if (false  && andCartesian)
   {
     hIntDistortionX->Write();
     hIntDistortionY->Write();
   }
-  dTree->Write();
-  outf->Close();
+  printf("finished writing histograms\n");
+  // dTree->Write();
+  //  printf("wrote dTree\n");
+ outf->Close();
   //printf("map:%s.closed\n",distortionFilename.Data());
 
   printf("wrote separated map and summary to %s.\n", filebase);
@@ -3715,11 +3721,11 @@ TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool in
 
   //using second order langevin expansion from http://skipper.physics.sunysb.edu/~prakhar/tpc/Papers/ALICE-INT-2010-016.pdf
   //TVector3 (*field)[nr][ny][nz]=field_;
-  int rt, pt, zt;  //just placeholders
+  int rt, pt, zt;  //these are filled by the checkbounds that follow, but are not used.
   BoundsCase zBound = GetZindexAndCheckBounds(start.Z(), &zt);
-  if (GetRindexAndCheckBounds(start.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(start.Phi(), &pt) != InBounds || (zBound != InBounds && zBound != OnHighEdge))
+  if (GetRindexAndCheckBounds(start.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(FilterPhiPos(start.Phi()), &pt) != InBounds || (zBound != InBounds && zBound != OnHighEdge))
   {
-    printf("AnnularFieldSim::swimTo asked to swim particle from (%f,%f,%f) which is outside the ROI:\n", start.X(), start.Y(), start.Z());
+    printf("AnnularFieldSim::swimTo asked to swim particle from (xyz)=(%f,%f,%f) which is outside the ROI:\n", start.X(), start.Y(), start.Z());
     printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp(), rmax_roi * step.Perp(), phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
     printf("Returning original position.\n");
     return start;
@@ -3763,7 +3769,6 @@ TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool in
     printf("GetStepDistortion: fieldInt=(%E,%E,%E)\n", fieldInt.X(), fieldInt.Y(), fieldInt.Z());
     assert(1 == 2);
   }
-  //rcc here
   //float fieldz=field_[in3(x,y,0,fx,fy,fz)].Z()+E.Z();// *field[x][y][zi].Z();
   double EfieldZ = fieldInt.Z() / zdist;  // average field over the path.
   double BfieldZ = fieldIntB.Z() / zdist;
@@ -3827,25 +3832,25 @@ TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool in
 
   if (abs(deltaX) < 1E-20 && !(chargeCase == NoSpacecharge))
   {
+    printf("GetStepDistortion produced a very small deltaX: %E\n", deltaX);
     printf("GetStepDistortion:  (c0,c1,c2)=(%E,%E,%E)\n", c0, c1, c2);
     printf("GetStepDistortion:  EintOverEz==(%E,%E,%E)\n", EintOverEz.X(), EintOverEz.Y(), EintOverEz.Z());
     printf("GetStepDistortion:  BintOverBz==(%E,%E,%E)\n", BintOverBz.X(), BintOverBz.Y(), BintOverBz.Z());
     printf("GetStepDistortion: (%2.4f,%2.4f,%2.4f) to z=%2.4f\n", start.X(), start.Y(), start.Z(), zdest);
     printf("GetStepDistortion: fieldInt=(%E,%E,%E)\n", fieldInt.X(), fieldInt.Y(), fieldInt.Z());
     printf("GetStepDistortion: delta=(%E,%E,%E)\n", deltaX, deltaY, deltaZ);
-    printf("GetStepDistortion produced a very small deltaX: %E\n", deltaX);
     //assert(1==2);
   }
 
   if (!(abs(deltaX) < 1E3))
   {
+    printf("GetStepDistortion produced a very large deltaX: %E\n", deltaX);
     printf("GetStepDistortion:  (c0,c1,c2)=(%E,%E,%E)\n", c0, c1, c2);
     printf("GetStepDistortion:  EintOverEz==(%E,%E,%E)\n", EintOverEz.X(), EintOverEz.Y(), EintOverEz.Z());
     printf("GetStepDistortion:  BintOverBz==(%E,%E,%E)\n", BintOverBz.X(), BintOverBz.Y(), BintOverBz.Z());
     printf("GetStepDistortion: (%2.4f,%2.4f,%2.4f) (rp)=(%2.4f,%2.4f) to z=%2.4f\n", start.X(), start.Y(), start.Z(), start.Perp(), start.Phi(), zdest);
     printf("GetStepDistortion: fieldInt=(%E,%E,%E)\n", fieldInt.X(), fieldInt.Y(), fieldInt.Z());
     printf("GetStepDistortion: delta=(%E,%E,%E)\n", deltaX, deltaY, deltaZ);
-    printf("GetStepDistortion produced a very large deltaX: %E\n", deltaX);
     assert(1 == 2);
   }
 
@@ -3853,7 +3858,7 @@ TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool in
 
   TVector3 shift(deltaX, deltaY, deltaZ);
   if (debug_distortionScale.Mag() > 0)
-  {
+  {//debug code
     shift.RotateZ(-start.Phi());
     //TVector3 localScale=debug_distortionScale;
     //localScale.RotateZ(start.Phi());
@@ -3896,7 +3901,7 @@ TVector3 AnnularFieldSim::GetFieldAt(TVector3 pos)
   int r, p, z;
 
   if (GetRindexAndCheckBounds(pos.Perp(), &r) == BoundsCase::OutOfBounds) return zero_vector;
-  if (GetPhiIndexAndCheckBounds(pos.Phi(), &p) == BoundsCase::OutOfBounds) return zero_vector;
+  if (GetPhiIndexAndCheckBounds(FilterPhiPos(pos.Phi()), &p) == BoundsCase::OutOfBounds) return zero_vector;
   if (GetZindexAndCheckBounds(pos.Z(), &z) == BoundsCase::OutOfBounds)
   {
     if (hasTwin) return twin->GetFieldAt(pos);
@@ -3912,7 +3917,7 @@ TVector3 AnnularFieldSim::GetBFieldAt(TVector3 pos)
   int r, p, z;
 
   if (GetRindexAndCheckBounds(pos.Perp(), &r) == BoundsCase::OutOfBounds) return zero_vector;
-  if (GetPhiIndexAndCheckBounds(pos.Phi(), &p) == BoundsCase::OutOfBounds) return zero_vector;
+  if (GetPhiIndexAndCheckBounds(FilterPhiPos(pos.Phi()), &p) == BoundsCase::OutOfBounds) return zero_vector;
   if (GetZindexAndCheckBounds(pos.Z(), &z) == BoundsCase::OutOfBounds)
   {
     if (hasTwin) return twin->GetBFieldAt(pos);
