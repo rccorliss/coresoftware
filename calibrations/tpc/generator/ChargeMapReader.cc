@@ -171,8 +171,8 @@ void ChargeMapReader::RegenerateDensity(){
   }
   if (hSourceCharge==nullptr) {
     //the source data doesn't exist, so we will fail if we try to clone
-    printf("no source charge data file is open, or the histogram was not found.\n"};
-    return false;
+    printf("no source charge data file is open, or the histogram was not found.\n"});
+    return;
   }
 
   //clone this from the source histogram, which we assume is open.
