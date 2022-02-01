@@ -3071,27 +3071,37 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
     //component
     for (int ax = 0; ax < 3; ax++)
     {
+      printf("looping over components i=%d ax=%d\n",i,ax);
+
       //plane
       c->cd(i * 4 + ax + 1);
       gPad->SetRightMargin(0.15);
       hIntDist[ax][i]->SetStats(0);
       hIntDist[ax][i]->Draw("colz");
     }
+
+    printf("drawing R profile %d\n",i);
+
     c->cd(i * 4 + 4);
     hRDist[0][i]->SetStats(0);
     hRDist[0][i]->SetFillColor(kRed);
     hRDist[0][i]->Draw("hist");
     if (hasTwin)
     {
+      printf("drawing R profile twin %d\n",i);
       hRDist[1][i]->SetStats(0);
       hRDist[1][i]->SetLineColor(kBlue);
       hRDist[1][i]->Draw("hist,same");
     }
   }
+  printf("switching to textpad\n");
+
   textpad->cd();
   float texpos = 0.9;
   float texshift = 0.12;
   TLatex *tex = new TLatex(0.0, texpos, "Fill Me In");
+    printf("built TLatex\n");
+
   tex->SetTextSize(texshift * 0.8);
   tex->DrawLatex(0.05, texpos, GetFieldString());
   texpos -= texshift;
@@ -3110,10 +3120,14 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
     texpos -= texshift;
   }
   texpos = 0.9;
+    printf("cd'ing to canvas:\n");
 
   canvas->cd();
+  printf("draw1\n");
+
   c->Draw();
   canvas->cd();
+  printf("draw2\n");
   textpad->Draw();
     printf("was able to complete drawing on both pads\n");
 
