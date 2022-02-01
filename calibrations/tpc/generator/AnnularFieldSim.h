@@ -240,7 +240,7 @@ class AnnularFieldSim
   void PlotFieldSlices(const char *filebase, TVector3 pos, char which = 'E');
 
   void load_spacecharge(const std::string &filename, const std::string &histname, float zoffset = 0, float chargescale = 1, float cmscale = 1, bool isChargeDensity = true);
-  void load_spacecharge(TH3 *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity, const char* inputchargestring);
+  void load_spacecharge(TH3 *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity, const char* inputchargestring="");
 
   void load_and_resample_spacecharge(int new_nphi, int new_nr, int new_nz, const std::string &filename, const std::string &histname, float zoffset, float chargescale, float cmscale, bool isChargeDensity);
 
