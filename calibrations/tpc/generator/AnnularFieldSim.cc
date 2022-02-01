@@ -1064,7 +1064,7 @@ void AnnularFieldSim::load_spacecharge(const std::string &filename, const std::s
             << "'.  Seeking histname '" << histname << "'" << std::endl;
   chargesourcename = filename + ":" + histname;
   //  sprintf(chargesourcename,"%s:%s",filename,histname);
-  load_spacecharge(scmap, zoffset, chargescale, cmscale, isChargeDensity, chargesourcename);
+  load_spacecharge(scmap, zoffset, chargescale, cmscale, isChargeDensity, chargesourcename.c_str());
   f->Close();
   return;
 }
