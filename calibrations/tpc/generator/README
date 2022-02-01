@@ -1,6 +1,19 @@
-This is the initial attempt to port the distortion generator code to run on racf.
+This is an update to the initial attempt to port the distortion generator code to run on racf.
 
 Some important notes:
-- AnnularFieldSim will look for a lookup table in the current directory containing the constants to the Rossegger decomposition of the TPC interior with a certain cell size.  If this file is not present, it will regenerate it.  At the default resolution settings, this single-threaded task takes about a day.  For the time being, Ross maintains this 1gb file, along with external E- and B- field maps in /sphenix/user/rcorliss/rossegger/.  If you wish to change this, it is currently hardcoded in the macro for each of the three.
-- The macro that runs AnnularFieldSim has very specific expectations of the charge maps that feed into it.  Evgeny's current file format works, but if the size of the TH3s in there changes dramatically, things may break in funny ways.
-- This does not currently compile.  Some dependencies that resolve when compiled on a home machine do not link correctly here.
+- generate_distortion_map.C hard-codes rcorliss paths for the electric and magnetic fieldmaps, as well as for the directory containing greens functions for the Rossegger decomposition of the TPC interior.  If the latter file is not present for the specific binning requested, AnnularFieldSim will generate it.  At the default resolution settings, this single-threaded task takes about a day.  For the time being, Ross maintains this 1gb file, along with external E- and B- field maps in /sphenix/user/rcorliss/rossegger/.  
+- This currently compiles, but there is a sporadic crash after the bulk of computation that can cause the distortion map .hist.root not to write correctly.
+- Earlier versions required specific binning of the input histogram.  This version may behave poorly if the input histogram has much higher resolution than the output (namely, some bins may not be sampled, and hence sharp features may be lost), but will otherwise run fine.
+- A prototype of a condor job file and submission script are also included.
+
+To generate distortion maps:
+  root -b -q ./generate_distortion_map.C\(\"$inputname\",\"$outputname\",\"$ibfname\",\"$primname\",1\)
+
+where:
+inputname = the full path to the spacecharge histogram file
+outputname= the desired name of the output file, except for the extension, which will be added for various .root and .pdf monitoring plots
+ibfname = the name of the ibf-only histogram inside the histogram file
+ibfname = the name of the primaries-only histogram inside the histogram file
+1 = a flag instructing the macro to use the provided spacecharge.  if false, the histograms must still exist, but they will not be processed.
+
+See bash_for_condor_submission for an example of this.
