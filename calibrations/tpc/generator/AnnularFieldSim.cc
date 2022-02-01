@@ -341,13 +341,18 @@ double AnnularFieldSim::FilterPhiPos(double phi)
   //this primarily takes the region [-pi,0] and maps it to [pi,2pi] by adding 2pi to it.
   //if math has pushed us past 2pi, it also subtracts to try to get us in range.
   double p = phi;
-  if (p >= phispan)
+  if (p >= 2 * M_PI)//phispan)
   {
     p -= 2 * M_PI;
   }
   if (p < 0)
   {
     p += 2 * M_PI;
+  }
+    if (p >= range || p < 0)
+  {
+    printf("AnnularFieldSim::FilterPhiPos asked to filter %f, which is more than range=%f out of bounds.  Check what called this.\n", phi, 2*M_PI);
+    assert(1 == 2);
   }
   return p;
 }
@@ -2493,7 +2498,7 @@ TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int st
     //otherwise, we're not in the twin, and default to our usual gripe:
     printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) asked to drift to z=%f, which is outside the ROI.  hasTwin= %d.  Returning zero_vector.\n", start.X(), start.Y(), start.Z(), start.Perp(), FilterPhiPos(start.Phi()), start.Z(), zdest, (int) hasTwin);
     printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp() + rmin, rmax_roi * step.Perp() + rmin, phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
-    return zero_vector;
+    return zero_vector;//rcchere
   }
   else if (zBound == OnLowEdge)
   {
@@ -2522,16 +2527,16 @@ TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int st
   TVector3 accumulated_drift(0, 0, 0);
   TVector3 drift_step(0, 0, zstep);
 
-  //the conceptual approach here is to get the vector distortion in each z step, and use the transverse component of that to update the transverse value of that to update the transverse position post-step.  We do not correct the z position, so that the stepping does not 'skip' parts of the trajectory.
+  //the conceptual approach here is to get the vector distortion in each z step, and use the transverse component of that to update the position of the particle for the next step, while accumulating the total distortion separately from the position.  This allows a small residual to accumulate, rather than being lost.  We do not correct the z position, so that the stepping does not 'skip' parts of the trajectory.
 
   for (int i = 0; i < steps; i++)
   {
     //check if we are in bounds
     if (GetRindexAndCheckBounds(position.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(FilterPhiPos(position.Phi()), &pt) != InBounds || (zBound == OutOfBounds))
     {
-      printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) with drift_step=%f, at step %d, asked to swim particle from (%f,%f,%f) (rphiz)=(%f,%f,%f)which is outside the ROI.\n", start.X(), start.Y(), start.Z(), start.Perp(), start.Phi(), start.Z(), zstep, i, position.X(), position.Y(), position.Z(), position.Perp(), position.Phi(), position.Z());
-      printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp() + rmin, rmax_roi * step.Perp() + rmin, phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
-      printf("Returning last good position.\n");
+      // printf("AnnularFieldSim::GetTotalDistortion starting at (%f,%f,%f)=(r%f,p%f,z%f) with drift_step=%f, at step %d, asked to swim particle from (%f,%f,%f) (rphiz)=(%f,%f,%f)which is outside the ROI.\n", start.X(), start.Y(), start.Z(), start.Perp(), FilterPhiPos(start.Phi()), start.Z(), zstep, i, position.X(), position.Y(), position.Z(), position.Perp(), position.Phi(), position.Z());
+      //printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp() + rmin, rmax_roi * step.Perp() + rmin, phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
+      //printf("Returning last good position.\n");
       if (!(goodToStep == 0)) *goodToStep = i - 1;
       //assert (1==2);
       return (accumulated_distortion);
