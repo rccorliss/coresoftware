@@ -44,7 +44,7 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
   //the total charge is prim + IBF
   TH3* hCharge=(TH3*)(infile->Get(ibfName));
   hCharge->Add((TH3*)(infile->Get(primName)));
-  TString chargestring=Form("%s:(%s+%s)",sourcefilename,ibfName,primName);
+  TString chargestring=Form("%s:(%s+%s)",inputname,ibfName,primName);
 	       
   //load the spacecharge into the distortion map generator:
   //  void load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity);
