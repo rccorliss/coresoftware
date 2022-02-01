@@ -341,17 +341,17 @@ double AnnularFieldSim::FilterPhiPos(double phi)
   //this primarily takes the region [-pi,0] and maps it to [pi,2pi] by adding 2pi to it.
   //if math has pushed us past 2pi, it also subtracts to try to get us in range.
   double p = phi;
-  if (p >= 2 * M_PI)//phispan)
+  if (p >= M_TWOPI)//phispan)
   {
-    p -= 2 * M_PI;
+    p -= M_TWOPI;
   }
   if (p < 0)
   {
-    p += 2 * M_PI;
+    p += M_TWOPI;
   }
-    if (p >= range || p < 0)
+    if (p >= M_TWOPI || p < 0)
   {
-    printf("AnnularFieldSim::FilterPhiPos asked to filter %f, which is more than range=%f out of bounds.  Check what called this.\n", phi, 2*M_PI);
+    printf("AnnularFieldSim::FilterPhiPos asked to filter %f, which is more than range=%f out of bounds.  Check what called this.\n", phi, M_TWOPI);
     assert(1 == 2);
   }
   return p;
