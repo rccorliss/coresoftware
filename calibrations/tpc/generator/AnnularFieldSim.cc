@@ -351,7 +351,7 @@ double AnnularFieldSim::FilterPhiPos(double phi)
   }
     if (p >= M_2_PI || p < 0)
   {
-    printf("AnnularFieldSim::FilterPhiPos asked to filter %f, which is more than range=%f out of bounds.  Check what called this.\n", phi, M_TWOPI);
+    printf("AnnularFieldSim::FilterPhiPos asked to filter %f, which is more than range=%f out of bounds.  Check what called this.\n", phi, M_2_PI);
     assert(1 == 2);
   }
   return p;
