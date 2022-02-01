@@ -17,7 +17,10 @@
 
 #include <boost/format.hpp>
 
+//needed for M_TWOPI:
+#define _USE_MATH_DEFINES 
 #include <cmath>
+
 #include <iostream>
 
 #define ALMOST_ZERO 0.00001
