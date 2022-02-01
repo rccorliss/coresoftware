@@ -3042,6 +3042,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
       }
     }
   }
+  printf("Completed distortion generation.  Saving outputs...\n");
 
   TCanvas *canvas = new TCanvas("cdistort", "distortion integrals", 1200, 800);
   //take 10 of the bottom of this for data?
@@ -3295,8 +3296,11 @@ void AnnularFieldSim::GenerateDistortionMaps(const char *filebase, int r_subsamp
   //int xi[3]={nrh/2,nph/2,nzh/2};
   int xi[3] = {(int) floor((pos.Perp() - rih) / s.Perp()), (int) floor((posphi - pih) / s.Phi()), (int) floor((pos.Z() - zih) / s.Z())};
   if (!hasTwin) printf("rpz slice indices= (%d,%d,%d) (no twin)\n", xi[0], xi[1], xi[2]);
-  int twinz = (-pos.Z() - zih) / s.Z();
-  if (hasTwin) printf("rpz slice indices= (%d,%d,%d) twinz=%d\n", xi[0], xi[1], xi[2], twinz);
+  int twinz = 0;//this is meant to be the matching position to xi[2] in the twin, hence generally -1*pos.  Better to just ask the twin rather than trying to calculate it ourselves...  
+  if (hasTwin) {
+    twinz=twin->GetZindex(-1*pos.Z());
+    printf("rpz slice indices= (%d,%d,%d) twinz=%d\n", xi[0], xi[1], xi[2], twinz);
+  }
 
   const char axname[] = "rpzrpz";
   int axn[] = {nrh, nph, nzh, nrh, nph, nzh};
@@ -3727,9 +3731,9 @@ TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool in
   BoundsCase zBound = GetZindexAndCheckBounds(start.Z(), &zt);
   if (GetRindexAndCheckBounds(start.Perp(), &rt) != InBounds || GetPhiIndexAndCheckBounds(FilterPhiPos(start.Phi()), &pt) != InBounds || (zBound != InBounds && zBound != OnHighEdge))
   {
-    printf("AnnularFieldSim::swimTo asked to swim particle from (xyz)=(%f,%f,%f) which is outside the ROI:\n", start.X(), start.Y(), start.Z());
-    printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp(), rmax_roi * step.Perp(), phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
-    printf("Returning original position.\n");
+    // printf("AnnularFieldSim::swimTo asked to swim particle from (xyz)=(%f,%f,%f) which is outside the ROI:\n", start.X(), start.Y(), start.Z());
+    // printf(" -- %f <= r < %f \t%f <= phi < %f \t%f <= z < %f \n", rmin_roi * step.Perp(), rmax_roi * step.Perp(), phimin_roi * step.Phi(), phimax_roi * step.Phi(), zmin_roi * step.Z(), zmax_roi * step.Z());
+    // printf("Returning original position.\n");
     return start;
   }
 
@@ -3860,7 +3864,7 @@ TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool in
 
   TVector3 shift(deltaX, deltaY, deltaZ);
   if (debug_distortionScale.Mag() > 0)
-  {//debug code
+  {//debug code to scale the resulting distortions
     shift.RotateZ(-start.Phi());
     //TVector3 localScale=debug_distortionScale;
     //localScale.RotateZ(start.Phi());

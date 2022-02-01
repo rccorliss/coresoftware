@@ -87,7 +87,10 @@ class MultiArray
   }
 
     T *GetFlat(int a = 0) { //get the value at position a in the 1D equivalent, assuming the math is done elsewhere, or we're just going straight through the thing.
-    if (a >= length) assert(false);  //check bounds
+      if (a<0 || a >= length) {
+	printf("tried to seek element %d of multiarray, but bounds are 0<a<%ld\n",length);
+	assert(a<0 || a >= length);  //check bounds
+      }
     return &(field[a]);
   }
 
