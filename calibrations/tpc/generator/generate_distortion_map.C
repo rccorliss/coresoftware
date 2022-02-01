@@ -56,7 +56,7 @@ void generate_distortion_map(const char *inputname, const char *outputname, cons
   if (hasTwin)  tpc->twin->populate_fieldmap();
 
   //build the distortion maps from the fieldmaps and save it to the output filename.
-  tpc->GenerateSeparateDistortionMaps(outputfilename.Data(),2,2,2,1,true);
+  tpc->GenerateSeparateDistortionMaps(outputfilename.Data(),1,1,1,1,true);
   //tpc->GenerateSeparateDistortionMaps(outputfilename.Data(),1,1,1,1,false);
   printf("distortions mapped.\n");
   tpc->PlotFieldSlices(outputfilename.Data(),pos, 'E'); //plot the electric field

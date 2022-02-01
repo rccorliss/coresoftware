@@ -3055,12 +3055,17 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
 
   TCanvas *canvas = new TCanvas("cdistort", "distortion integrals", 1200, 800);
   //take 10 of the bottom of this for data?
+  printf("was able to make a tcanvas\n");
   canvas->cd();
   TPad *c = new TPad("cplots", "distortion integral plots", 0, 0.2, 1, 1);
   canvas->cd();
   TPad *textpad = new TPad("ctext", "distortion integral plots", 0, 0.0, 1, 0.2);
+    printf("was able to make some tpads\n");
+
   c->Divide(4, 3);
   gStyle->SetOptStat();
+  printf("was able to interact with gStyle\n");
+
   for (int i = 0; i < 3; i++)
   {
     //component
@@ -3110,6 +3115,8 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   c->Draw();
   canvas->cd();
   textpad->Draw();
+    printf("was able to complete drawing on both pads\n");
+
   canvas->SaveAs(summaryFilename.Data());
 
   //canvas->cd();
