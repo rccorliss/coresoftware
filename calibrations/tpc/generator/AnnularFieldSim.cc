@@ -17,13 +17,14 @@
 
 #include <boost/format.hpp>
 
-//needed for M_TWOPI:
-#define _USE_MATH_DEFINES 
 #include <cmath>
 
 #include <iostream>
 
 #define ALMOST_ZERO 0.00001
+#ifndef M_TWOPI
+#define M_TWOPI 6.2831853
+#endif
 
 AnnularFieldSim::AnnularFieldSim(float in_innerRadius, float in_outerRadius, float in_outerZ,
                                  int r, int roi_r0, int roi_r1, int /*in_rLowSpacing*/, int /*in_rHighSize*/,
