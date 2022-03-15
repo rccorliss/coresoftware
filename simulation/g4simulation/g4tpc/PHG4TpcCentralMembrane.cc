@@ -173,7 +173,7 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
   //diffusion length to get a truly smooth distribution.
   float phi_stepsize=(2*TMath::Pi())/(1.*n_phi_steps);
   
-  float x[2],y[2],phi[2],dx,dy,dist,electronsdep;
+  float xcm[2],ycm[2],phi[2],dx,dy,dist,electronsdep;
   double edep;
   PHG4Hitv1 *cmhit;
   for (int i=0;i<n_radial_steps;i++){
@@ -184,26 +184,29 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
       phi[0]=phi_stepsize*j;
       phi[1]=phi[0]+phi_stepsize;
       for (int k=0;k<2;k++){
-	x[k]=r*cos(phi[k]);
-	y[k]=r*sin(phi[k]);
-	cmhit->set_x(k,x[k]);
-	cmhit->set_y(k,y[k]);
+	xcm[k]=r*cos(phi[k])/cm;//store in centimeters
+	ycm[k]=r*sin(phi[k])/cm;//store in centimeters
+	cmhit->set_x(k,xcm[k]);
+	cmhit->set_y(k,ycm[k]);
 	cmhit->set_z(k,1.);
 	cmhit->set_px(k, 500.0);
 	cmhit->set_py(k, 500.0);
 	cmhit->set_pz(k, 500.0);
 	cmhit->set_t(k, 0);
+
       }
       //fill this hit with the nele for the rectangle it ~covers on the CM
       if (j==0){ // this calc will be the same for each segment, so only do it once:
-	dx=x[1]-x[0];
-	dy=y[1]-y[0];      
+	dx=xcm[1]-xcm[0];
+	dy=ycm[1]-ycm[0];      
 	dist=sqrt(dx*dx+dy*dy);
-	electronsdep=(dist/cm)*(radial_stepsize/cm)*electrons_per_goldsqcm;
+	electronsdep=(dist)*(radial_stepsize/cm)*electrons_per_goldsqcm;
 	edep=electronsdep / electrons_per_gev;
 	std::cout << "PHG4TpcCentralMembrane::InitRun - enig backing layer "<< i << "/"<<n_radial_steps
 		  <<"segment leng.: " <<dist << ", Ne-: " << electronsdep << ", edep: " << edep << std::endl;
       }
+      cmhit->set_layer(-1);
+      cmhit->set_trkid(-1);  // dummy number
       cmhit->set_edep(edep);
       cmhit->set_eion(edep);
       
