@@ -173,7 +173,7 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
   //diffusion length to get a truly smooth distribution.
   float phi_stepsize=(2*TMath::Pi())/(1.*n_phi_steps);
   
-  float r,x[2],y[2],phi[2];
+  float x[2],y[2],phi[2];
   PHG4Hitv1 *cmhit;
   for (int i=0;i<n_radial_steps;i++){
     float r=inner_radius+radial_stepsize*i;
