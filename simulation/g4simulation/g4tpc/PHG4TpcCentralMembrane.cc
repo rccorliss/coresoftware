@@ -178,6 +178,8 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
   for (int i=0;i<n_radial_steps;i++){
     float r=inner_radius+radial_stepsize*i;
     for (int j=0;j<n_phi_steps;j++){
+      cmhit=new PHG4Hitv1();
+
       phi[0]=phi_stepsize*j;
       phi[1]=phi[0]+phi_stepsize;
       for (int k=0;k<2;k++){
