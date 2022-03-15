@@ -168,7 +168,9 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
   float outer_radius=780.*mm;
   int n_radial_steps=120;
   int n_phi_steps=30;
-  float radial_stepsize=(outer_radius-innter_radius)/(1.*n_radial_steps); //radial stepsize must be smaller than the diffusion length to get a truly smooth distribution.
+  float radial_stepsize=(outer_radius-inner_radius)/(1.*n_radial_steps);
+  //radial stepsize must be smaller than the
+  //diffusion length to get a truly smooth distribution.
   float phi_stepsize=(2*TMath::Pi())/(1.*n_phi_steps);
   
   float r,x[2],y[2],phi[2];
