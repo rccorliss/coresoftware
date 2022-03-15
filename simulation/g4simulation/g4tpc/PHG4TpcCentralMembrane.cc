@@ -14,6 +14,7 @@
 #include <phool/phool.h>  // for PHWHERE
 
 #include <TVector3.h>
+#include <TMath.h>
 
 #include <iostream>  // for operator<<, endl, basi...
 
@@ -84,9 +85,11 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
   UpdateParametersWithMacro();
   electrons_per_stripe = get_int_param("electrons_per_stripe");
   electrons_per_gev = get_double_param("electrons_per_gev");
+  electrons_per_goldsqcm = get_double_param("electrons_per_goldsqcm");
 
   std::cout << "PHG4TpcCentralMembrane::InitRun - electrons_per_stripe: " << electrons_per_stripe << std::endl;
   std::cout << "PHG4TpcCentralMembrane::InitRun - electrons_per_gev " << electrons_per_gev << std::endl;
+  std::cout << "PHG4TpcCentralMembrane::InitRun - electrons_per_goldsqcm " << electrons_per_goldsqcm << std::endl;
 
   // make sure G4Hit container exists
   hitnodename = "G4HIT_" + detector;
@@ -158,6 +161,50 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
     hit->set_z(1, 1.);
   }
 
+  //create background hits:
+  //we make a series of hits, nested n-gons, and set their number of electrons correctly.
+  //obsessive TODO:  make this avoid the regions of actual stripes.  that's a minor change.
+  float inner_radius=200.*mm;
+  float outer_radius=780.*mm;
+  int n_radial_steps=120;
+  int n_phi_steps=30;
+  float radial_stepsize=(outer_radius-innter_radius)/(1.*n_radial_steps); //radial stepsize must be smaller than the diffusion length to get a truly smooth distribution.
+  float phi_stepsize=(2*TMath::Pi())/(1.*n_phi_steps);
+  
+  float r,x[2],y[2],phi[2];
+  PHG4Hitv1 *cmhit;
+  for (int i=0;i<n_radial_steps;i++){
+    float r=inner_radius+radial_stepsize*i;
+    for (int j=0;j<n_phi_steps;j++){
+      phi[0]=phi_stepsize*j;
+      phi[1]=phi[0]+phi_stepsize;
+      for (int k=0;k<2;k++){
+	x[k]=r*cos(phi[k]);
+	y[k]=r*sin(phi[k]);
+	cmhit->set_x(k,x[k]);
+	cmhit->set_y(k,y[k]);
+	cmhit->set_z(k,1.);
+	cmhit->set_px(k, 500.0);
+	cmhit->set_py(k, 500.0);
+	cmhit->set_pz(k, 500.0);
+	cmhit->set_t(k, 0);
+      }
+      //fill this hit with the nele for the rectangle it ~covers on the CM
+      float dx=x[1]-x[0];
+      float dy=y[1]-y[0];      
+      float dist=sqrt(dx*dx+dy*dy);
+      float electronsdep=(dist/cm)*(radial_stepsize/cm)*electrons_per_goldsqcm;
+      double edep=electronsdep / electrons_per_gev;
+      cmhit->set_edep(edep);
+      cmhit->set_eion(edep);
+      
+      PHG4Hits.push_back(cmhit);
+    }
+  }
+
+
+      
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -201,7 +248,10 @@ void PHG4TpcCentralMembrane::SetDefaultParameters()
 
   // number of electrons per deposited GeV in TPC gas
   set_default_double_param("electrons_per_gev", Tpc_ElectronsPerKeV * 1000000.);
-
+  
+  // number of electrons per square centimeter of the gold subtrate behind the aluminum stripes:
+  set_default_double_param("electrons_per_goldsqcm", 75.);
+  
   /// mean number of electrons per stripe
   set_default_int_param("electrons_per_stripe", 300);
 }

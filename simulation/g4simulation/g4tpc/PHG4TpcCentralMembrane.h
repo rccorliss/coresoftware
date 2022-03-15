@@ -180,6 +180,7 @@ class PHG4TpcCentralMembrane : public SubsysReco, public PHParameterInterface
    * inside PHG4TpcElectronDrift
    */
   double electrons_per_gev = NAN;
+  double electrons_per_goldsqcm = NAN;
 
   /// delay between central membrane hits and trigger time (ns)
   int m_centralMembraneDelay = 0;
