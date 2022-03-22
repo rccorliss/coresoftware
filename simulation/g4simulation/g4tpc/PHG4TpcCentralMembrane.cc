@@ -151,6 +151,7 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
   }
 
   // adjust G4Hits position and time
+  if(0){//manually turning off the CM hits for now.
   for (const auto& hit : PHG4Hits)
   {
     hit->set_t(0, m_centralMembraneDelay);  //real hit delay
@@ -160,13 +161,14 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
     hit->set_z(0, 1.);
     hit->set_z(1, 1.);
   }
+  }
 
   //create background hits:
   //we make a series of hits, nested n-gons, and set their number of electrons correctly.
   //obsessive TODO:  make this avoid the regions of actual stripes.  that's a minor change.
   float inner_radius=200.*mm;
   float outer_radius=780.*mm;
-  int n_radial_steps=120;
+  int n_radial_steps=1200;
   int n_phi_steps=30;
   float radial_stepsize=(outer_radius-inner_radius)/(1.*n_radial_steps);
   //radial stepsize must be smaller than the
