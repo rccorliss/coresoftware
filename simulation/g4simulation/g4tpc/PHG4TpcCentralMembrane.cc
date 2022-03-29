@@ -264,7 +264,8 @@ void PHG4TpcCentralMembrane::SetDefaultParameters()
   set_default_double_param("electrons_per_gev", Tpc_ElectronsPerKeV * 1000000.);
   
   // number of electrons per square centimeter of the gold subtrate behind the aluminum stripes:
-  set_default_double_param("electrons_per_goldsqcm", 75.);
+  //set_default_double_param("electrons_per_goldsqcm", 75.);
+  set_default_double_param("electrons_per_goldsqcm", 30.); //lower version
   
   /// mean number of electrons per stripe
   set_default_int_param("electrons_per_stripe", 300);

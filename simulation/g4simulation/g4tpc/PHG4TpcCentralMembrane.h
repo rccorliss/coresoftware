@@ -47,6 +47,9 @@ class PHG4TpcCentralMembrane : public SubsysReco, public PHParameterInterface
 
   /// adjust central membrane hits delay with respect to trigger time
   void setCentralMembraneDelay(int ns) { m_centralMembraneDelay = ns; };
+  void setStripeElectrons(int  ne) {   electrons_per_stripe = ne;};
+  void setGoldElectronsPerCm2(double  ne) {   electrons_per_goldsqcm = ne;};
+
 
  private:
   /// detector name
