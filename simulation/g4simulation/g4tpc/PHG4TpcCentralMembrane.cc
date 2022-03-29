@@ -151,7 +151,7 @@ int PHG4TpcCentralMembrane::InitRun(PHCompositeNode* topNode)
   }
 
   // adjust G4Hits position and time
-  if(0){//manually turning off the CM hits for now.
+  if(1){
   for (const auto& hit : PHG4Hits)
   {
     hit->set_t(0, m_centralMembraneDelay);  //real hit delay
