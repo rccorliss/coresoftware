@@ -15,14 +15,13 @@ class SvtxTrackMap;
 class SvtxTrack;
 class SvtxVertexMap;
 class TrkrClusterContainer;
-class TrkrHitSetContainer;
 class TrkrClusterHitAssoc;
 class TrkrHitTruthAssoc;
 class PHG4TruthInfoContainer;
 class PHG4HitContainer;
 class PHG4Particle;
-class AssocInfoContainer;
-
+class TpcSeedTrackMap;
+class TrkrClusterCrossingAssoc;
 
 class PHTruthSiliconAssociation : public SubsysReco
 {
@@ -30,25 +29,10 @@ class PHTruthSiliconAssociation : public SubsysReco
 
   PHTruthSiliconAssociation(const std::string &name = "PHTruthSiliconAssociation");
 
-  ~PHTruthSiliconAssociation() override;
-
-  /** Called during initialization.
-      Typically this is where you can book histograms, and e.g.
-      register them to Fun4AllServer (so they can be output to file
-      using Fun4AllServer::dumpHistos() method).
-   */
   int Init(PHCompositeNode *topNode) override;
 
-  /** Called for first event when run number is known.
-      Typically this is where you may want to fetch data from
-      database, because you know the run number. A place
-      to book histograms which have to know the run number.
-   */
   int InitRun(PHCompositeNode *topNode) override;
 
-  /** Called for each event.
-      This is where you do the real work.
-   */
   int process_event(PHCompositeNode *topNode) override;
 
   /// Clean up internals after each event.
@@ -68,23 +52,29 @@ class PHTruthSiliconAssociation : public SubsysReco
  private:
 
   int GetNodes(PHCompositeNode* topNode);
+  void copySiliconClustersToCorrectedMap( );
 
   std::vector<PHG4Particle*> getG4PrimaryParticle(SvtxTrack *track);
   std::set<TrkrDefs::cluskey> getSiliconClustersFromParticle(PHG4Particle* g4particle);
-  
-  PHG4TruthInfoContainer *_truthinfo{nullptr};
+  std::set<short int> getInttCrossings(SvtxTrack *si_track) const;
+
+  PHG4TruthInfoContainer* _g4truth_container{nullptr};
   PHG4HitContainer *_g4hits_tpc{nullptr};
   PHG4HitContainer *_g4hits_mvtx{nullptr};
   PHG4HitContainer *_g4hits_intt{nullptr};
   
   TrkrClusterContainer *_cluster_map{nullptr};
-  TrkrHitSetContainer  *_hitsets{nullptr};
+  TrkrClusterContainer *_corrected_cluster_map{nullptr};
   TrkrClusterHitAssoc *_cluster_hit_map{nullptr};
   TrkrHitTruthAssoc *_hit_truth_map{nullptr};
   SvtxTrackMap *_track_map{nullptr};
-  AssocInfoContainer *_assoc_container{nullptr};
   SvtxTrack *_tracklet{nullptr};
   SvtxVertexMap * _vertex_map{nullptr};
+  TpcSeedTrackMap *_seed_track_map{nullptr};
+ TrkrClusterCrossingAssoc *_cluster_crossing_map{nullptr};
+
+ std::string _tpcseed_track_map_name = "TpcSeedTrackMap";
+
 };
 
 #endif // PHTRUTHSILICONASSOCIATION_H

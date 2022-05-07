@@ -14,14 +14,12 @@
 class TrkrClusterContainer;
 class TrkrClusterIterationMapv1;
 class SvtxTrackMap;
-class AssocInfoContainer;
 class PHCompositeNode;
 class PHG4CylinderGeomContainer;
 class SvtxTrack;
 class TrkrCluster;
 class TF1;
 class TH1;
-class TrkrHitSetContainer;
 
 class PHMicromegasTpcTrackMatching : public SubsysReco
 {
@@ -49,14 +47,17 @@ class PHMicromegasTpcTrackMatching : public SubsysReco
 
   //! load nodes relevant for the analysis
   int GetNodes(PHCompositeNode* topNode);
+
+  void copyMicromegasClustersToCorrectedMap( );
     
   //! number of layers in the micromegas
   static constexpr unsigned int _n_mm_layers = 2;
   
   bool _use_truth_clusters = false;
   TrkrClusterContainer *_cluster_map{nullptr};
+  TrkrClusterContainer *_corrected_cluster_map{nullptr};
+
   SvtxTrackMap *_track_map{nullptr};
-  AssocInfoContainer *_assoc_container{nullptr};
 
   //! default rphi search window for each layer
   std::array<double,_n_mm_layers> _rphi_search_win = {0.25, 13.0}; 

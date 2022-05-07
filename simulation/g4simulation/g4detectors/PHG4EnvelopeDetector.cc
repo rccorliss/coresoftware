@@ -5,10 +5,9 @@
 #include <Geant4/G4Colour.hh>
 #include <Geant4/G4Cons.hh>
 #include <Geant4/G4LogicalVolume.hh>
-#include <Geant4/G4Material.hh>
 #include <Geant4/G4PVPlacement.hh>
 #include <Geant4/G4RotationMatrix.hh>  // for G4RotationMatrix
-#include <Geant4/G4String.hh>              // for G4String
+#include <Geant4/G4String.hh>          // for G4String
 #include <Geant4/G4SystemOfUnits.hh>   // for mm, m
 #include <Geant4/G4ThreeVector.hh>     // for G4ThreeVector
 #include <Geant4/G4Transform3D.hh>     // for G4Transform3D
@@ -20,6 +19,7 @@
 #include <cmath>  // for M_PI
 #include <iostream>
 
+class G4Material;
 class G4VSolid;
 class PHCompositeNode;
 

@@ -7,7 +7,6 @@
 #include "PHSimpleKFProp.h"
 
 #include "ALICEKF.h"
-#include "AssocInfoContainer.h"
 #include "nanoflann.hpp"
 #include "GPUTPCTrackParam.h"
 #include "GPUTPCTrackLinearisation.h"
@@ -19,6 +18,8 @@
 
 #include <phfield/PHField.h>
 #include <phfield/PHFieldUtility.h>
+#include <phfield/PHFieldConfig.h>
+#include <phfield/PHFieldConfigv1.h>
 
 #include <phool/getClass.h>
 #include <phool/phool.h>                       // for PHWHERE
@@ -28,14 +29,15 @@
 
 #include <trackbase_historic/ActsTransformations.h>
 #include <trackbase_historic/SvtxTrackMap.h>
-#include <trackbase_historic/SvtxTrack_v2.h>
+#include <trackbase_historic/SvtxTrack_v3.h>
 
 #include <trackbase/TrkrCluster.h>
 #include <trackbase/TrkrClusterContainer.h>
-#include <trackbase/TrkrHitSetContainer.h>
 #include <trackbase/TrkrDefs.h>
 #include <trackbase/TrkrClusterIterationMapv1.h>
 
+#include <Acts/MagneticField/MagneticFieldProvider.hpp>
+#include <Acts/MagneticField/InterpolatedBFieldMap.hpp>
 #include <Geant4/G4SystemOfUnits.hh>
 
 #include <Eigen/Core>
@@ -100,7 +102,7 @@ namespace
 //     line_fit(points, a, b);
 //   }
 
-  void CircleFitByTaubin ( const std::vector<Acts::Vector3F>& points, double &R, double &X0, double &Y0)
+  void CircleFitByTaubin ( const std::vector<Acts::Vector3>& points, double &R, double &X0, double &Y0)
   /*  
   Circle fit to a given set of data points (in 2D)
   This is an algebraic fit, due to Taubin, based on the journal article
@@ -263,7 +265,7 @@ int PHSimpleKFProp::InitRun(PHCompositeNode* topNode)
     }
    
   // tpc distortion correction
-  m_dcc = findNode::getClass<TpcDistortionCorrectionContainer>(topNode,"TpcDistortionCorrectionContainer");
+  m_dcc = findNode::getClass<TpcDistortionCorrectionContainer>(topNode,"TpcDistortionCorrectionContainerStatic");
   if( m_dcc )
   { std::cout << "PHSimpleKFProp::InitRun - found TPC distortion correction container" << std::endl; }
 
@@ -274,7 +276,15 @@ int PHSimpleKFProp::InitRun(PHCompositeNode* topNode)
   fitter->setFixedClusterError(0,_fixed_clus_err.at(0));
   fitter->setFixedClusterError(1,_fixed_clus_err.at(1));
   fitter->setFixedClusterError(2,_fixed_clus_err.at(2));
-  _field_map = PHFieldUtility::GetFieldMapNode(nullptr,topNode);
+  PHFieldConfigv1 fcfg;
+  fcfg.set_field_config(PHFieldConfig::FieldConfigTypes::Field3DCartesian);
+  auto magField = std::string(getenv("CALIBRATIONROOT")) +
+    std::string("/Field/Map/sphenix3dtrackingmapxyz.root"); 
+  fcfg.set_filename(magField);
+  //  fcfg.set_rescale(1);
+  _field_map = PHFieldUtility::BuildFieldMap(&fcfg);
+  //  _field_map = PHFieldUtility::GetFieldMapNode(nullptr,topNode);
+  // m_Cache = magField->makeCache(m_tGeometry->magFieldContext);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -284,6 +294,18 @@ double PHSimpleKFProp::get_Bz(double x, double y, double z) const
   double p[4] = {x*cm,y*cm,z*cm,0.*cm};
   double bfield[3];
   _field_map->GetFieldValue(p,bfield);
+  /*  Acts::Vector3 loc(0,0,0);
+  int mfex = (magField != nullptr);
+  int tgex = (m_tGeometry != nullptr);
+  std::cout << " getting acts field " << mfex << " " << tgex << std::endl;
+  auto Cache =  m_tGeometry->magField->makeCache(m_tGeometry->magFieldContext);
+  auto bf = m_tGeometry->magField->getField(loc,Cache);
+  if(bf.ok())
+    {
+      Acts::Vector3 val = bf.value();
+      std::cout << "bz big: " <<  bfield[2]/tesla << " bz acts: " << val(2) << std::endl;
+    }
+  */
   return bfield[2]/tesla;
 }
 
@@ -311,14 +333,6 @@ int PHSimpleKFProp::get_nodes(PHCompositeNode* topNode)
     return Fun4AllReturnCodes::ABORTEVENT;
   }
 
-  _hitsets = findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
-  if(!_hitsets)
-    {
-      std::cerr << PHWHERE << "No hitset container on node tree. Bailing."
-		<< std::endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
-
   PHG4CylinderCellGeomContainer *geom_container =
       findNode::getClass<PHG4CylinderCellGeomContainer>(topNode, "CYLINDERCELLGEOM_SVTX");
   if (!geom_container)
@@ -331,7 +345,16 @@ int PHSimpleKFProp::get_nodes(PHCompositeNode* topNode)
   {
     radii.push_back(geom_container->GetLayerCellGeom(i)->get_radius());
   }
-
+  /*
+  m_tGeometry = findNode::getClass<ActsTrackingGeometry>(topNode, "ActsTrackingGeometry");
+  if(!m_tGeometry)
+    {
+      std::cout << "ActsTrackingGeometry not on node tree. Exiting."
+		<< std::endl;
+      
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+  */
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -376,16 +399,16 @@ int PHSimpleKFProp::process_event(PHCompositeNode* topNode)
   
   _track_map->Reset();
   std::vector<std::vector<TrkrDefs::cluskey>> clean_chains = RemoveBadClusters(new_chains, globalPositions); 
-  std::vector<SvtxTrack_v2> ptracks = fitter->ALICEKalmanFilter(clean_chains,true, globalPositions);
+  std::vector<SvtxTrack_v3> ptracks = fitter->ALICEKalmanFilter(clean_chains,true, globalPositions);
   publishSeeds(ptracks);
   publishSeeds(unused_tracks);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-Acts::Vector3D PHSimpleKFProp::getGlobalPosition( TrkrCluster* cluster ) const
+Acts::Vector3 PHSimpleKFProp::getGlobalPosition( TrkrDefs::cluskey key, TrkrCluster* cluster ) const
 {
   // get global position from Acts transform
-  auto globalpos = m_transform.getGlobalPosition(cluster,
+  auto globalpos = m_transform.getGlobalPosition(key, cluster,
     _surfmaps,
     _tgeometry);
 
@@ -407,10 +430,9 @@ PositionMap PHSimpleKFProp::PrepareKDTrees()
     return globalPositions;
   }
 
-  auto hitsetrange = _hitsets->getHitSets(TrkrDefs::TrkrId::tpcId);
-  for (auto hitsetitr = hitsetrange.first; hitsetitr != hitsetrange.second; ++hitsetitr)
+  for(const auto& hitsetkey:_cluster_map->getHitSetKeys(TrkrDefs::TrkrId::tpcId))
   {
-    auto range = _cluster_map->getClusters(hitsetitr->first);
+    auto range = _cluster_map->getClusters(hitsetkey);
     for (TrkrClusterContainer::ConstIterator it = range.first; it != range.second; ++it)
     {
       TrkrDefs::cluskey cluskey = it->first;
@@ -426,8 +448,8 @@ PositionMap PHSimpleKFProp::PrepareKDTrees()
         }
       }
 
-      const Acts::Vector3D globalpos_d = getGlobalPosition(cluster);
-      const Acts::Vector3F globalpos = { (float) globalpos_d.x(), (float) globalpos_d.y(), (float) globalpos_d.z()};
+      const Acts::Vector3 globalpos_d = getGlobalPosition( cluskey, cluster);
+      const Acts::Vector3 globalpos = { (float) globalpos_d.x(), (float) globalpos_d.y(), (float) globalpos_d.z()};
       globalPositions.insert(std::make_pair(cluskey, globalpos));
 
       int layer = TrkrDefs::getLayer(cluskey);
@@ -435,7 +457,7 @@ PositionMap PHSimpleKFProp::PrepareKDTrees()
       kdhit[0] = globalpos_d.x();
       kdhit[1] = globalpos_d.y();
       kdhit[2] = globalpos_d.z();
-      uint64_t key = cluster->getClusKey();
+      uint64_t key = cluskey;
       std::memcpy(&kdhit[3], &key, sizeof(key));
     
       //      HINT: way to get original uint64_t value from double:
@@ -481,7 +503,7 @@ void PHSimpleKFProp::MoveToFirstTPCCluster( const PositionMap& globalPositions )
       std::vector<TrkrDefs::cluskey> ckeys;
       std::copy(track->begin_cluster_keys(),track->end_cluster_keys(),std::back_inserter(ckeys));
       
-      std::vector<Acts::Vector3F> trkGlobPos;
+      std::vector<Acts::Vector3> trkGlobPos;
       for(const auto& ckey : ckeys)
       {
         if(TrkrDefs::getTrkrId(ckey) == TrkrDefs::tpcId )
@@ -777,17 +799,54 @@ std::vector<TrkrDefs::cluskey> PHSimpleKFProp::PropagateTrack(SvtxTrack* track, 
       // update track coordinates after transport
       tX = kftrack.GetX();
       tY = kftrack.GetY();
+      double tYerr = sqrt(kftrack.GetCov(0));
+      double tzerr = sqrt(kftrack.GetCov(5));
       tx = tX*cos(old_phi)-tY*sin(old_phi);
       ty = tX*sin(old_phi)+tY*cos(old_phi);
       tz = kftrack.GetZ();
-      double tYerr = sqrt(kftrack.GetCov(0));
-      double tzerr = sqrt(kftrack.GetCov(5));
+      double query_pt[3] = {tx, ty, tz};
+
+      if(m_dcc)
+	{
+	  // The distortion corrected cluster positions in globalPos are not at the layer radius
+	  // We want to project to the radius appropriate for the globalPos values
+	  // Get the distortion correction for the projection point, and calculate the radial increment
+
+	  double proj_radius = sqrt(tx*tx+ty*ty);
+	  if(proj_radius > 78.0 || abs(tz) > 105.5) continue;   // projection is bad, no cluster will be found
+
+	  Acts::Vector3 proj_pt(tx,ty,tz);
+	  if(Verbosity() > 2) 
+	    std::cout << " call distortion correction for layer " << l  << " tx " << tx << " ty " << ty << " tz " << tz << " radius " << proj_radius << std::endl;
+	  proj_pt = m_distortionCorrection.get_corrected_position( proj_pt, m_dcc ); 
+	  // this point is meaningless, except that it gives us an estimate of the corrected radius of a point measured in this layer
+	  double radius = sqrt(proj_pt[0]*proj_pt[0] + proj_pt[1]*proj_pt[1]);
+	  // now project the track to that radius
+	  if(Verbosity() > 2) 
+	    std::cout << " call transport again for layer " << l  << " x " << proj_pt[0] << " y " << proj_pt[1] << " z " << proj_pt[2] 
+		      << " radius " << radius << std::endl;
+	  kftrack.TransportToX(radius,kfline,_Bzconst*get_Bz(tx,ty,tz),10.);
+	  if(std::isnan(kftrack.GetX()) ||
+	     std::isnan(kftrack.GetY()) ||
+	     std::isnan(kftrack.GetZ())) continue;
+	  tX = kftrack.GetX();
+	  tY = kftrack.GetY();
+	  tYerr = sqrt(kftrack.GetCov(0));
+	  tzerr = sqrt(kftrack.GetCov(5));
+	  tx = tX*cos(old_phi)-tY*sin(old_phi);
+	  ty = tX*sin(old_phi)+tY*cos(old_phi);
+	  tz = kftrack.GetZ();
+	  query_pt[0] = tx;
+	  query_pt[1] = ty;
+	  query_pt[2] = tz; 
+	}
+
       double txerr = fabs(tYerr*sin(old_phi));
       double tyerr = fabs(tYerr*cos(old_phi));
       if(Verbosity()>0) std::cout << "transported to " << radii[l-7] << "\n";
       if(Verbosity()>0) std::cout << "track position: (" << tx << ", " << ty << ", " << tz << ")" << std::endl;
       if(Verbosity()>0) std::cout << "track position error: (" << txerr << ", " << tyerr << ", " << tzerr << ")" << std::endl;
-      double query_pt[3] = {tx, ty, tz};
+
 //      size_t ret_index;
 //      double out_dist_sqr;
 //      nanoflann::KNNResultSet<double> resultSet(1);
@@ -807,6 +866,51 @@ std::vector<TrkrDefs::cluskey> PHSimpleKFProp::PropagateTrack(SvtxTrack* track, 
       double ccX = ccglob(0);
       double ccY = ccglob(1);
       double ccZ = ccglob(2);
+
+      /*
+      // alternatively:
+      if(m_dcc)
+	{
+	  // The distortion corrected cluster positions in globalPos are not at the layer radius
+	  // We want to project to the radius appropriate for the globalPos values
+	  // Get the radius from the nearest associated cluster found above
+	  Acts::Vector3 proj_pt(ccX, ccY, ccZ);
+	  double radius = sqrt(proj_pt[0]*proj_pt[0] + proj_pt[1]*proj_pt[1]);
+
+	  // now project the track to that radius
+	  if(Verbosity() > 2) 
+	    std::cout << " call transport again for layer " << l  << " x " << proj_pt[0] << " y " << proj_pt[1] << " z " << proj_pt[2] 
+		      << " radius " << radius << std::endl;
+	  kftrack.TransportToX(radius,kfline,_Bzconst*get_Bz(ccX,ccY,ccZ),10.);
+	  if(std::isnan(kftrack.GetX()) ||
+	     std::isnan(kftrack.GetY()) ||
+	     std::isnan(kftrack.GetZ())) continue;
+	  tX = kftrack.GetX();
+	  tY = kftrack.GetY();
+	  tYerr = sqrt(kftrack.GetCov(0));
+	  tzerr = sqrt(kftrack.GetCov(5));
+	  tx = tX*cos(old_phi)-tY*sin(old_phi);
+	  ty = tX*sin(old_phi)+tY*cos(old_phi);
+	  tz = kftrack.GetZ();
+	  query_pt[0] = tx;
+	  query_pt[1] = ty;
+	  query_pt[2] = tz; 
+
+	  n_results = _kdtrees[l]->knnSearch(&query_pt[0],1,&index_out[0],&distance_out[0]);
+	  if(Verbosity()>0) std::cout << "index_out: " << index_out[0] << std::endl;
+	  if(Verbosity()>0) std::cout << "squared_distance_out: " << distance_out[0] << std::endl;
+	  if(Verbosity()>0) std::cout << "solid_angle_dist: " << atan2(sqrt(distance_out[0]),radii[l-7]) << std::endl;
+	  if(n_results==0) continue;
+	  point = _ptclouds[l]->pts[index_out[0]];
+	  closest_ckey = (*((int64_t*)&point[3]));
+	  cc = _cluster_map->findCluster(closest_ckey);
+	  ccglob = globalPositions.at(closest_ckey);
+	  ccX = ccglob(0);
+	  ccY = ccglob(1);
+	  ccZ = ccglob(2);
+	}
+      */      
+
       double cxerr = sqrt(fitter->getClusterError(cc,ccglob,0,0));
       double cyerr = sqrt(fitter->getClusterError(cc,ccglob,1,1));
       double czerr = sqrt(fitter->getClusterError(cc,ccglob,2,2));
@@ -926,12 +1030,50 @@ std::vector<TrkrDefs::cluskey> PHSimpleKFProp::PropagateTrack(SvtxTrack* track, 
       tx = tX*cos(old_phi)-tY*sin(old_phi);
       ty = tX*sin(old_phi)+tY*cos(old_phi);
       tz = kftrack.GetZ();
+      double query_pt[3] = {tx, ty, tz};
+
+      // Now look for the nearest cluster to this projection point (tx,ty,tz), which is at the nominal layer radius
+      if(m_dcc)
+	{
+	  // The distortion corrected cluster positions in globalPos are not at the layer radius
+	  // We want to project to the radius appropriate for the globalPos values
+	  // Get the distortion correction for the projection point, and calculate the radial increment
+	  double proj_radius = sqrt(tx*tx+ty*ty);
+	  if(proj_radius > 78.0 || abs(tz) > 105.5) continue;   // projection is bad, no cluster will be found
+
+	  Acts::Vector3 proj_pt(tx,ty,tz);
+	  if(Verbosity() > 2)
+	    std::cout << " call distortion correction for layer " << l  << " tx " << tx << " ty " << ty << " tz " << tz << " radius " << proj_radius << std::endl;
+	  proj_pt = m_distortionCorrection.get_corrected_position( proj_pt, m_dcc ); 
+	  // this point is meaningless, except that it givs us an estimate of the corrected radius of a point measured in this layer
+	  double radius = sqrt(proj_pt[0]*proj_pt[0] + proj_pt[1]*proj_pt[1]);
+
+	  // now project the track to that radius
+	  if(Verbosity() > 2)
+	    std::cout << " call transport again for layer " << l  << " x " << proj_pt[0] << " y " << proj_pt[1] << " z " << proj_pt[2] 
+		      << " radius " << radius << std::endl;
+	  kftrack.TransportToX(radius,kfline,_Bzconst*get_Bz(tx,ty,tz),10.);
+	  if(std::isnan(kftrack.GetX()) ||
+	     std::isnan(kftrack.GetY()) ||
+	     std::isnan(kftrack.GetZ())) continue;
+	  tX = kftrack.GetX();
+	  tY = kftrack.GetY();
+	  tYerr = sqrt(kftrack.GetCov(0));
+	  tzerr = sqrt(kftrack.GetCov(5));
+	  tx = tX*cos(old_phi)-tY*sin(old_phi);
+	  ty = tX*sin(old_phi)+tY*cos(old_phi);
+	  tz = kftrack.GetZ();
+	  query_pt[0] = tx;
+	  query_pt[1] = ty;
+	  query_pt[2] = tz; 
+	}
+
       double txerr = fabs(tYerr*sin(old_phi));
       double tyerr = fabs(tYerr*cos(old_phi));
       if(Verbosity()>0) std::cout << "transported to " << radii[l-7] << "\n";
       if(Verbosity()>0) std::cout << "track position: (" << kftrack.GetX()*cos(old_phi)-kftrack.GetY()*sin(old_phi) << ", " << kftrack.GetX()*sin(old_phi)+kftrack.GetY()*cos(old_phi) << ", " << kftrack.GetZ() << ")" << std::endl;
       if(Verbosity()>0) std::cout << "track position errors: (" << txerr << ", " << tyerr << ", " << tzerr << ")" << std::endl;
-      double query_pt[3] = {tx, ty, tz};
+
       std::vector<long unsigned int> index_out(1);
       std::vector<double> distance_out(1);
       int n_results = _kdtrees[l]->knnSearch(&query_pt[0],1,&index_out[0],&distance_out[0]);
@@ -946,6 +1088,51 @@ std::vector<TrkrDefs::cluskey> PHSimpleKFProp::PropagateTrack(SvtxTrack* track, 
       double ccX = ccglob2(0);
       double ccY = ccglob2(1);
       double ccZ = ccglob2(2);
+
+      /*
+      // alternatively:
+      if(m_dcc)
+	{
+	  // The distortion corrected cluster positions in globalPos are not at the layer radius
+	  // We want to project to the radius appropriate for the globalPos values
+	  // Get the radius from the global position of the nearest cluster found above 
+	  Acts::Vector3 proj_pt(ccX, ccY, ccZ);
+	  double radius = sqrt(proj_pt[0]*proj_pt[0] + proj_pt[1]*proj_pt[1]);
+
+	  // now project the track to that radius
+	  if(Verbosity() > 2) 
+	    std::cout << " call transport again for layer " << l  << " x " << proj_pt[0] << " y " << proj_pt[1] << " z " << proj_pt[2] 
+		      << " radius " << radius << std::endl;
+	  kftrack.TransportToX(radius,kfline,_Bzconst*get_Bz(ccX,ccY,ccZ),10.);
+	  if(std::isnan(kftrack.GetX()) ||
+	     std::isnan(kftrack.GetY()) ||
+	     std::isnan(kftrack.GetZ())) continue;
+	  tX = kftrack.GetX();
+	  tY = kftrack.GetY();
+	  tYerr = sqrt(kftrack.GetCov(0));
+	  tzerr = sqrt(kftrack.GetCov(5));
+	  tx = tX*cos(old_phi)-tY*sin(old_phi);
+	  ty = tX*sin(old_phi)+tY*cos(old_phi);
+	  tz = kftrack.GetZ();
+	  query_pt[0] = tx;
+	  query_pt[1] = ty;
+	  query_pt[2] = tz; 
+
+	  n_results = _kdtrees[l]->knnSearch(&query_pt[0],1,&index_out[0],&distance_out[0]);
+	  if(Verbosity()>0) std::cout << "index_out: " << index_out[0] << std::endl;
+	  if(Verbosity()>0) std::cout << "squared_distance_out: " << distance_out[0] << std::endl;
+	  if(Verbosity()>0) std::cout << "solid_angle_dist: " << atan2(sqrt(distance_out[0]),radii[l-7]) << std::endl;
+	  if(n_results==0) continue;
+	  point = _ptclouds[l]->pts[index_out[0]];
+	  closest_ckey = (*((int64_t*)&point[3]));
+	  cc = _cluster_map->findCluster(closest_ckey);
+	  ccglob2 = globalPositions.at(closest_ckey);
+	  ccX = ccglob2(0);
+	  ccY = ccglob2(1);
+	  ccZ = ccglob2(2);
+	}
+      */
+
       double cxerr = sqrt(fitter->getClusterError(cc,ccglob2,0,0));
       double cyerr = sqrt(fitter->getClusterError(cc,ccglob2,1,1));
       double czerr = sqrt(fitter->getClusterError(cc,ccglob2,2,2));
@@ -1031,7 +1218,7 @@ std::vector<keylist> PHSimpleKFProp::RemoveBadClusters(const std::vector<keylist
 
 
 
-void PHSimpleKFProp::publishSeeds(const std::vector<SvtxTrack_v2>& seeds)
+void PHSimpleKFProp::publishSeeds(const std::vector<SvtxTrack_v3>& seeds)
 {
   for( const auto& seed:seeds )
   { _track_map->insert(&seed); }
@@ -1177,7 +1364,7 @@ void PHSimpleKFProp::publishSeeds(const std::vector<SvtxTrack>& seeds)
 // 
 //       // make circle fit 
 //       std::vector<std::pair<double, double>> cpoints;
-//       std::vector<Acts::Vector3F> globalpositions;
+//       std::vector<Acts::Vector3> globalpositions;
 //       ActsTransformations transformer;
 //       for (unsigned int i=0; i<clusters.size(); ++i)
 // 	{
