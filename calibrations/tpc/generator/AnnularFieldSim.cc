@@ -2775,7 +2775,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
 
 
   const int nMapComponents=6;
-  TH3F *hSeparatedMapComponent[2][6];  //side, then xyzrp
+  TH3F *hSeparatedMapComponent[2][6];  //side, then xyzrp and finally rphi
   TString side[2];
   side[0] = "soloz";
   if (hasTwin)
@@ -2799,11 +2799,13 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
     }
     for (int j = 0; j < nMapComponents; j++)
     {
+      printf("building hSeparatedMapComponent[%d][%d]\n",i,j);
       hSeparatedMapComponent[i][j] = new TH3F(Form("hIntDistortion%s_%s", sepAxis[j].Data(),side[i].Data()),
                                               Form("Integrated %s Deflection drifting from (phi,r,z) to z=endcap);phi;r;z (%s side)", sepAxis[j].Data(), side[i].Data()),
                                               nph, pih, pfh, nrh, rih, rfh, nzh, zlower, zupper);
     }
   }
+  printf("done building map component histograms\n");
 
   //monitor plots, and the position that that plot monitors at:
 
