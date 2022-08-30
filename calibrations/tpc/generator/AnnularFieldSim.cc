@@ -3022,7 +3022,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hIntDist[0][0]->Fill(partP, partZ, distortR);
             hIntDist[0][1]->Fill(partP, partZ, distortP);
             hIntDist[0][2]->Fill(partP, partZ, distortZ);
-	    if (enableDiffDistort){
+	    if (enableDiffDistortion){
 	      hDiffDist[0][0]->Fill(partP, partZ, diffdistR);
 	      hDiffDist[0][1]->Fill(partP, partZ, diffdistP);
 	      hDiffDist[0][2]->Fill(partP, partZ, diffdistZ);
@@ -3034,7 +3034,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hIntDist[1][0]->Fill(partZ, partR, distortR);
             hIntDist[1][1]->Fill(partZ, partR, distortP);
             hIntDist[1][2]->Fill(partZ, partR, distortZ);
-	    if (enableDiffDistort){
+	    if (enableDiffDistortion){
 	      hDiffDist[1][0]->Fill(partZ, partR, diffdistR);
 	      hDiffDist[1][1]->Fill(partZ, partR, diffdistP);
 	      hDiffDist[1][2]->Fill(partZ, partR, diffdistZ);
@@ -3045,7 +3045,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
               hRDist[0][0]->Fill(partR, distortR);
               hRDist[0][1]->Fill(partR, distortP);
               hRDist[0][2]->Fill(partR, distortZ);
-	      if (enableDiffDistort){
+	      if (enableDiffDistortion){
 		hRDiffDist[0][0]->Fill(partR, diffdistR);
 		hRDiffDist[0][1]->Fill(partR, diffdistP);
 		hRDiffDist[0][2]->Fill(partR, diffdistZ);
@@ -3056,7 +3056,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
               hRDist[1][0]->Fill(partR, distortR);
               hRDist[1][1]->Fill(partR, distortP);
               hRDist[1][2]->Fill(partR, distortZ);
-	      if (enableDiffDistort){
+	      if (enableDiffDistortion){
 		hRDiffDist[1][0]->Fill(partR, diffdistR);
 		hRDiffDist[1][1]->Fill(partR, diffdistP);
 		hRDiffDist[1][2]->Fill(partR, diffdistZ);
@@ -3070,7 +3070,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hIntDist[2][0]->Fill(partR, partP, distortR);
             hIntDist[2][1]->Fill(partR, partP, distortP);
             hIntDist[2][2]->Fill(partR, partP, distortZ);
-	    if (enableDiffDistort){
+	    if (enableDiffDistortion){
 	      hDiffDist[2][0]->Fill(partR, partP, diffdistR);
 	      hDiffDist[2][1]->Fill(partR, partP, diffdistP);
 	      hDiffDist[2][2]->Fill(partR, partP, diffdistZ);
@@ -3176,7 +3176,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   //already done TPad *textpad=new TPad("ctext","distortion differential plots",0,0.0,1,0.2);
   //already done c->Divide(4,3);
   //gStyle->SetOptStat();
-  if (enableDiffDistort){
+  if (enableDiffDistortion){
 
     for (int i = 0; i < 3; i++)
       {
