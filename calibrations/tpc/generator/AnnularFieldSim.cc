@@ -2779,7 +2779,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
 
   TH3F *hIntDistortionX = new TH3F("hIntDistortionX", "Integrated X Distortion from (phi,r,z) to z=0 (centered in r,phi, and z);phi;r;z", nph, pih, pfh, nrh, rih, rfh, nzh, zih, zfh);
   TH3F *hIntDistortionY = new TH3F("hIntDistortionY", "Integrated Y Distortion from (phi,r,z) to z=0 (centered in r,phi, and z);phi;r;z", nph, pih, pfh, nrh, rih, rfh, nzh, zih, zfh);
-  TH3C *hIntDistortionCrash = new TH3C("hIntDistortionCrash","If value is nonzero, a test particle in that starting voxel crashes into the IFC/OFC before reaching readout;phi;r;z", nph, pih, pfh, nrh, rih, rfh, nzh, zih, zfh);
+  //TH3C *hIntDistortionCrash = new TH3C("hIntDistortionCrash","If value is nonzero, a test particle in that starting voxel crashes into the IFC/OFC before reaching readout;phi;r;z", nph, pih, pfh, nrh, rih, rfh, nzh, zih, zfh);
 
 
   const int nMapComponents=6;
@@ -2915,7 +2915,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
 
   //note that we apply the adjustment to the particle position (inpart) and not the plotted position (partR etc)
   inpart.SetXYZ(1, 0, 0);
-  diffDistort.SetXYZ(0,0,0);
+  diffdistort.SetXYZ(0,0,0);
   for (ir = 0; ir < nrh; ir++)
   {
     partR = (ir + 0.5) * deltar + rih;
@@ -2971,7 +2971,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
              if (enableDiffDistortion) diffdistort = twin->GetTotalDistortion(inpart.Z() - deltaz, inpart, nSteps, true, &validToStep);
             distort = twin->GetTotalDistortion(-z_readout, inpart, nSteps, true, &validToStep);
           }
-	  hSeparatedCrash[i]->Fill(partP,partR,partZ,validToStep);// for now, set crash to the number of steps it reached, to make sure I don't have an off-by-one.  (validToStep!=nSteps));//set 'Crash' to true if the steps don't match.
+	  hSeparatedCrash[side]->Fill(partP,partR,partZ,validToStep);// for now, set crash to the number of steps it reached, to make sure I don't have an off-by-one.  (validToStep!=nSteps));//set 'Crash' to true if the steps don't match.
 
 
 	  
