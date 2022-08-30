@@ -264,8 +264,8 @@ class AnnularFieldSim
     UpdateOmegaTau();
     return;
   };
-
-  void SetComputeDifferentialDistortionsFlag(bool flag){enableDiffDistortions=false);
+  void SetComputeDifferentialDistortionsFlag(bool flag){enableDiffDistortions=flag; return;};
+  
   void setFlatFields(float B, float E);
   void loadEfield(const std::string &filename, const std::string &treename, int zsign = 1);
   void loadBfield(const std::string &filename, const std::string &treename);
