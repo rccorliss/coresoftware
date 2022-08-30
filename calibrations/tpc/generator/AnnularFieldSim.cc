@@ -2473,6 +2473,7 @@ TVector3 AnnularFieldSim::swimToInAnalyticSteps(float zdest, TVector3 start, int
 
 TVector3 AnnularFieldSim::swimToInSteps(float zdest, TVector3 start, int steps = 1, bool interpolate = false, int *goodToStep = 0)
 {
+  
   TVector3 straightline(start.X(), start.Y(), zdest);
   TVector3 distortion = GetTotalDistortion(zdest, start, steps, interpolate, goodToStep);
   return straightline + distortion;
@@ -2480,9 +2481,15 @@ TVector3 AnnularFieldSim::swimToInSteps(float zdest, TVector3 start, int steps =
 
 TVector3 AnnularFieldSim::GetTotalDistortion(float zdest, TVector3 start, int steps, bool interpolate, int *goodToStep)
 {
+  /*
+    Divides the z spacing from start.Z to zdest into the specified number of steps,
+    then gets the distortion from each step in turn, accumulating distortion and 
+    position separately, so that resolution is not lost.
+    Returns the total accumulated distortion
+
+   */
+  //then 
   //work in native units is automatic.
-  //double zdist=(zdest-start.Z())*cm;
-  //start=start*cm;
 
   //check the z bounds:
   int rt, pt, zt;  //just placeholders for the bounds-checking.
@@ -2772,10 +2779,12 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
 
   TH3F *hIntDistortionX = new TH3F("hIntDistortionX", "Integrated X Distortion from (phi,r,z) to z=0 (centered in r,phi, and z);phi;r;z", nph, pih, pfh, nrh, rih, rfh, nzh, zih, zfh);
   TH3F *hIntDistortionY = new TH3F("hIntDistortionY", "Integrated Y Distortion from (phi,r,z) to z=0 (centered in r,phi, and z);phi;r;z", nph, pih, pfh, nrh, rih, rfh, nzh, zih, zfh);
+  TH3C *hIntDistortionCrash = new TH3C("hIntDistortionCrash","If value is nonzero, a test particle in that starting voxel crashes into the IFC/OFC before reaching readout;phi;r;z", nph, pih, pfh, nrh, rih, rfh, nzh, zih, zfh);
 
 
   const int nMapComponents=6;
   TH3F *hSeparatedMapComponent[2][6];  //side, then xyzrp
+  TH3C *hSeparatedCrash[2]; //side.
   TString side[2];
   side[0] = "soloz";
   if (hasTwin)
@@ -2797,6 +2806,10 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
       zlower = -1 * fmax(zih, zfh);
       zupper = -1 * fmin(zih, zfh);
     }
+    hSeparatedCrash[i] = new TH3F(Form("hIntDistortionCrash_%s",side[i].Data()),
+                                              Form("Whether particle hits the edge of the TPC while drifting from (phi,r,z) to z=endcap);phi;r;z (%s side)", side[i].Data()),
+                                              nph, pih, pfh, nrh, rih, rfh, nzh, zlower, zupper);
+
     for (int j = 0; j < nMapComponents; j++)
     {
       hSeparatedMapComponent[i][j] = new TH3F(Form("hIntDistortion%s_%s", sepAxis[j].Data(),side[i].Data()),
@@ -2817,7 +2830,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   int twinz = (-pos.Z() - zih) / s.Z();
   if (hasTwin) printf("rpz slice indices= (%d,%d,%d) twinz=%d\n", xi[0], xi[1], xi[2], twinz);
 
-  const char axname[] = "rpzrpz";
+  const char axname[] = "rpzrpz"; //this is lazy, but way easier than having to do modulo arithmetic everywhere
   int axn[] = {nrh, nph, nzh, nrh, nph, nzh};
   float axval[] = {(float) pos.Perp(), (float) pos.Phi(), (float) pos.Z(), (float) pos.Perp(), (float) pos.Phi(), (float) pos.Z()};
   float axbot[] = {rih, pih, zih, rih, pih, zih};
@@ -2902,6 +2915,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
 
   //note that we apply the adjustment to the particle position (inpart) and not the plotted position (partR etc)
   inpart.SetXYZ(1, 0, 0);
+  diffDistort.SetXYZ(0,0,0);
   for (ir = 0; ir < nrh; ir++)
   {
     partR = (ir + 0.5) * deltar + rih;
@@ -2940,9 +2954,12 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
         partZ += 0.5 * deltaz;  //move to center of histogram bin.
         for (int side = 0; side < nSides; side++)
         {
+
+	  //this is the key move:  GetTotalDistortion integrates the distortion in steps from the starting position to the end z.
+	  // it also keeps track of whether the distortion 'succeeds', which means it is stays in bounds the whole time.
           if (side == 0)
           {
-            diffdistort = GetTotalDistortion(inpart.Z() + deltaz, inpart, nSteps, true, &validToStep);
+            if (enableDiffDistortion) diffdistort = GetTotalDistortion(inpart.Z() + deltaz, inpart, nSteps, true, &validToStep);
             distort = GetTotalDistortion(z_readout, inpart, nSteps, true, &validToStep);
           }
           else
@@ -2951,9 +2968,13 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             //flip z coords and do the twin instead:
             partZ *= -1;                   //position to place in histogram
             inpart.SetZ(-1 * inpart.Z());  //position to seek in sim
-            diffdistort = twin->GetTotalDistortion(inpart.Z() - deltaz, inpart, nSteps, true, &validToStep);
+             if (enableDiffDistortion) diffdistort = twin->GetTotalDistortion(inpart.Z() - deltaz, inpart, nSteps, true, &validToStep);
             distort = twin->GetTotalDistortion(-z_readout, inpart, nSteps, true, &validToStep);
           }
+	  hSeparatedCrash[i]->Fill(partP,partR,partZ,validToStep);// for now, set crash to the number of steps it reached, to make sure I don't have an off-by-one.  (validToStep!=nSteps));//set 'Crash' to true if the steps don't match.
+
+
+	  
 
           diffdistort.RotateZ(-inpart.Phi());  //rotate so that distortion components are wrt the x axis
           diffdistP = diffdistort.Y();         //the phi component is now the y component.
@@ -3001,9 +3022,11 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hIntDist[0][0]->Fill(partP, partZ, distortR);
             hIntDist[0][1]->Fill(partP, partZ, distortP);
             hIntDist[0][2]->Fill(partP, partZ, distortZ);
-            hDiffDist[0][0]->Fill(partP, partZ, diffdistR);
-            hDiffDist[0][1]->Fill(partP, partZ, diffdistP);
-            hDiffDist[0][2]->Fill(partP, partZ, diffdistZ);
+	    if (enableDiffDistort){
+	      hDiffDist[0][0]->Fill(partP, partZ, diffdistR);
+	      hDiffDist[0][1]->Fill(partP, partZ, diffdistP);
+	      hDiffDist[0][2]->Fill(partP, partZ, diffdistZ);
+	    }
           }
           if (ip == xi[1]&& side==0)
           {  //phi slice
@@ -3011,27 +3034,33 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hIntDist[1][0]->Fill(partZ, partR, distortR);
             hIntDist[1][1]->Fill(partZ, partR, distortP);
             hIntDist[1][2]->Fill(partZ, partR, distortZ);
-            hDiffDist[1][0]->Fill(partZ, partR, diffdistR);
-            hDiffDist[1][1]->Fill(partZ, partR, diffdistP);
-            hDiffDist[1][2]->Fill(partZ, partR, diffdistZ);
+	    if (enableDiffDistort){
+	      hDiffDist[1][0]->Fill(partZ, partR, diffdistR);
+	      hDiffDist[1][1]->Fill(partZ, partR, diffdistP);
+	      hDiffDist[1][2]->Fill(partZ, partR, diffdistZ);
+	    }
 
             if (iz == xi[2] && side==0)
             {  //z slices of phi slices= r line at mid phi, mid z:
               hRDist[0][0]->Fill(partR, distortR);
               hRDist[0][1]->Fill(partR, distortP);
               hRDist[0][2]->Fill(partR, distortZ);
-              hRDiffDist[0][0]->Fill(partR, diffdistR);
-              hRDiffDist[0][1]->Fill(partR, diffdistP);
-              hRDiffDist[0][2]->Fill(partR, diffdistZ);
+	      if (enableDiffDistort){
+		hRDiffDist[0][0]->Fill(partR, diffdistR);
+		hRDiffDist[0][1]->Fill(partR, diffdistP);
+		hRDiffDist[0][2]->Fill(partR, diffdistZ);
+	      }
             }
             if (hasTwin && iz == twinz && side==1)
             {  //z slices of phi slices= r line at mid phi, mid z:
               hRDist[1][0]->Fill(partR, distortR);
               hRDist[1][1]->Fill(partR, distortP);
               hRDist[1][2]->Fill(partR, distortZ);
-              hRDiffDist[1][0]->Fill(partR, diffdistR);
-              hRDiffDist[1][1]->Fill(partR, diffdistP);
-              hRDiffDist[1][2]->Fill(partR, diffdistZ);
+	      if (enableDiffDistort){
+		hRDiffDist[1][0]->Fill(partR, diffdistR);
+		hRDiffDist[1][1]->Fill(partR, diffdistP);
+		hRDiffDist[1][2]->Fill(partR, diffdistZ);
+	      }
             }
           }
           if (iz == xi[2] && side==0)
@@ -3041,9 +3070,11 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
             hIntDist[2][0]->Fill(partR, partP, distortR);
             hIntDist[2][1]->Fill(partR, partP, distortP);
             hIntDist[2][2]->Fill(partR, partP, distortZ);
-            hDiffDist[2][0]->Fill(partR, partP, diffdistR);
-            hDiffDist[2][1]->Fill(partR, partP, diffdistP);
-            hDiffDist[2][2]->Fill(partR, partP, diffdistZ);
+	    if (enableDiffDistort){
+	      hDiffDist[2][0]->Fill(partR, partP, diffdistR);
+	      hDiffDist[2][1]->Fill(partR, partP, diffdistP);
+	      hDiffDist[2][2]->Fill(partR, partP, diffdistZ);
+	    }
           }
 
           if (!(el % waypoint))
@@ -3145,57 +3176,60 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
   //already done TPad *textpad=new TPad("ctext","distortion differential plots",0,0.0,1,0.2);
   //already done c->Divide(4,3);
   //gStyle->SetOptStat();
-  for (int i = 0; i < 3; i++)
-  {
-    //component
-    for (int ax = 0; ax < 3; ax++)
-    {
-      //plane
-      c->cd(i * 4 + ax + 1);
-      gPad->SetRightMargin(0.15);
-      hDiffDist[ax][i]->SetStats(0);
-      hDiffDist[ax][i]->Draw("colz");
-    }
-    c->cd(i * 4 + 4);
-    hRDiffDist[0][i]->SetStats(0);
-    hRDiffDist[0][i]->SetFillColor(kRed);
-    hRDiffDist[0][i]->Draw("hist");
-    if (hasTwin)
-    {
-      hRDiffDist[1][i]->SetStats(0);
-      hRDiffDist[1][i]->SetLineColor(kBlue);
-      hRDiffDist[1][i]->Draw("hist same");
-    }
-  }
-  textpad->cd();
-  texpos = 0.9;
-  texshift = 0.12;
-  tex->SetTextSize(texshift * 0.8);
-  tex->DrawLatex(0.05, texpos, GetFieldString());
-  texpos -= texshift;
-  tex->DrawLatex(0.05, texpos, GetChargeString());
-  texpos -= texshift;
-  //tex->DrawLatex(0.05,texpos,Form("Drift Field = %2.2f V/cm",GetNominalE()));texpos-=texshift;
-  tex->DrawLatex(0.05, texpos, Form("Drifting grid of (rp)=(%d x %d) electrons with %d steps", nrh, nph, nSteps));
-  texpos -= texshift;
-  tex->DrawLatex(0.05, texpos, GetLookupString());
-  texpos -= texshift;
-  tex->DrawLatex(0.05, texpos, GetGasString());
-  texpos -= texshift;
-  tex->DrawLatex(0.05, texpos, "Differential Plots");
-  texpos -= texshift;
-  if (debug_distortionScale.Mag() > 0)
-  {
-    tex->DrawLatex(0.05, texpos, Form("Distortion scaled by (r,p,z)=(%2.2f,%2.2f,%2.2f)", debug_distortionScale.X(), debug_distortionScale.Y(), debug_distortionScale.Z()));
-    texpos -= texshift;
-  }
-  texpos = 0.9;
+  if (enableDiffDistort){
 
-  canvas->cd();
-  c->Draw();
-  canvas->cd();
-  textpad->Draw();
-  canvas->SaveAs(diffSummaryFilename.Data());
+    for (int i = 0; i < 3; i++)
+      {
+	//component
+	for (int ax = 0; ax < 3; ax++)
+	  {
+	    //plane
+	    c->cd(i * 4 + ax + 1);
+	    gPad->SetRightMargin(0.15);
+	    hDiffDist[ax][i]->SetStats(0);
+	    hDiffDist[ax][i]->Draw("colz");
+	  }
+	c->cd(i * 4 + 4);
+	hRDiffDist[0][i]->SetStats(0);
+	hRDiffDist[0][i]->SetFillColor(kRed);
+	hRDiffDist[0][i]->Draw("hist");
+	if (hasTwin)
+	  {
+	    hRDiffDist[1][i]->SetStats(0);
+	    hRDiffDist[1][i]->SetLineColor(kBlue);
+	    hRDiffDist[1][i]->Draw("hist same");
+	  }
+      }
+    textpad->cd();
+    texpos = 0.9;
+    texshift = 0.12;
+    tex->SetTextSize(texshift * 0.8);
+    tex->DrawLatex(0.05, texpos, GetFieldString());
+    texpos -= texshift;
+    tex->DrawLatex(0.05, texpos, GetChargeString());
+    texpos -= texshift;
+    //tex->DrawLatex(0.05,texpos,Form("Drift Field = %2.2f V/cm",GetNominalE()));texpos-=texshift;
+    tex->DrawLatex(0.05, texpos, Form("Drifting grid of (rp)=(%d x %d) electrons with %d steps", nrh, nph, nSteps));
+    texpos -= texshift;
+    tex->DrawLatex(0.05, texpos, GetLookupString());
+    texpos -= texshift;
+    tex->DrawLatex(0.05, texpos, GetGasString());
+    texpos -= texshift;
+    tex->DrawLatex(0.05, texpos, "Differential Plots");
+    texpos -= texshift;
+    if (debug_distortionScale.Mag() > 0)
+      {
+	tex->DrawLatex(0.05, texpos, Form("Distortion scaled by (r,p,z)=(%2.2f,%2.2f,%2.2f)", debug_distortionScale.X(), debug_distortionScale.Y(), debug_distortionScale.Z()));
+	texpos -= texshift;
+      }
+    texpos = 0.9;
+
+    canvas->cd();
+    c->Draw();
+    canvas->cd();
+    textpad->Draw();
+    canvas->SaveAs(diffSummaryFilename.Data());
+  }
 
   printf("saving map histograms to:%s.\n",distortionFilename.Data());
 
@@ -3208,6 +3242,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
       hSeparatedMapComponent[i][j]->GetSumw2()->Set(0);
       hSeparatedMapComponent[i][j]->Write();
     }
+    hSeparatedCrash[i]->Write();
   }
   hDistortionR->GetSumw2()->Set(0);
   hDistortionP->GetSumw2()->Set(0);
@@ -3757,6 +3792,7 @@ void AnnularFieldSim::GenerateDistortionMaps(const char *filebase, int r_subsamp
 
 TVector3 AnnularFieldSim::swimTo(float zdest, TVector3 start, bool interpolate, bool useAnalytic)
 {
+  //this is vestigial, and is not used as of May 2022.
   int defaultsteps = 100;
   int goodtostep = 0;
   if (useAnalytic) return swimToInAnalyticSteps(zdest, start, defaultsteps, &goodtostep);

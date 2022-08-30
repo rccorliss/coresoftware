@@ -333,6 +333,7 @@ AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge){
     tpc->set_twin(twin);
   }
 
+  tpc->SetComputeDifferentialDistortionsFlag(false);//disable computing and saving of differential maps we don't use.
   return tpc;
 }
   

@@ -85,6 +85,9 @@ class AnnularFieldSim
   AnnularFieldSim *twin = nullptr;
   bool hasTwin = false;
 
+  //switches to control data output
+  bool enableDiffDistortion = false; //whether we compute differential distortions (per voxel) in addition to integrated distortions.
+
   //constants of motion, dimensions, etc:
   //
   TVector3 zero_vector;  //a shorthand way to return a vectorial zero.
@@ -261,6 +264,8 @@ class AnnularFieldSim
     UpdateOmegaTau();
     return;
   };
+
+  void SetComputeDifferentialDistortionsFlag(bool flag){enableDiffDistortions=false);
   void setFlatFields(float B, float E);
   void loadEfield(const std::string &filename, const std::string &treename, int zsign = 1);
   void loadBfield(const std::string &filename, const std::string &treename);
@@ -340,5 +345,5 @@ class AnnularFieldSim
   {
     omegatau_nominal = -Bnominal * vdrift / abs(Enominal);
     return;
-  };  //various constants to match internal representation to the familiar formula.  Adding in these factors suggests I should switch to a unitful calculation throughout...
+  };  
 };
