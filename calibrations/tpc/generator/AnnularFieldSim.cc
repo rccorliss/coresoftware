@@ -2806,7 +2806,7 @@ void AnnularFieldSim::GenerateSeparateDistortionMaps(const char *filebase, int r
       zlower = -1 * fmax(zih, zfh);
       zupper = -1 * fmin(zih, zfh);
     }
-    hSeparatedCrash[i] = new TH3F(Form("hIntDistortionCrash_%s",side[i].Data()),
+    hSeparatedCrash[i] = new TH3C(Form("hIntDistortionCrash_%s",side[i].Data()),
                                               Form("Whether particle hits the edge of the TPC while drifting from (phi,r,z) to z=endcap);phi;r;z (%s side)", side[i].Data()),
                                               nph, pih, pfh, nrh, rih, rfh, nzh, zlower, zupper);
 
