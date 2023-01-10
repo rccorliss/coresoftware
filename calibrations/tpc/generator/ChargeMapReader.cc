@@ -154,14 +154,14 @@ void ChargeMapReader::RegenerateCharge()
     float volume = dz * dphi * (rlow + 0.5 * dr) * dr;  //note that since we have equal bin widths, the volume term depends only on r.
     float scaleFactor = volume * inputChargeScale;      //and the total scale factor is the volume term times the charge scale factor
     for (i[1] = 0; i[1] <= nBins[1]; i[1]++)
-    {  //phi
+    {  //phi 
       phimid = lowerBound[1] + (i[1] + 0.5) * dphi;
       for (i[2] = 0; i[2] <= nBins[2]; i[2]++)
       {  //z
         zmid = (lowerBound[2] + (i[2] + 0.5) * dz) / inputAxisScale;
         if (CanInterpolateAt(rmid, phimid, zmid))
         {  //interpolate if we can
-          if (0)
+          if (0) 
           {
             printf("function said we could interpolate at (r,phi,z)=(%.2f, %.2f,%.2f), bounds are:\n", rmid, phimid, zmid);
             printf("  r: %.2f < %.2f < %.2f\n", hChargeDensity->GetYaxis()->GetXmin(), rmid, hChargeDensity->GetYaxis()->GetXmax());
