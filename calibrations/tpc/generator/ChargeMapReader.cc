@@ -150,16 +150,16 @@ void ChargeMapReader::RegenerateCharge()
   float phimid, zmid;  //position of the center of each fixed-width array bin, in the input histogram units
   //note that since we computed density using the hist units, we must use those units for the volume term again here.
   int i[3];
-  for (i[0] = 0; i[0] <= nBins[0]; i[0]++)
+  for (i[0] = 0; i[0] < nBins[0]; i[0]++)
   {  //r
     float rmid = (lowerBound[0] + (i[0] + 0.5) * dr) / inputAxisScale;
     // float rlow = (lowerBound[0] + dr * i[0]) / inputAxisScale;
     float histBinVolume = dzhist * dphi * rmid * drhist;  //note that since we have equal bin widths, the volume term depends only on r.
     float scaleFactor = histBinVolume * inputChargeScale;      //and the total scale factor is the volume term times the charge scale factor
-    for (i[1] = 0; i[1] <= nBins[1]; i[1]++)
+    for (i[1] = 0; i[1] < nBins[1]; i[1]++)
     {  //phi 
       phimid = lowerBound[1] + (i[1] + 0.5) * dphi;
-      for (i[2] = 0; i[2] <= nBins[2]; i[2]++)
+      for (i[2] = 0; i[2] < nBins[2]; i[2]++)
       {  //z
         zmid = (lowerBound[2] + (i[2] + 0.5) * dz) / inputAxisScale;
         if (CanInterpolateAt(phimid, rmid, zmid,hChargeDensity))
