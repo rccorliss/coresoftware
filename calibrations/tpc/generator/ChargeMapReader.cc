@@ -180,15 +180,23 @@ void ChargeMapReader::RegenerateCharge()
         }
 	if (1){
 	  if (CanInterpolateAt(phimid, rmid, zmid,hChargeDensity)){
-            printf("density debug report (interp) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E, density=%E, vol=%E, q_bin=%E, q_interp=%E, q_bin/vol=%E\n",
-		   rmid, phimid, zmid, q,hChargeDensity->Interpolate(phimid, rmid, zmid),scaleFactor,
+            printf("density debug report (interp) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E"
+		   ", density=%E, vol=%E"
+		   ", q_bin=%E, q_bin_ions=%E, q_interp=%E, q_bin_ions/vol=%E\n",
+		   rmid, phimid, zmid, q,
+		   hChargeDensity->Interpolate(phimid, rmid, zmid),histBinVolume,
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/inputChargeScale,
 		   hSourceCharge->Interpolate(phimid, rmid, zmid),
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
 	  } else {
-            printf("density debug report (getbin) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E, density=%E, vol=%E, q_bin=%E, q_bin/vol=%E\n",
-		   rmid, phimid, zmid, q,hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid)),scaleFactor,
+            printf("density debug report (getbin) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E"
+		   ", density=%E, vol=%E"
+		   ", q_bin=%E, q_bin_ions=%E, q_bin_ions/vol=%E\n",
+		   rmid, phimid, zmid, q,
+		   hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid)),histBinVolume,
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/inputChargeScale,
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
 	  }
 	}
@@ -270,6 +278,10 @@ void ChargeMapReader::RegenerateDensity()
         int globalBin = hSourceCharge->GetBin(i[0], i[1], i[2]);
         float q = hSourceCharge->GetBinContent(globalBin);
         hChargeDensity->SetBinContent(globalBin, q / volume);
+	if (1){
+	  printf("iprz=(%d,%d,%d),glob=%d",i[0],i[1],i[2]);
+	  printf("\tq=%E,vol=%E,dens=%E\n",q,volume,hChargeDensity->GetBinContent(globalBin));
+	}
       }
     }
   }
