@@ -162,6 +162,7 @@ void ChargeMapReader::RegenerateCharge()
       for (i[2] = 0; i[2] < nBins[2]; i[2]++)
       {  //z
         zmid = (lowerBound[2] + (i[2] + 0.5) * dz) / inputAxisScale;
+	float q=0;
         if (CanInterpolateAt(phimid, rmid, zmid,hChargeDensity))
         {  //interpolate if we can
           if (0) 
@@ -171,15 +172,28 @@ void ChargeMapReader::RegenerateCharge()
             printf("  p: %.2f < %.2f < %.2f\n", hChargeDensity->GetXaxis()->GetXmin(), phimid, hChargeDensity->GetXaxis()->GetXmax());
             printf("  z: %.2f < %.2f < %.2f\n", hChargeDensity->GetZaxis()->GetXmin(), zmid, hChargeDensity->GetZaxis()->GetXmax());
           }
-
-          charge->Set(i[0], i[1], i[2],
-                      scaleFactor*hChargeDensity->Interpolate(phimid, rmid, zmid) );
+	  q=scaleFactor*hChargeDensity->Interpolate(phimid, rmid, zmid);
         }
         else
         {  //otherwise, just take the central value and assume it's flat.  Better than a zero.
-          charge->Set(i[0], i[1], i[2],
-                      scaleFactor*hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid)) );
+	  q=scaleFactor*hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid));
         }
+	if (1){
+	  if (CanInterpolateAt(phimid, rmid, zmid,hChargeDensity)){
+            printf("density debug report (interp) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E, density=%E, vol=%E, q_bin=%E, q_interp=%E q_bin/vol=%E\n",
+		   rmid, phimid, zmid, q,scaleFactor,
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
+		   hSourceCharge->Interpolate(phimid, rmid, zmid);
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
+	  } else {
+	    printf("density debug report (getbin) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E, density=%E, vol=%E, q_bin=%E, q_bin/vol=%E\n",
+		   rmid, phimid, zmid, q,scaleFactor,
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
+	  }
+	}
+	charge->Set(i[0], i[1], i[2],q);
+
       }  //z
     }    //phi
   }      //r
