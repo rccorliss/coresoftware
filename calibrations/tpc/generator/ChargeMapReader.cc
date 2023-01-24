@@ -179,24 +179,23 @@ void ChargeMapReader::RegenerateCharge()
 	  q=scaleFactor*hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid));
         }
 	if (1){
+	  int global=hSourceCharge->FindBin(phimid, rmid, zmid);
 	  if (CanInterpolateAt(phimid, rmid, zmid,hChargeDensity)){
-            printf("density debug report (interp) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E"
-		   ", density=%E, vol=%E"
-		   ", q_bin=%E, q_bin_ions=%E, q_interp=%E, q_bin_ions/vol=%E\n",
-		   rmid, phimid, zmid, q,
-		   hChargeDensity->Interpolate(phimid, rmid, zmid),histBinVolume,
+            printf("density debug report (interp) (r,phi,z)=(%.2f, %.2f,%.2f), glob=%d, q_dens=%E", rmid, phimid, zmid, global,q);
+	    printf(", density=%E, vol=%E",hChargeDensity->Interpolate(phimid, rmid, zmid),histBinVolume);
+	    printf(", q_bin=%E, q_bin_ions=%E",
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
-		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/inputChargeScale,
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/inputChargeScale);
+	    printf(", q_interp=%E, q_bin_ions/vol=%E\n",
 		   hSourceCharge->Interpolate(phimid, rmid, zmid),
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
 	  } else {
-            printf("density debug report (getbin) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E"
-		   ", density=%E, vol=%E"
-		   ", q_bin=%E, q_bin_ions=%E, q_bin_ions/vol=%E\n",
-		   rmid, phimid, zmid, q,
-		   hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid)),histBinVolume,
+            printf("density debug report (getbin) (r,phi,z)=(%.2f, %.2f,%.2f), glob=%d, q_dens=%E", rmid, phimid, zmid, global,q);
+ 	    printf(", density=%E, vol=%E",hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid)),histBinVolume);
+	    printf(", q_bin=%E, q_bin_ions=%E",
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
-		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/inputChargeScale,
+		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/inputChargeScale);
+	    printf(", q_bin_ions/vol=%E\n",
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
 	  }
 	}
@@ -232,6 +231,7 @@ void ChargeMapReader::RegenerateDensity()
 
   //clone this from the source histogram, which we assume is open.
   hChargeDensity = static_cast<TH3*>(hSourceCharge->Clone("hChargeDensity"));
+  hChargeDensity->Reset();
 
   //then go through it, bin by bin, and replace each bin content with the corresponding density, so we can interpolate correctly.
   //TODO:  Does this mean we once again need 'guard' bins?  Gross.
@@ -280,6 +280,7 @@ void ChargeMapReader::RegenerateDensity()
         hChargeDensity->SetBinContent(globalBin, q / volume);
 	if (1){
 	  printf("iprz=(%d,%d,%d),glob=%d",i[0],i[1],i[2],globalBin);
+	  printf("edges=[%.2f,%.2f],[%.1f,%.1f],[%.1f,%f.1],",low[0],high[0],low[1],high[1],low[2],high[2]);
 	  printf("\tq=%E,vol=%E,dens=%E\n",q,volume,hChargeDensity->GetBinContent(globalBin));
 	}
       }
