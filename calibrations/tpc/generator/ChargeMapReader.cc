@@ -181,13 +181,13 @@ void ChargeMapReader::RegenerateCharge()
 	if (1){
 	  if (CanInterpolateAt(phimid, rmid, zmid,hChargeDensity)){
             printf("density debug report (interp) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E, density=%E, vol=%E, q_bin=%E, q_interp=%E, q_bin/vol=%E\n",
-		   rmid, phimid, zmid, q,scaleFactor,
+		   rmid, phimid, zmid, q,hChargeDensity->Interpolate(phimid, rmid, zmid),scaleFactor,
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
 		   hSourceCharge->Interpolate(phimid, rmid, zmid),
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
 	  } else {
             printf("density debug report (getbin) (r,phi,z)=(%.2f, %.2f,%.2f), q_dens=%E, density=%E, vol=%E, q_bin=%E, q_bin/vol=%E\n",
-		   rmid, phimid, zmid, q,scaleFactor,
+		   rmid, phimid, zmid, q,hChargeDensity->GetBinContent(hChargeDensity->FindBin(phimid, rmid, zmid)),scaleFactor,
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid)),
 		   hSourceCharge->GetBinContent(hSourceCharge->FindBin(phimid, rmid, zmid))/scaleFactor);
 	  }
