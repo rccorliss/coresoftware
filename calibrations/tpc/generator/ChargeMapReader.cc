@@ -279,7 +279,7 @@ void ChargeMapReader::RegenerateDensity()
         float q = hSourceCharge->GetBinContent(globalBin);
         hChargeDensity->SetBinContent(globalBin, q / volume);
 	if (1){
-	  printf("iprz=(%d,%d,%d),glob=%d",i[0],i[1],i[2]);
+	  printf("iprz=(%d,%d,%d),glob=%d",i[0],i[1],i[2],globalBin);
 	  printf("\tq=%E,vol=%E,dens=%E\n",q,volume,hChargeDensity->GetBinContent(globalBin));
 	}
       }
