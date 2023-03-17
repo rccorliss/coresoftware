@@ -5,6 +5,8 @@ void generateTruthIbfGainMap(const char* adcFile, const char *adcName, const cha
 			     const char* outputFile, float scalefactor=1.0, float scaleuncertainty=0.0){
 
   TRandom *rng=new TRandom();
+  printf("scalefactor=%f, scaleuncertainty=%f\n",scalefactor,scaleuncertainty);
+  return;
   
  //load the adc-per-bin data from the specified file.
   TFile* adcInputFile = TFile::Open(adcFile, "READ");
@@ -96,6 +98,7 @@ void generateTruthIbfGainMap(const char* adcFile, const char *adcName, const cha
       int nCells=hIonGain[i]->GetNcells();
       for (int j=0;j<nCells;j++){
 	float val=hIonGain[i]->GetBinContent(j)*rng->Gaus(scalefactor,scaleuncertainty);
+	printf("sanity: binorig=%f,newval=%f\n",hIonGain[i]->GetBinContent(j),val);
 	hIonGain[i]->SetBinContent(j,val);
 	val=hIbfGain[i]->GetBinContent(j)*rng->Gaus(scalefactor,scaleuncertainty);
 	hIbfGain[i]->SetBinContent(j,val);
