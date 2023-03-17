@@ -92,16 +92,16 @@ void generateTruthIbfGainMap(const char* adcFile, const char *adcName, const cha
     hIbfGain[i]->Divide(hFlatAdc[i]);
 
     //draw gaussians for every entry, only if the input is not zero.
-    if (scalefactor!=1.0){
-      if (scaleuncertainty>0.0){
-	int nCells=hIonGain[i]->GetNcells();
-	for (int j=0;j<nCells;j++){
-	  float val=hIonGain[i]->GetBinContent(j)*rng->Gaus(scalefactor,scaleuncertainty);
-	  hIonGain[i]->SetBinContent(j,val);
-	  val=hIbfGain[i]->GetBinContent(j)*rng->Gaus(scalefactor,scaleuncertainty);
-	  hIbfGain[i]->SetBinContent(j,val);
-	}
-      } else {
+    if (scaleuncertainty>0.0){
+      int nCells=hIonGain[i]->GetNcells();
+      for (int j=0;j<nCells;j++){
+	float val=hIonGain[i]->GetBinContent(j)*rng->Gaus(scalefactor,scaleuncertainty);
+	hIonGain[i]->SetBinContent(j,val);
+	val=hIbfGain[i]->GetBinContent(j)*rng->Gaus(scalefactor,scaleuncertainty);
+	hIbfGain[i]->SetBinContent(j,val);
+      }
+    } else {
+      if (scalefactor!=1.0){
 	hIonGain[i]->Scale(scalefactor);
 	hIbfGain[i]->Scale(scalefactor);
       }
