@@ -5,8 +5,8 @@ void generateTruthIbfGainMap(const char* adcFile, const char *adcName, const cha
 			     const char* outputFile, float scalefactor=1.0, float scaleuncertainty=0.0){
 
   TRandom *rng=new TRandom();
-  printf("scalefactor=%f, scaleuncertainty=%f\n",scalefactor,scaleuncertainty);
-  return;
+  //printf("scalefactor=%f, scaleuncertainty=%f\n",scalefactor,scaleuncertainty);
+  //return;
   
  //load the adc-per-bin data from the specified file.
   TFile* adcInputFile = TFile::Open(adcFile, "READ");
