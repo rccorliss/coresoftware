@@ -1664,12 +1664,22 @@ void AnnularFieldSim::populate_lowres_lookup()
   return;
 }
 
-void AnnularFieldSim::populate_phislice_lookup()
+void AnnularFieldSim::populate_phislice_lookup(int divisions, int id)
 {
+  
   //with 'f' being the position the field is being measured at, and 'o' being the position of the charge generating the field.
   //remember the 'f' part of Epartial uses relative indices.
+
+  //we divide the work into n divisions, and only do the math if el%divisions=id.
+  
   //  TVector3 (*f)[fx][fy][fz][ox][oy][oz]=field_;
-  printf("populating phislice  lookup for (%dx%dx%d)x(%dx%dx%d) grid\n", nr_roi, 1, nz_roi, nr, nphi, nz);
+  if (divisions!=1){
+    printf("populating phislice  lookup for (%dx%dx%d)x(%dx%dx%d) grid.  %d divisions, this id=%d\n", nr_roi, 1, nz_roi, nr, nphi, nz, divisions, id);
+    phislice_divisions=divisions;
+    phislice_id=id;
+  }  else {
+    printf("populating phislice  lookup for (%dx%dx%d)x(%dx%dx%d) grid\n", nr_roi, 1, nz_roi, nr, nphi, nz);
+  }
   unsigned long long totalelements = nr;  //nr*nphi*nz*nr_roi*nz_roi
   totalelements *= nphi;
   totalelements *= nz;
@@ -1694,6 +1704,14 @@ void AnnularFieldSim::populate_phislice_lookup()
           for (int ioz = 0; ioz < nz; ioz++)
           {
             el++;
+	    if (el%divisions!=id)
+	      {
+		if (!(el % percent))
+		  {
+		    printf("populate_phislice_lookup %d%%: skipping because mod(%d)!=id (%d)  ", (int) (debug_npercent * el / percent), el%divisions,id);
+		  }
+		continue;
+	      }
             from = GetCellCenter(ior, iophi, ioz);
             //*f[ifx][ify][ifz][iox][ioy][ioz]=cacl_unit_field(at,from);
             //printf("calc_unit_field...\n");
@@ -1873,6 +1891,7 @@ void AnnularFieldSim::save_phislice_lookup(const char *destfile)
           for (ioz = 0; ioz < nz; ioz++)
           {
             el++;
+	    if (el%phislice_divisions!=phislice_id) continue;
             unitf = Epartial_phislice->Get(ifr - rmin_roi, 0, ifz - zmin_roi, ior, iophi, ioz) * (-1 / (V / (C * cm)));  //save in units of V/(C*cm) note that we introduce a -1 here for legcy reasons.
             if (1)
             {
@@ -1883,7 +1902,6 @@ void AnnularFieldSim::save_phislice_lookup(const char *destfile)
                        ior, iophi, ioz, ifr, ifz, unitf.X(), unitf.Y(), unitf.Z());
               }
             }
-
             tLookup->Fill();
           }
         }

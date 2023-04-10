@@ -122,6 +122,7 @@ class AnnularFieldSim
   LookupCase lookupCase;  //which lookup system to instantiate and use.
   ChargeCase chargeCase;  //which charge model to use
   int truncation_length;  //distance in cells (full 3D metric in units of bins)
+  int phislice_divisions=1, phislice_id=0;
 
   //variables related to the region of interest:
   //
@@ -315,7 +316,7 @@ class AnnularFieldSim
   void populate_full3d_lookup();
   void populate_highres_lookup();
   void populate_lowres_lookup();
-  void populate_phislice_lookup();
+  void populate_phislice_lookup(int divisions=1, int id=0);
 
   void load_phislice_lookup(const char *sourcefile);
   void save_phislice_lookup(const char *destfile);
