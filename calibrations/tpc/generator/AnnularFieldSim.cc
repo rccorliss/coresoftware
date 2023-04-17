@@ -1704,7 +1704,7 @@ void AnnularFieldSim::populate_phislice_lookup(int divisions, int id)
           for (int ioz = 0; ioz < nz; ioz++)
           {
             el++;
-	    if (el%divisions!=id)
+	    if (el%divisions!=id) // skip if this is not our stripe.
 	      {
 		if (!(el % percent))
 		  {
@@ -1891,7 +1891,14 @@ void AnnularFieldSim::save_phislice_lookup(const char *destfile)
           for (ioz = 0; ioz < nz; ioz++)
           {
             el++;
-	    if (el%phislice_divisions!=phislice_id) continue;
+	    if (el%phislice_divisions!=phislice_id)
+	      {
+		if (!(el % percent)) 
+		  {
+		    printf("save_phislice_lookup %d%%:  \n skipping because not in our striped responsibility", (int) (debug_npercent * el / percent));
+		  }
+		continue; //only write the terms we are responsible for.
+	      }
             unitf = Epartial_phislice->Get(ifr - rmin_roi, 0, ifz - zmin_roi, ior, iophi, ioz) * (-1 / (V / (C * cm)));  //save in units of V/(C*cm) note that we introduce a -1 here for legcy reasons.
             if (1)
             {
