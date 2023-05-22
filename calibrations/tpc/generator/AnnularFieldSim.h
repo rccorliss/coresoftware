@@ -265,11 +265,11 @@ class AnnularFieldSim
     return;
   };
   void setFlatFields(float B, float E);
-  void loadEfield(const std::string &filename, const std::string &treename, int zsign = 1);
-  void loadBfield(const std::string &filename, const std::string &treename);
-  void load3dBfield(const std::string &filename, const std::string &treename, int zsign = 1, float scale = 1.0);
+  void loadEfield(const std::string &filename, const std::string &treename, int zsign = 1, TVector3 *fieldOrigin=nullptr, float thetaX=0, float thetaY=0);
+  void loadBfield(const std::string &filename, const std::string &treename, TVector3 *fieldOrigin=nullptr, float thetaX=0, float thetaY=0);
+  void load3dBfield(const std::string &filename, const std::string &treename, int zsign = 1, float scale = 1.0, TVector3 *fieldOrigin=nullptr, float thetaX=0, float thetaY=0);
 
-  void loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign);
+  void loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign, TVector3 *fieldOrigin, float thetaX, float thetaY); //load field vector data from the source TTree, assuming the field coordinates are centered at a position fieldOrigin in the TPC coordaintes, and hence all coordinates in the source should be transformed into TPC coordinates via x_tpc=rotation(x_f+fieldOrigin), where the rotation is about the y axis, and then the x axis.
 
   void load_rossegger(double epsilon = 1E-4)
   {

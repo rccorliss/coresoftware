@@ -893,7 +893,7 @@ void AnnularFieldSim::load_analytic_spacecharge(float scalefactor = 1)
   return;
 }
 
-void AnnularFieldSim::loadEfield(const std::string &filename, const std::string &treename, int zsign)
+void AnnularFieldSim::loadEfield(const std::string &filename, const std::string &treename, int zsign, TVector3 *fieldOrigin, float thetaX, float thetaY)
 {
   //prep variables so that loadField can just iterate over the tree entries and fill our selected tree agnostically
   //assumes file stores fields as V/cm.
@@ -912,11 +912,11 @@ void AnnularFieldSim::loadEfield(const std::string &filename, const std::string 
   phi = fphi = 0;  //no phi components yet.
   phi += 1;
   phi = 0;  //satisfy picky racf compiler
-  loadField(&Eexternal, fTree, &r, 0, &z, &fr, &fphi, &fz, V / cm, zsign);
+  loadField(&Eexternal, fTree, &r, 0, &z, &fr, &fphi, &fz, V / cm, zsign, fieldOrigin,thetaX,thetaY);
   fieldFile.Close();
   return;
 }
-void AnnularFieldSim::loadBfield(const std::string &filename, const std::string &treename)
+void AnnularFieldSim::loadBfield(const std::string &filename, const std::string &treename, TVector3 *fieldOrigin, float thetaX, float thetaY)
 {
   //prep variables so that loadField can just iterate over the tree entries and fill our selected tree agnostically
   //assumes file stores field as Tesla.
@@ -934,13 +934,13 @@ void AnnularFieldSim::loadBfield(const std::string &filename, const std::string 
   phi = fphi = 0;  //no phi components yet.
   phi += 1;
   phi = 0;  //satisfy picky racf compiler
-  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla, 1);
+  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla, 1, fieldOrigin,thetaX,thetaY);
   fieldFile.Close();
 
   return;
 }
 
-void AnnularFieldSim::load3dBfield(const std::string &filename, const std::string &treename, int zsign, float scale)
+void AnnularFieldSim::load3dBfield(const std::string &filename, const std::string &treename, int zsign, float scale, TVector3 *fieldOrigin, float thetaX, float thetaY)
 {
   //prep variables so that loadField can just iterate over the tree entries and fill our selected tree agnostically
   //assumes file stores field as Tesla.
@@ -957,15 +957,14 @@ void AnnularFieldSim::load3dBfield(const std::string &filename, const std::strin
   fTree->SetBranchAddress("bz", &fz);
   fTree->SetBranchAddress("phi", &phi);
   fTree->SetBranchAddress("bphi", &fphi);
-  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla * scale, zsign);
+  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla * scale, zsign, fieldOrigin,thetaX,thetaY);
   return;
 }
 
-void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign)
+void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign, TVector3 *fieldOrigin, float thetaX, float thetaY)
 {
   //we're loading a tree of unknown size and spacing -- and possibly uneven spacing -- into our local data.
   //formally, we might want to interpolate or otherwise weight, but for now, carve this into our usual bins, and average, similar to the way we load spacecharge.
-
   bool phiSymmetry = (phiptr == 0);  //if the phi pointer is zero, assume phi symmetry.
   int lowres_factor = 10;            // to fill in gaps, we group together loweres^3 cells into one block and use that average.
   printf("loading field from %f<z<%f\n", zmin, zmax);
@@ -980,39 +979,93 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
     htSumLow[i] = new TH3F(Form("htsumlow%d", i), Form("sum of low %c-axis entries in the field loading", *(axis + i)), nphi / lowres_factor + 1, 0, M_PI * 2.0, nr / lowres_factor + 1, rmin, rmax, nz / lowres_factor + 1, zmin, zmax);
   }
 
+
+  //now that we have our th3 objects, we also need to do some bookkeeping for our transformation from the field coordinate system to the TPC coordinate system.  TPC must be the local system because it defines the drift axis.
+  bool doOffset=(fieldOrigin!=nullptr)
+  bool doRotX=(thetaX!=0);
+  bool doRotY=(thetaY!=0);
+  
+  
+  
+  
+  
   int nEntries = source->GetEntries();
   for (int i = 0; i < nEntries; i++)
   {  //could probably do this with an iterator
     source->GetEntry(i);
-    float zval = *zptr * zsign;  //right now, need the ability to flip the sign of the z coordinate.
+    float zval = *zptr * zsign;  //right now (circa when?), need the ability to flip the sign of the z coordinate.
+    
+    
     //note that the z sign also needs to affect the field sign in that direction, which is handled outside in the z components of the fills
     //if we aren't asking for phi symmetry, build just the one phi strip
     if (!phiSymmetry)
     {
-      htEntries->Fill(*phiptr, *rptr, zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-      htSum[0]->Fill(*phiptr, *rptr, zval, *frptr * fieldunit);
-      htSum[1]->Fill(*phiptr, *rptr, zval, *fphiptr * fieldunit);
-      htSum[2]->Fill(*phiptr, *rptr, zval, *fzptr * fieldunit * zsign);
-      htEntriesLow->Fill(*phiptr, *rptr, zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-      htSumLow[0]->Fill(*phiptr, *rptr, zval, *frptr * fieldunit);
-      htSumLow[1]->Fill(*phiptr, *rptr, zval, *fphiptr * fieldunit);
-      htSumLow[2]->Fill(*phiptr, *rptr, zval, *fzptr * fieldunit * zsign);
+    TVector3 pos(1,1,1);
+    pos.SetPhi(*phiptr);
+    pos.SetPerp(*rptr);
+    pos.SetZ(zval);
+    Tvector3 field(1,1,1);
+   field.SetPhi(*fphiptr*fieldunit);
+    field.SetPerp(*frptr*fieldunit);
+    field.SetZ(*fzptr*fieldunit*zsign);
+     
+    if (doOffset)
+      pos+=*fieldOrigin; //note we only translate the coordinate, not the field
+    if (doRotX) {
+      pos.RotateX(thetaX);
+      field.RotateX(thetaX); //but we rotate the field
+    }
+    if (doRotY) {
+      pos.RotateY(thetaY);
+      field.RotateY(thetaX); //but we rotate the field
+    }
+
+      
+      htEntries->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
+      htSum[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
+      htSum[1]->Fill(pos.Phi(), pos.Perp(), zval, field.Phi());
+      htSum[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
+      htEntriesLow->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
+      htSumLow[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
+      htSumLow[1]->Fill(pos.Phi(), pos.Perp(), zval, field.Phi());
+      htSumLow[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
     }
     else
     {  //if we do have phi symmetry, build every phi strip using this one.
       for (int j = 0; j < nphi; j++)
-      {
-        htEntries->Fill(j * step.Phi(), *rptr, zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-        htSum[0]->Fill(j * step.Phi(), *rptr, zval, *frptr * fieldunit);
-        htSum[1]->Fill(j * step.Phi(), *rptr, zval, *fphiptr * fieldunit);
-        htSum[2]->Fill(j * step.Phi(), *rptr, zval, *fzptr * fieldunit * zsign);
-        htEntriesLow->Fill(j * step.Phi(), *rptr, zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-        htSumLow[0]->Fill(j * step.Phi(), *rptr, zval, *frptr * fieldunit);
-        htSumLow[1]->Fill(j * step.Phi(), *rptr, zval, *fphiptr * fieldunit);
-        htSumLow[2]->Fill(j * step.Phi(), *rptr, zval, *fzptr * fieldunit * zsign);
-      }
+	{
+	  TVector3 pos(1,1,1);
+	  pos.SetPhi(j * step.Phi());
+	  pos.SetPerp(*rptr);
+	  pos.SetZ(zval);
+	  Tvector3 field(1,1,1);
+	  field.SetPhi(*fphiptr*fieldunit);
+	  field.SetPerp(*frptr*fieldunit);
+	  field.SetZ(*fzptr*fieldunit*zsign);
+   
+	  if (doOffset)
+	    pos+=*fieldOrigin; //note we only translate the coordinate, not the field
+	  if (doRotX) {
+	    pos.RotateX(thetaX);
+	    field.RotateX(thetaX); //but we rotate the field
+	  }
+	  if (doRotY) {
+	    pos.RotateY(thetaY);
+	    field.RotateY(thetaX); //but we rotate the field
+	  }
+	  htEntries->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
+	  htSum[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
+	  htSum[1]->Fill(pos.Phi(), pos.Perp(), zval, field.Phi());
+	  htSum[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
+	  htEntriesLow->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
+	  htSumLow[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
+	  htSumLow[1]->Fill(pos.Phi(), pos.Perp(), zval,field.Phi());
+	  htSumLow[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
+	}
     }
   }
+  //now all the bins are loaded with the r,phi, z components of the field.
+ 
   //now we just divide and fill our local plots (which should eventually be stored as histograms, probably) with the values from each hist cell:
   int nemptybins = 0;
   for (int i = 0; i < nphi; i++)
@@ -1030,7 +1083,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
           //no entries here!
           nemptybins++;
         }
-        //have to rotate this to the proper direction.
+        //have to rotate this to the proper direction. (so we can read off the cartesian coordinates)
         fieldvec.RotateZ(FilterPhiPos(cellcenter.Phi()));  //rcc caution.  Does this rotation shift the sense of 'up'?
         (*field)->Set(j, i, k, fieldvec);
       }
@@ -1045,6 +1098,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
       {
         for (int k = 0; k < nz; k++)
         {
+	  //rcc caution.  we are now averaging across things we know may not be phi symmetric in our coordinate system.  probably better to do a cartesian average rather than r,phi,z component average...
           TVector3 cellcenter = GetCellCenter(j, i, k);
           int bin = htEntries->FindBin(FilterPhiPos(cellcenter.Phi()), cellcenter.Perp(), cellcenter.Z());
           if (htEntries->GetBinContent(bin) == 0)
