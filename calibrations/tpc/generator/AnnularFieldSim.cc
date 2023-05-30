@@ -992,7 +992,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
   if (doRotation){
     printf("  Rotation Magnet->TPC:\n");
     for (int i=0;i<3;i++){
-      printf("\t%f\t%f\t%f\n",tpcPassiveMagnet(i,0),tpcPassiveMagnet(i,1),tpcPassiveMagnet(i,2));
+      printf("\t%f\t%f\t%f\n",magToTpc(i,0),magToTpc(i,1),magToTpc(i,2));
     }
     printf("\n");
   }
