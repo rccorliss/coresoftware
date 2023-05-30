@@ -9,7 +9,9 @@ R__LOAD_LIBRARY(build/.libs/libfieldsim)
   char field_string[200];
   char lookup_string[200];
 
-AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe=false, bool useSpacecharge=true);
+AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe=false, bool useSpacecharge=true,
+					float magX=0, float magY=0, float magZ=0,
+					float eulerPhi=0, float eulerTheta=0,float eulerPsi=0){);
 AnnularFieldSim *SetupDigitalCurrentSphenixTpc(bool twinMe=false, bool useSpacecharge=true);
 void TestSpotDistortion(AnnularFieldSim *t);
 void SurveyFiles(TFileCollection* filelist);
@@ -237,8 +239,8 @@ void TestSpotDistortion(AnnularFieldSim *t){
 }
 
 AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge,
-					float magX=0, float magY=0, float magZ=0,
-					float eulerPhi=0, float eulerTheta=0,float eulerPsi=0){
+					float magX, float magY, float magZ,
+					float eulerPhi, float eulerTheta,float eulerPsi){
   //step1:  specify the sPHENIX space charge model parameters
   const float tpc_rmin=20.0;
   const float tpc_rmax=78.0;
