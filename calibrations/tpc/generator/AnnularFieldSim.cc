@@ -16,6 +16,7 @@
 #include <TStyle.h>
 #include <TTree.h>
 #include <TVector3.h>
+#include <TRotation.h>
 
 #include <boost/format.hpp>
 
@@ -1001,60 +1002,74 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
     //if we aren't asking for phi symmetry, build just the one phi strip
     if (!phiSymmetry)
     {
-    TVector3 pos(1,1,1);
-    pos.SetPhi(*phiptr);
-    pos.SetPerp(*rptr);
-    pos.SetZ(zval);
-    Tvector3 field(1,1,1);
-   field.SetPhi(*fphiptr*fieldunit);
-    field.SetPerp(*frptr*fieldunit);
-    field.SetZ(*fzptr*fieldunit*zsign);
+    TVector3 inputpos(1,1,1);
+    inputpos.SetPhi(*phiptr);
+    inputpos.SetPerp(*rptr);
+    inputpos.SetZ(zval);
+
+    //note that the components in the tntuple are 'phi-hat' and not 'phi value'.  this has components that point in the phi, r, and z coordinates, but we have to handle them as cartesian magnitudes, since root things phi is a coordinate, not a magnitude.  It wraps, and is bounded.
+    TVector3 inputfield(1,1,1);
+    //start by assigning the coordinate as if it were at phi=0, then rotate to the proper phi position:
+    //x component is the radial component, since we are along the x axis.
+    //y component is the phi-hat component, since that is perp to x.
+    //z is just z.  cylinders don't mess with that.
+    inputfield.SetXYZ(*frptr*fieldunit,*fphiptr*fieldunit,*fzptr*fieldunit*zsign);
+    inputfield.RotateZ(inputPos.Phi());
+    //now the field at inputpos is properly expressed in the cartesian of the magnet's local coords.
      
     if (doRotation){
-      pos=magToTpc*pos; //rotate our coordinates
-      field=magToTpc*field; //rotate the components of the field.
+      inputpos=magToTpc*inputpos; //rotate our coordinates
+      inputfield=magToTpc*inputfield; //rotate the components of the field.
     if (doOffset) {
-      pos+=*fieldOrigin;
+      inputpos+=*fieldOrigin;
     }
 
+    //to get the vector components back out of the field, we can take dot products of the field with the local r and phi axes, or we can rotate the vector to phi=zero in the TPC frame.  The latter is easier:
+    inputfield.RotateZ(inputpos.Phi()*-1.);
+    //now Xhat is the radial component, Yhat the phi component, and Zhat the z component, in TPC coords
+
       
-      htEntries->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-      htSum[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
-      htSum[1]->Fill(pos.Phi(), pos.Perp(), zval, field.Phi());
-      htSum[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
-      htEntriesLow->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-      htSumLow[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
-      htSumLow[1]->Fill(pos.Phi(), pos.Perp(), zval, field.Phi());
-      htSumLow[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
+      htEntries->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
+      htSum[0]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(),inputfield.X());
+      htSum[1]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Y());
+      htSum[2]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Z());
+      htEntriesLow->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
+      htSumLow[0]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(),inputfield.X());
+      htSumLow[1]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Y());
+      htSumLow[2]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Z());
     }
     else
     {  //if we do have phi symmetry, build every phi strip using this one.
       for (int j = 0; j < nphi; j++)
 	{
-	  TVector3 pos(1,1,1);
-	  pos.SetPhi(j * step.Phi());
-	  pos.SetPerp(*rptr);
-	  pos.SetZ(zval);
-	  Tvector3 field(1,1,1);
-	  field.SetPhi(*fphiptr*fieldunit);
-	  field.SetPerp(*frptr*fieldunit);
-	  field.SetZ(*fzptr*fieldunit*zsign);
-
-	  if (doRotation){
-	    pos=magToTpc*pos; //rotate our coordinates
-	    field=magToTpc*field; //rotate the components of the field.
-	    if (doOffset) {
-	      pos+=*fieldOrigin;
-	    }
+	  TVector3 inputpos(1,1,1);
+	  inputpos.SetPhi(j * step.Phi());
+	  inputpos.SetPerp(*rptr);
+	  inputpos.SetZ(zval);
+	  Tvector3 inputfield(1,1,1);
+	  //see the non-phi-symmetric version above for more explanation of why we set inputfield this way.
+	  inputfield.SetXYZ(*frptr*fieldunit,*fphiptr*fieldunit,*fzptr*fieldunit*zsign);
+	  inputfield.RotateZ(inputpos.Phi());
+ 
 	  
-	  htEntries->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-	  htSum[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
-	  htSum[1]->Fill(pos.Phi(), pos.Perp(), zval, field.Phi());
-	  htSum[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
-	  htEntriesLow->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
-	  htSumLow[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
-	  htSumLow[1]->Fill(pos.Phi(), pos.Perp(), zval,field.Phi());
-	  htSumLow[2]->Fill(pos.Phi(), pos.Perp(), zval, field.Z());
+	  if (doRotation){
+	    inputpos=magToTpc*inputpos; //rotate our coordinates
+	    inputfield=magToTpc*inputfield; //rotate the components of the field.
+	    if (doOffset) {
+	      inputpos+=*fieldOrigin;
+	    }
+
+	    inputfield.RotateZ(inputpos.Phi()*-1.);
+
+	  
+	  htEntries->Fill(inputpos.Phi(), posinputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
+	  htSum[0]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(),inputfield.X());
+	  htSum[1]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Y());
+	  htSum[2]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Z());
+	  htEntriesLow->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
+	  htSumLow[0]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(),inputfield.X());
+	  htSumLow[1]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(),inputfield.Y());
+	  htSumLow[2]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Z());
 	}
     }
   }
