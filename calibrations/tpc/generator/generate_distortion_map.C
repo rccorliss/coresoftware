@@ -11,7 +11,7 @@ R__LOAD_LIBRARY(build/.libs/libfieldsim)
 
 AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe=false, bool useSpacecharge=true,
 					float magX=0, float magY=0, float magZ=0,
-					float eulerPhi=0, float eulerTheta=0,float eulerPsi=0){);
+					float eulerPhi=0, float eulerTheta=0,float eulerPsi=0);
 AnnularFieldSim *SetupDigitalCurrentSphenixTpc(bool twinMe=false, bool useSpacecharge=true);
 void TestSpotDistortion(AnnularFieldSim *t);
 void SurveyFiles(TFileCollection* filelist);
