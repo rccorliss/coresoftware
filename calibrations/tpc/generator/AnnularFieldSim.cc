@@ -893,7 +893,7 @@ void AnnularFieldSim::load_analytic_spacecharge(float scalefactor = 1)
   return;
 }
 
-void AnnularFieldSim::loadEfield(const std::string &filename, const std::string &treename, int zsign, TVector3 *fieldOrigin, float thetaX, float thetaY)
+void AnnularFieldSim::loadEfield(const std::string &filename, const std::string &treename, int zsign, TVector3 *fieldOrigin, float eulerPhi, float eulerTheta, float eulerPsi)
 {
   //prep variables so that loadField can just iterate over the tree entries and fill our selected tree agnostically
   //assumes file stores fields as V/cm.
@@ -912,11 +912,11 @@ void AnnularFieldSim::loadEfield(const std::string &filename, const std::string 
   phi = fphi = 0;  //no phi components yet.
   phi += 1;
   phi = 0;  //satisfy picky racf compiler
-  loadField(&Eexternal, fTree, &r, 0, &z, &fr, &fphi, &fz, V / cm, zsign, fieldOrigin,thetaX,thetaY);
+  loadField(&Eexternal, fTree, &r, 0, &z, &fr, &fphi, &fz, V / cm, zsign, fieldOrigin, eulerPhi, eulerTheta, eulerPsi);
   fieldFile.Close();
   return;
 }
-void AnnularFieldSim::loadBfield(const std::string &filename, const std::string &treename, TVector3 *fieldOrigin, float thetaX, float thetaY)
+void AnnularFieldSim::loadBfield(const std::string &filename, const std::string &treename, TVector3 *fieldOrigin, float eulerPhi, float eulerTheta, float eulerPsi)
 {
   //prep variables so that loadField can just iterate over the tree entries and fill our selected tree agnostically
   //assumes file stores field as Tesla.
@@ -934,13 +934,13 @@ void AnnularFieldSim::loadBfield(const std::string &filename, const std::string 
   phi = fphi = 0;  //no phi components yet.
   phi += 1;
   phi = 0;  //satisfy picky racf compiler
-  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla, 1, fieldOrigin,thetaX,thetaY);
+  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla, 1, fieldOrigin, eulerPhi, eulerTheta, eulerPsi);
   fieldFile.Close();
 
   return;
 }
 
-void AnnularFieldSim::load3dBfield(const std::string &filename, const std::string &treename, int zsign, float scale, TVector3 *fieldOrigin, float thetaX, float thetaY)
+void AnnularFieldSim::load3dBfield(const std::string &filename, const std::string &treename, int zsign, float scale, TVector3 *fieldOrigin, float eulerPhi, float eulerTheta, float eulerPsi)
 {
   //prep variables so that loadField can just iterate over the tree entries and fill our selected tree agnostically
   //assumes file stores field as Tesla.
@@ -957,11 +957,11 @@ void AnnularFieldSim::load3dBfield(const std::string &filename, const std::strin
   fTree->SetBranchAddress("bz", &fz);
   fTree->SetBranchAddress("phi", &phi);
   fTree->SetBranchAddress("bphi", &fphi);
-  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla * scale, zsign, fieldOrigin,thetaX,thetaY);
+  loadField(&Bfield, fTree, &r, 0, &z, &fr, &fphi, &fz, Tesla * scale, zsign, fieldOrigin, eulerPhi, eulerTheta, eulerPsi);
   return;
 }
 
-void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign, TVector3 *fieldOrigin, float thetaX, float thetaY)
+void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign, TVector3 *fieldOrigin, float eulerPhi, float eulerTheta, float eulerPsi)
 {
   //we're loading a tree of unknown size and spacing -- and possibly uneven spacing -- into our local data.
   //formally, we might want to interpolate or otherwise weight, but for now, carve this into our usual bins, and average, similar to the way we load spacecharge.
@@ -981,11 +981,12 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 
 
   //now that we have our th3 objects, we also need to do some bookkeeping for our transformation from the field coordinate system to the TPC coordinate system.  TPC must be the local system because it defines the drift axis.
-  bool doOffset=(fieldOrigin!=nullptr)
-  bool doRotX=(thetaX!=0);
-  bool doRotY=(thetaY!=0);
-  
-  
+  bool doOffset=(fieldOrigin!=nullptr);
+  bool doRotation=!(eulerPhi==0 && eulerTheta==0 && eulerPsi==0);
+
+  TRotation magToTpc;//rotation to convert magnet coordinates to TPC coordinates
+  magToTpc.SetXEulerAngles(eulerPhi,eulerTheta,eulerPsi);
+
   
   
   
@@ -1009,15 +1010,11 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
     field.SetPerp(*frptr*fieldunit);
     field.SetZ(*fzptr*fieldunit*zsign);
      
-    if (doOffset)
-      pos+=*fieldOrigin; //note we only translate the coordinate, not the field
-    if (doRotX) {
-      pos.RotateX(thetaX);
-      field.RotateX(thetaX); //but we rotate the field
-    }
-    if (doRotY) {
-      pos.RotateY(thetaY);
-      field.RotateY(thetaX); //but we rotate the field
+    if (doRotation){
+      pos=magToTpc*pos; //rotate our coordinates
+      field=magToTpc*field; //rotate the components of the field.
+    if (doOffset) {
+      pos+=*fieldOrigin;
     }
 
       
@@ -1042,17 +1039,14 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 	  field.SetPhi(*fphiptr*fieldunit);
 	  field.SetPerp(*frptr*fieldunit);
 	  field.SetZ(*fzptr*fieldunit*zsign);
-   
-	  if (doOffset)
-	    pos+=*fieldOrigin; //note we only translate the coordinate, not the field
-	  if (doRotX) {
-	    pos.RotateX(thetaX);
-	    field.RotateX(thetaX); //but we rotate the field
-	  }
-	  if (doRotY) {
-	    pos.RotateY(thetaY);
-	    field.RotateY(thetaX); //but we rotate the field
-	  }
+
+	  if (doRotation){
+	    pos=magToTpc*pos; //rotate our coordinates
+	    field=magToTpc*field; //rotate the components of the field.
+	    if (doOffset) {
+	      pos+=*fieldOrigin;
+	    }
+	  
 	  htEntries->Fill(pos.Phi(), pos.Perp(), zval);  //for legacy reasons this histogram, like others, goes phi-r-z.
 	  htSum[0]->Fill(pos.Phi(), pos.Perp(), zval,field.Perp());
 	  htSum[1]->Fill(pos.Phi(), pos.Perp(), zval, field.Phi());

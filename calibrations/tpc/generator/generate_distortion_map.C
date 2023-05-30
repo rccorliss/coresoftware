@@ -16,7 +16,7 @@ void SurveyFiles(TFileCollection* filelist);
 
 
   
-void generate_distortion_map(const char *inputname, const char* gainName, const char *outputname, const char *ibfName, const char *primName, bool hasSpacecharge=true, bool isAdc=false, int nSteps=500){
+void generate_distortion_map(const char *inputname, const char* gainName, const char *outputname, const char *ibfName, const char *primName, bool hasSpacecharge=true, bool isAdc=false, int nSteps=250, float magX=0, float magY=0, float magZ=0, float eulerPhi=0, float eulerTheta=0,float eulerPsi=0){
   printf("generating single distortion map.  Caution:  This is vastly less efficient than re-using the tpc model once it is set up\n");
  
   bool hasTwin=true; //this flag prompts the code to build both a positive-half and a negative-half for the TPC, reusing as much of the calculations as possible.  It is more efficient to 'twin' one half of the TPC than to recalculate/store the greens functions for both.
@@ -33,9 +33,11 @@ void generate_distortion_map(const char *inputname, const char* gainName, const 
   TString sourcefilename=inputname;
   TString outputfilename=outputname;
 
-  //now build the time-consuming part:
+  //now build the time-consuming part:  setting the long list of parameters, loading the lookup tables, fields, etc
   AnnularFieldSim *tpc;
-    tpc=SetupDefaultSphenixTpc(hasTwin,hasSpacecharge);//loads the lookup, fields, etc.
+  tpc=SetupDefaultSphenixTpc(hasTwin,hasSpacecharge,/*shortcuts about whether the model bothers with both halves of the det or the greens function lookups*/
+			     magX,magY,magZ, /*position of the magnet center in TPC coordinates*/
+			     eulerPhi,eulerTheta,eulerPsi/*rotation from magnet to tpc axes*/);
  
   //and the location to plot the fieldslices about:
  TVector3 pos=0.5*(tpc->GetOuterEdge()+tpc->GetInnerEdge());;
@@ -231,7 +233,9 @@ void TestSpotDistortion(AnnularFieldSim *t){
       return;
 }
 
-AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge){
+AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge,
+					float magX=0, float magY=0, float magZ=0,
+					float eulerPhi=0, float eulerTheta=0,float eulerPsi=0){
   //step1:  specify the sPHENIX space charge model parameters
   const float tpc_rmin=20.0;
   const float tpc_rmax=78.0;
@@ -298,12 +302,13 @@ AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge){
     sprintf(field_string,"realE_B%2.1f_E%2.1f",tpc_magField,tpc_cmVolt/tpc_z);
   }
    if (realB){
-    tpc->load3dBfield("/sphenix/user/rcorliss/field/sphenix3dmaprhophiz.root","fieldmap",1,-1.4/1.5);
+     TVector3 *magPos=new TVector3(magX,magY,magZ);
+     tpc->load3dBfield("/sphenix/user/rcorliss/field/sphenix3dmaprhophiz.root","fieldmap",1,-1.4/1.5,magPos,eulerPhi,eulerTheta,eulerPsi);
         //tpc->loadBfield("sPHENIX.2d.root","fieldmap");
     sprintf(field_string,"realB_B%2.1f_E%2.1f",tpc_magField,tpc_cmVolt/tpc_z);
   } 
   if (realE && realB){
-    sprintf(field_string,"real_B%2.1f_E%2.1f",tpc_magField,tpc_cmVolt/tpc_z);
+    sprintf(field_string,"real_B%2.1f_E%2.1f_bEulers(%1.2E,%1.2E,%1.2E)",tpc_magField,tpc_cmVolt/tpc_z,eulerPhi,eulerTheta,eulerPsi);
   }
   printf("set fields.\n");
 
