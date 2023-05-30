@@ -1014,12 +1014,13 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
     //y component is the phi-hat component, since that is perp to x.
     //z is just z.  cylinders don't mess with that.
     inputfield.SetXYZ(*frptr*fieldunit,*fphiptr*fieldunit,*fzptr*fieldunit*zsign);
-    inputfield.RotateZ(inputPos.Phi());
+    inputfield.RotateZ(inputpos.Phi());
     //now the field at inputpos is properly expressed in the cartesian of the magnet's local coords.
      
     if (doRotation){
       inputpos=magToTpc*inputpos; //rotate our coordinates
       inputfield=magToTpc*inputfield; //rotate the components of the field.
+    }
     if (doOffset) {
       inputpos+=*fieldOrigin;
     }
@@ -1046,7 +1047,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 	  inputpos.SetPhi(j * step.Phi());
 	  inputpos.SetPerp(*rptr);
 	  inputpos.SetZ(zval);
-	  Tvector3 inputfield(1,1,1);
+	  TVector3 inputfield(1,1,1);
 	  //see the non-phi-symmetric version above for more explanation of why we set inputfield this way.
 	  inputfield.SetXYZ(*frptr*fieldunit,*fphiptr*fieldunit,*fzptr*fieldunit*zsign);
 	  inputfield.RotateZ(inputpos.Phi());
@@ -1055,6 +1056,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 	  if (doRotation){
 	    inputpos=magToTpc*inputpos; //rotate our coordinates
 	    inputfield=magToTpc*inputfield; //rotate the components of the field.
+	  }
 	    if (doOffset) {
 	      inputpos+=*fieldOrigin;
 	    }
@@ -1062,7 +1064,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 	    inputfield.RotateZ(inputpos.Phi()*-1.);
 
 	  
-	  htEntries->Fill(inputpos.Phi(), posinputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
+	  htEntries->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
 	  htSum[0]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(),inputfield.X());
 	  htSum[1]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Y());
 	  htSum[2]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Z());
@@ -1071,6 +1073,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 	  htSumLow[1]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(),inputfield.Y());
 	  htSumLow[2]->Fill(inputpos.Phi(), inputpos.Perp(), inputpos.Z(), inputfield.Z());
 	}
+       
     }
   }
   //now all the bins are loaded with the r,phi, z components of the field.
