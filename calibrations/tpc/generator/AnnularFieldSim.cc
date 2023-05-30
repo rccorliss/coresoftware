@@ -988,7 +988,18 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
   TRotation magToTpc;//rotation to convert magnet coordinates to TPC coordinates
   magToTpc.SetXEulerAngles(eulerPhi,eulerTheta,eulerPsi);
 
-  
+  printf("AnnularFieldSim::loadField() with doOffset=%s, doRotation=%s\n",doOffset?"true":"false",doRotation?"true":"false");
+  if (doRotation){
+    printf("  Rotation Magnet->TPC:\n");
+    for (int i=0;i<3;i++){
+      printf("\t%f\t%f\t%f\n",tpcPassiveMagnet(i,0),tpcPassiveMagnet(i,1),tpcPassiveMagnet(i,2));
+    }
+    printf("\n");
+  }
+  if (doOffset){
+    printf("  Translation Magnet->TPC:\n");
+    printf("\t(%f,%f,%f)\n",fieldOrigin->X(),fieldOrigin->Y(),fieldOrigin->Z());
+  }
   
   
   int nEntries = source->GetEntries();
