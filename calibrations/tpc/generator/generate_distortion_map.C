@@ -43,32 +43,35 @@ void generate_distortion_map(const char *inputname, const char* gainName, const 
  TVector3 pos=0.5*(tpc->GetOuterEdge()+tpc->GetInnerEdge());;
   pos.SetPhi(3.14159);
 
-  infile=TFile::Open(sourcefilename.Data(),"READ");
+  //load spacecharge if we have it:
+  if (hasSpacecharge){
+    infile=TFile::Open(sourcefilename.Data(),"READ");
 
-  //the total charge is prim + IBF
-  //if we are doing ADCs, though, we only read the one.
-  TH3* hCharge=(TH3*)(infile->Get(ibfName));
-  if (!isAdc){
-    hCharge->Add((TH3*)(infile->Get(primName)));
-  }   
-  TString chargestring;
+    //the total charge is prim + IBF
+    //if we are doing ADCs, though, we only read the one.
+    TH3* hCharge=(TH3*)(infile->Get(ibfName));
+    if (!isAdc){
+      hCharge->Add((TH3*)(infile->Get(primName)));
+    }   
+    TString chargestring;
 	       
-  //load the spacecharge into the distortion map generator:
-  //  void load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity);
-  if (!isAdc){
-    chargestring=Form("%s:(%s+%s)",inputname,ibfName,primName);
-    tpc->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity, chargestring.Data());
-    if (hasTwin) tpc->twin->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
-  }
-  if (isAdc){ //load digital current using the scaling:
-    gainfile=TFile::Open(gainName,"READ");
-    TH2* hGain[2];
-    hGain[0]=(TH2*)(gainfile->Get(gainHistName[0]));
-    chargestring=Form("%s:(dc:%s g:%s:%s)",inputname,ibfName,gainName,gainHistName[0].Data());
-    tpc->load_digital_current(hCharge,hGain[0],tpc_chargescale,spacecharge_cm_per_axis_unit,chargestring.Data());
-    if (hasTwin) {
-      hGain[1]=(TH2*)(gainfile->Get(gainHistName[1]));
-      tpc->twin->load_digital_current(hCharge,hGain[1],tpc_chargescale,spacecharge_cm_per_axis_unit,chargestring.Data());
+    //load the spacecharge into the distortion map generator:
+    //  void load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity);
+    if (!isAdc){
+      chargestring=Form("%s:(%s+%s)",inputname,ibfName,primName);
+      tpc->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity, chargestring.Data());
+      if (hasTwin) tpc->twin->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
+    }
+    if (isAdc){ //load digital current using the scaling:
+      gainfile=TFile::Open(gainName,"READ");
+      TH2* hGain[2];
+      hGain[0]=(TH2*)(gainfile->Get(gainHistName[0]));
+      chargestring=Form("%s:(dc:%s g:%s:%s)",inputname,ibfName,gainName,gainHistName[0].Data());
+      tpc->load_digital_current(hCharge,hGain[0],tpc_chargescale,spacecharge_cm_per_axis_unit,chargestring.Data());
+      if (hasTwin) {
+	hGain[1]=(TH2*)(gainfile->Get(gainHistName[1]));
+	tpc->twin->load_digital_current(hCharge,hGain[1],tpc_chargescale,spacecharge_cm_per_axis_unit,chargestring.Data());
+      }
     }
   }
   //build the electric fieldmap from the chargemap
