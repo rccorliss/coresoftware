@@ -1079,7 +1079,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 
 	  
 	  htEntries->Fill(filteredPhi, inputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
-	  htSum[0]->Fill(filteredPhi, inputpos.Perp(), inputpos.Z(),inputfield.X());
+	  htSum[0]->Fill(filteredPhi, inputpos.Perp(), inputpos.Z(), inputfield.X());
 	  htSum[1]->Fill(filteredPhi, inputpos.Perp(), inputpos.Z(), inputfield.Y());
 	  htSum[2]->Fill(filteredPhi, inputpos.Perp(), inputpos.Z(), inputfield.Z());
 	  htEntriesLow->Fill(filteredPhi, inputpos.Perp(), inputpos.Z());  //for legacy reasons this histogram, like others, goes phi-r-z.
@@ -1115,7 +1115,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
 	  fieldvec.RotateZ(FilterPhiPos(cellcenter.Phi()));  //rcc caution.  Does this rotation shift the sense of 'up'?
 	}
 	if (entries<1.0 && fieldvec.Mag()>0.0001){
-	  printf("Loading field at jik=(%d,%d,%d).  entries=%f <1.0 but field=(%1.2E,%1.2E,%1.2E)!=0vec)\n",j,i,k,fieldvec.X(),fieldvec.Y(),fieldvec.Z());
+	  printf("Loading field at jik=(%d,%d,%d).  entries=%f <1.0 but field=(%1.2E,%1.2E,%1.2E)!=0vec)\n",j,i,k,entries,fieldvec.X(),fieldvec.Y(),fieldvec.Z());
 	}
 	(*field)->Set(j, i, k, fieldvec);
       }
