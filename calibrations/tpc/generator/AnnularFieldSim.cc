@@ -1013,12 +1013,13 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
     //if we aren't asking for phi symmetry, build just the one phi strip
     if (!phiSymmetry)
     {
+      //coordinates in the fieldmap coordinate system:
       TVector3 inputpos(1,1,1);
       inputpos.SetPhi(*phiptr);
       inputpos.SetPerp(*rptr);
       inputpos.SetZ(zval);
 
-      //note that the components in the tntuple are 'phi-hat' and not 'phi value'.  this has components that point in the phi, r, and z coordinates, but we have to handle them as cartesian magnitudes, since root things phi is a coordinate, not a magnitude.  It wraps, and is bounded.
+      //note that the field components in the tntuple are 'phi-hat' and not 'phi value'.  this has components that point in the phi, r, and z directions as defined locally at that point in the cylinder, hence we have to handle them as cartesian magnitudes, since root treats phi is a coordinate, not a magnitude.
       TVector3 inputfield(1,1,1);
       //start by assigning the coordinate as if it were at phi=0, then rotate to the proper phi position:
       //x component is the radial component, since we are along the x axis.
@@ -1035,6 +1036,7 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
       if (doOffset) {
 	inputpos+=*fieldOrigin;
       }
+      //the field measurement coordinates and field vector are now expressed in the TPC coordinate system.
 
       //to get the vector components back out of the field, we can take dot products of the field with the local r and phi axes, or we can rotate the vector to phi=zero in the TPC frame.  The latter is easier:
       inputfield.RotateZ(inputpos.Phi()*-1.);
@@ -1100,16 +1102,22 @@ void AnnularFieldSim::loadField(MultiArray<TVector3> **field, TTree *source, flo
       {
         TVector3 cellcenter = GetCellCenter(j, i, k);
         int bin = htEntries->FindBin(FilterPhiPos(cellcenter.Phi()), cellcenter.Perp(), cellcenter.Z());
+	float entries=htEntries->GetBinContent(bin);
         TVector3 fieldvec(htSum[0]->GetBinContent(bin), htSum[1]->GetBinContent(bin), htSum[2]->GetBinContent(bin));
-        fieldvec = fieldvec * (1.0 / htEntries->GetBinContent(bin));
-        if (htEntries->GetBinContent(bin) < 0.99)
-        {
-          //no entries here!
-          nemptybins++;
-        }
-        //have to rotate this to the proper direction. (so we can read off the cartesian coordinates)
-        fieldvec.RotateZ(FilterPhiPos(cellcenter.Phi()));  //rcc caution.  Does this rotation shift the sense of 'up'?
-        (*field)->Set(j, i, k, fieldvec);
+	if (entries>0){
+	  fieldvec = fieldvec * (1.0 / entries);
+	  if (htEntries->GetBinContent(bin) < 0.99)
+	    {
+	      //no entries here!
+	      nemptybins++;
+	    }
+	  //have to rotate this to the proper direction. (so we can read off the cartesian coordinates)
+	  fieldvec.RotateZ(FilterPhiPos(cellcenter.Phi()));  //rcc caution.  Does this rotation shift the sense of 'up'?
+	}
+	if (entries<1.0 && fieldvec.Mag()>0.0001){
+	  printf("Loading field at jik=(%d,%d,%d).  entries=%f <1.0 but field=(%1.2E,%1.2E,%1.2E)!=0vec)\n",j,i,k,fieldvec.X(),fieldvec.Y(),fieldvec.Z());
+	}
+	(*field)->Set(j, i, k, fieldvec);
       }
     }
   }
