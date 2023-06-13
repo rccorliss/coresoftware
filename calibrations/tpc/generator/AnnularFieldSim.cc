@@ -1354,8 +1354,9 @@ void AnnularFieldSim::save_fields(const char * filename){
             }
         }
     }
-
+  printf("Saving fields to %s\n", filename);
   TFile *histout=TFile::Open(filename, "RECREATE");
+  histout->cd();
   for (int i=0;i<6;i++){
     hfield[i]->Write();
   }
