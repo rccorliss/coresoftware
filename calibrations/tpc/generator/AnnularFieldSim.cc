@@ -1327,6 +1327,42 @@ void AnnularFieldSim::save_spacecharge(const std::string &filename){
 }
 
 
+void AnnularFieldSim::save_fields(const char * filename){
+  //save six histograms, corresponding to the E and B fields in our local coordinates, as we'll be using them..                                                                                  
+  TH3F* hfield[6];
+  hfield[0]=new TH3F("hInternalElectricField","Internal E.x Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[1]=new TH3F("hInternalElectricField","Internal E.y Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[2]=new TH3F("hInternalElectricField","Internal E.z Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[3]=new TH3F("hInternalElectricField","Internal B.x Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[4]=new TH3F("hInternalElectricField","Internal B.y Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[5]=new TH3F("hInternalElectricField","Internal B.z Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  for (int i = 0; i < nphi; i++)
+    {
+      float phi = 0+step.Phi()*(i+0.5);
+      for (int j = 0; j < nr; j++)
+        {
+          float r = rmin + step.Perp()*(j+0.5);
+          for (int k = 0; k < nz; k++)
+            {
+              float z = zmin+step.Z()*(k+0.5);
+	      for (int x=0;x<3;x++){
+		hfield[x]->Fill(phi,r,z,Efield->Get(j,i,k));
+		hfield[x+3]->Fill(phi,r,z,Bfield->Get(j,i,k));
+	      }
+	      //old version: hsc->Fill(phi,r,z,q->Get(j,i,k));
+            }
+        }
+    }
+
+  TFile *histout=TFile::Open(filename, "RECREATE");
+  for (int i=0;i<6;i++){
+    hfield[i]->Write();
+  }
+  histout->Close();
+  return;
+}
+
+
 void AnnularFieldSim::add_testcharge(float r, float phi, float z, float coulombs)
 {
   q->AddChargeAtPosition(r, phi, z, coulombs * C);
@@ -3740,6 +3776,7 @@ TVector3 AnnularFieldSim::swimTo(float zdest, TVector3 start, bool interpolate, 
 
 TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool interpolate, bool useAnalytic)
 {
+  
   //getting the distortion instead of the post-step position allows us to accumulate small deviations from the original position that might be lost in the large number
 
   //using second order langevin expansion from http://skipper.physics.sunysb.edu/~prakhar/tpc/Papers/ALICE-INT-2010-016.pdf
@@ -3784,7 +3821,18 @@ TVector3 AnnularFieldSim::GetStepDistortion(float zdest, TVector3 start, bool in
     fieldInt = fieldIntegral(zdest, start, Efield);
     fieldIntB = fieldIntegral(zdest, start, Bfield);
   }
+  
 
+
+  if (fieldIntB.Z()==0)
+  {
+    printf("GetStepDistortion is attempting to swim with zero magnetic field. distortions will not work right:\n");
+    printf("GetStepDistortion: (%2.4f,%2.4f,%2.4f) to z=%2.4f\n", start.X(), start.Y(), start.Z(), zdest);
+    printf("GetStepDistortion: fieldIntB=(%E,%E,%E)\n", fieldIntB.X(), fieldIntB.Y(), fieldIntB.Z());
+    printf("GetStepDistortion: interpolate=%s, useAnalytic=%s\n",interpolate?"true":"false",useAnalytic?"true":"false");
+    assert(1 == 2);
+  }
+  
   if (abs(fieldInt.Z() / zdist) < ALMOST_ZERO)
   {
     printf("GetStepDistortion is attempting to swim with no drift field:\n");

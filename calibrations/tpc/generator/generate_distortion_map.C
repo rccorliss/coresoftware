@@ -79,6 +79,8 @@ void generate_distortion_map(const char *inputname, const char* gainName, const 
   //build the electric fieldmap from the chargemap
   tpc->populate_fieldmap();
   if (hasTwin)  tpc->twin->populate_fieldmap();
+  tpc->save_fields(Form("%s.fields.hist.root",outputfilename.Data()));
+  if (hasTwin)  tpc->twin->save_fields(Form("%s.twin.fields.hist.root",outputfilename.Data()));
 
   //build the distortion maps from the fieldmaps and save it to the output filename.
   tpc->GenerateSeparateDistortionMaps(outputfilename.Data(),1,1,1,1,true);
