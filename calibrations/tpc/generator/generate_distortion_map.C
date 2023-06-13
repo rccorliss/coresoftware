@@ -308,7 +308,7 @@ AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge,
   }
    if (realB){
      TVector3 *magPos=new TVector3(magX,magY,magZ);
-     tpc->load3dBfield("/sphenix/user/rcorliss/field/sphenix3dmaprhophiz.root","fieldmap",1,-1.4/1.5,magPos,eulerPhi,eulerTheta,eulerPsi);
+     tpc->load3dBfield("/sphenix/user/rcorliss/field/sphenix3dmaprhophiz.root","fieldmap",1,-1.4/1.5);//,magPos,eulerPhi,eulerTheta,eulerPsi);
         //tpc->loadBfield("sPHENIX.2d.root","fieldmap");
     sprintf(field_string,"realB_B%2.1f_E%2.1f",tpc_magField,tpc_cmVolt/tpc_z);
   } 
