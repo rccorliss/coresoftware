@@ -1330,12 +1330,12 @@ void AnnularFieldSim::save_spacecharge(const std::string &filename){
 void AnnularFieldSim::save_fields(const char * filename){
   //save six histograms, corresponding to the E and B fields in our local coordinates, as we'll be using them..                                                                                  
   TH3F* hfield[6];
-  hfield[0]=new TH3F("hInternalElectricField","Internal E.x Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
-  hfield[1]=new TH3F("hInternalElectricField","Internal E.y Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
-  hfield[2]=new TH3F("hInternalElectricField","Internal E.z Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
-  hfield[3]=new TH3F("hInternalElectricField","Internal B.x Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
-  hfield[4]=new TH3F("hInternalElectricField","Internal B.y Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
-  hfield[5]=new TH3F("hInternalElectricField","Internal B.z Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[0]=new TH3F("hInternalElectricFieldX","Internal E.x Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[1]=new TH3F("hInternalElectricFieldY","Internal E.y Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[2]=new TH3F("hInternalElectricFieldZ","Internal E.z Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[3]=new TH3F("hInternalMagneticFieldX","Internal B.x Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[4]=new TH3F("hInternalMagneticFieldY","Internal B.y Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
+  hfield[5]=new TH3F("hInternalMagneticFieldZ","Internal B.z Histogram;phi(rad);r(cm);z(cm)",nphi,0,phispan,nr,rmin,rmax,nz,zmin,zmax);
   for (int i = 0; i < nphi; i++)
     {
       float phi = 0+step.Phi()*(i+0.5);
