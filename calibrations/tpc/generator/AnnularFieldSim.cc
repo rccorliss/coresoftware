@@ -1345,9 +1345,10 @@ void AnnularFieldSim::save_fields(const char * filename){
           for (int k = 0; k < nz; k++)
             {
               float z = zmin+step.Z()*(k+0.5);
+	      
 	      for (int x=0;x<3;x++){
-		hfield[x]->Fill(phi,r,z,Efield->Get(j,i,k));
-		hfield[x+3]->Fill(phi,r,z,Bfield->Get(j,i,k));
+		hfield[x]->Fill(phi,r,z,Efield->Get(j,i,k)(x));
+		hfield[x+3]->Fill(phi,r,z,Bfield->Get(j,i,k)(x));
 	      }
 	      //old version: hsc->Fill(phi,r,z,q->Get(j,i,k));
             }
