@@ -1231,7 +1231,8 @@ void AnnularFieldSim::load_spacecharge(TH3 *hist, float zoffset, float chargesca
 
 void AnnularFieldSim::load_digital_current(TH3 *hist, TH2 *gainHist, float chargescale, float cmscale, const std::string &inputchargestring)
 {
-  //q->ReadSourceAdc(hist, gainHist, cmscale, chargescale);
+  if (hist && gainHist) printf("%f %f %s\n", chargescale,cmscale,inputchargestring.c_str()) //for the moment.
+			  //q->ReadSourceAdc(hist, gainHist, cmscale, chargescale);
 
   chargestring = "SC loaded externally: " + inputchargestring + ".";
   return;
