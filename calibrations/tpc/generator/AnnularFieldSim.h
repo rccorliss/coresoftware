@@ -147,7 +147,7 @@ class AnnularFieldSim
   void loadBfield(const std::string &filename, const std::string &treename);
   void load3dBfield(const std::string &filename, const std::string &treename, int zsign = 1, float scale = 1.0, float zshift=0);
 
-  void loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign, flota zshift=0);
+  void loadField(MultiArray<TVector3> **field, TTree *source, float *rptr, float *phiptr, float *zptr, float *frptr, float *fphiptr, float *fzptr, float fieldunit, int zsign, float zshift=0);
 
   void load_rossegger(double epsilon = 1E-4)
   {
