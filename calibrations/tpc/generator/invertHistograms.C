@@ -605,7 +605,7 @@ void CheckClosure(std::vector<TH3*> hdistort, std::vector<TH3*> hcorrect, bool r
   return;
 }
 
-int main(){
-  invertHistograms();
-  return 0;
-}
+//int main(){
+//  invertHistograms();
+//  return 0;
+//}
