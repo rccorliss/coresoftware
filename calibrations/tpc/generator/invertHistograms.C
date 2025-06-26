@@ -8,6 +8,7 @@ const int resample_factor=11; //how many samples, evenly spaced but centered in 
 void Resample(std::vector<TH3*> hin, std::vector<TH3*> hout);
 void CheckClosure(std::vector<TH3*> hdistort, std::vector<TH3*> hcorrect, bool rFirst=false);//rFirst means apply rphi shift at the shifted r coord, instead of the original r coord
 void ClosureTest(const char* originalfilename, const char* invertfilename, const char* closurefilename, bool rFirst=false); //opens appropriate files, then calls CheckClosure.
+void invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure=false);
 
 
 
@@ -16,7 +17,7 @@ void invertHistograms(){
   return;
 }
 
-void invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure=false){
+void invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure){
   //do the inversion and save the check histogram to the invert file:
   histName.push_back("hIntDistortionR_negz");
   histName.push_back("hIntDistortionP_negz");
