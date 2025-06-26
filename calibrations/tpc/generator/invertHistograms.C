@@ -11,6 +11,10 @@ void ClosureTest(const char* originalfilename, const char* invertfilename, const
 
 
 
+void invertHistograms(){
+  printf("needs to be invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure=false)\n");
+  return;
+}
 
 void invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure=false){
   //do the inversion and save the check histogram to the invert file:
