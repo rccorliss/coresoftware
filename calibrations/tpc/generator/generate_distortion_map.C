@@ -5,6 +5,8 @@
 #include "TCanvas.h" //this prevents a lazy binding issue and/or is a magic spell.
 //#include "invertHistograms.C"
 
+
+
 // cppcheck-suppress unknownMacro
 R__LOAD_LIBRARY(libfieldsim.so)
 
@@ -16,12 +18,14 @@ AnnularFieldSim *SetupDigitalCurrentSphenixTpc(bool twinMe=false, bool useSpacec
 void TestSpotDistortion(AnnularFieldSim *t);
 void SurveyFiles(TFileCollection* filelist);
 
+void invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure=false);
+
+
   
 void generate_distortion_map(const char *inputname, const char* gainName, const char *outputname, const char *ibfName, const char *primName, bool hasSpacecharge=true, bool isAdc=false, int nSteps=500, bool scanSteps=false, float zshift=0){
   printf("generating single distortion map.  Caution:  This is vastly less efficient than re-using the tpc model once it is set up\n");
 
   gROOT->ProcessLine(".L invertHistograms.C");
-  return;
   
   bool hasTwin=true; //this flag prompts the code to build both a positive-half and a negative-half for the TPC, reusing as much of the calculations as possible.  It is more efficient to 'twin' one half of the TPC than to recalculate/store the greens functions for both.
   TString gainHistName[2]={"hIbfGain_posz","hIbfGFain_negz"};
