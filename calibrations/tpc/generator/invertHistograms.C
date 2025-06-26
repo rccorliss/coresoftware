@@ -12,7 +12,7 @@ void ClosureTest(const char* originalfilename, const char* invertfilename, const
 
 
 void invertHistograms(){
-  printf("needs to be invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure=false)\n");
+  printf("proper usage:  root -b -q invertHistograms(const char* originalfilename, const char* invertfilename, bool checkClosure=false)\n");
   return;
 }
 
@@ -246,7 +246,8 @@ void Resample(std::vector<TH3*> hin, std::vector<TH3*> hout){
 	hnhits->Fill(global_hits);
 	if (global_hits<half_sampling){
 	  printf("(%2.2f,%2.2f,%2.2f)(glob=%d) has %1.2f entries\n",distorted_pos[0],distorted_pos[1],distorted_pos[2],global_bin,global_hits);
-	  exit;
+	  printf("this is less than half the expected entries, suggesting there are regions with poorly defined corrections.  Contact an expert.  Aborting.\n");
+	  assert(false);
 	} else {
 	  //average the contents in the bin
 	  for (int m=0;m<3;m++){
@@ -605,6 +606,6 @@ void CheckClosure(std::vector<TH3*> hdistort, std::vector<TH3*> hcorrect, bool r
 }
 
 int main(){
-  //  invertHistograms();
+  invertHistograms();
   return 0;
 }
