@@ -3,6 +3,7 @@
 #include "AnnularFieldSim.h"
 #include "TTree.h" //this prevents a lazy binding issue and/or is a magic spell.
 #include "TCanvas.h" //this prevents a lazy binding issue and/or is a magic spell.
+#include "invertHistograms.C"
 
 // cppcheck-suppress unknownMacro
 R__LOAD_LIBRARY(libfieldsim.so)
@@ -94,6 +95,10 @@ void generate_distortion_map(const char *inputname, const char* gainName, const 
   printf("fieldslices plotted.\n");
   
   infile->Close();
+
+  TString distortionfilename=outputfilename+".distortion_map.hist.root";
+  TString correctionfilename=outputfilename+".correction_map.hist.root";
+  invertHistograms(distortionfilename.Data(),correctionfilename.Data());
   printf("input closed.  All done.  Anything else is root's problem.\n");
 
   return;
@@ -216,6 +221,7 @@ void generate_distortion_map(const char * inputpattern="./evgeny_apr/Smooth*.roo
       tpc->PlotFieldSlices(outputfilename.Data(),pos,'B');
       printf("fieldslices plotted.\n");     
       printf("obj %d: getname: %s  inherits from TH3D:%d \n",j,tobj->GetName(),tobj->InheritsFrom("TH3"));
+
       //break; //rcc temp -- uncomment this to process one hist per file.
       if (i>maxmaps) return;
     }
