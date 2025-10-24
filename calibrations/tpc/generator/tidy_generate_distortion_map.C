@@ -10,7 +10,7 @@ R__LOAD_LIBRARY(libfieldsim.so)
 char field_string[200];
 char lookup_string[200];
 
-AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe=false, bool useSpacecharge=true, float xshift=0, float yshift=0, float zshift=0);
+AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe=false, bool useSpacecharge=true);
 AnnularFieldSim *SetupDigitalCurrentSphenixTpc(bool twinMe=false, bool useSpacecharge=true);
 void TestSpotDistortion(AnnularFieldSim *t); //
 void SurveyFiles(TFileCollection* filelist);
@@ -217,7 +217,7 @@ void LoadGreensFunctions(AnnularFieldSim *tpc){
   printf("populated lookup.\n");
 
 
-  if (params.hasTwin==false) return; //no twin to set up.
+  if (tpc->twin==nullptr) return; //no twin to set up.
   //borrow the greens functions:
   tpc->twin->borrow_rossegger(tpc->green,tpc_z);//use the original's green's functions, shift our internal coordinates by tpc_z when querying those functions.
   tpc->twin->borrow_epartial_from(tpc,tpc_z);//use the original's epartial.  Note that those values ought to be symmetric about z, and since our boundary conditions are translated along with our coordinates, they're completely unchanged.  (they're on top of the static solution from the fieldcage)
@@ -225,7 +225,7 @@ void LoadGreensFunctions(AnnularFieldSim *tpc){
   return;
 }
 
-AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge, float xshift, float yshift, float zshift){
+AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe, bool useSpacecharge){
 // Set up an AnnularFieldSim object for the sPHENIX TPC with default parameters (uses spacecharge, not ADC).
 
 
