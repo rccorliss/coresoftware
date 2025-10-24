@@ -124,9 +124,12 @@ for (int i=0; i<paramsets.size(); i++){
   UpdateFields(tpc, params);
   printf("set fields.\n");
   //then load the spacecharge histograms from file: 
-  UpdateSpaceCharge(tpc, params);
+  if (params.hasSpacecharge){
+    UpdateSpaceCharge(tpc, params);
   printf("set spacecharge.\n");
-
+  } else {
+    printf("no spacecharge in this params.\n");
+  }
   //generate the maps and the field slices:
   tpc->GenerateSeparateDistortionMaps(std::string(params.outputName.Data()),params.nSteps,1,1,1,1,false);
   printf("distortions mapped.\n");
