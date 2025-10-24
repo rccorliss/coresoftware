@@ -56,14 +56,14 @@ void tidy_generate_distortion_map(){
 
 DistortionMapParameters params;
 //the standard:  params.inputName="/sphenix/user/shulga/Work/IBF/DistortionMap/Files/Summary_hist_mdc2_UseFieldMaps_AA_event_0_bX10556072.root";
-params.inputName="no_charge";///direct/star+u/rcorliss/sphenix/temp/summed_evgeny/Summary_hist_mdc2_UseFieldMaps_AA_smoothed_average.root";
+params.inputName="/direct/star+u/rcorliss/sphenix/temp/summed_evgeny/Summary_hist_mdc2_UseFieldMaps_AA_smoothed_average.root";
 params.gainName="no_gain";
 params.gainHistName[0]="hIbfGain_posz"; //0=north=positive z.  
 params.gainHistName[1]="hIbfGain_negz";
 params.outputName="fill_me_in";
 params.ibfName="_h_SC_ibf_0";
 params.primName="_h_SC_prim_0";
-params.hasSpacecharge=false;
+params.hasSpacecharge=true;
 params.isAdc=false;
 params.nSteps=450;
 params.xshift=0;
@@ -74,7 +74,7 @@ params.bfieldTreeName="fieldmap";
 params.efieldName="/sphenix/user/rcorliss/field/externalEfield.ttree.root";
 params.efieldTreeName="fTree"; 
 params.usesChargeDensity=false; //true if source hists contain charge density per bin.  False if hists are charge per bin.
-params.tpc_chargescale=1.6e-19;//Coulombs per bin unit.
+params.tpc_chargescale=0;//1.6e-19;//Coulombs per bin unit.
 params.spacecharge_cm_per_axis_unit=0.1;//cm per histogram axis unit (mm), matching the MDC2 sample from Evgeny.
 params.hasTwin=true; //this flag prompts the code to build both a positive-half and a negative-half for the TPC, reusing as much of the calculations as possible.  It is more efficient to 'twin' one half of the TPC than to recalculate/store the greens functions for both.
 
