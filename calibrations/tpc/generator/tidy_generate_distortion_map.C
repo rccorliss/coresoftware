@@ -14,6 +14,9 @@ AnnularFieldSim *SetupDefaultSphenixTpc(bool twinMe=false, bool useSpacecharge=t
 AnnularFieldSim *SetupDigitalCurrentSphenixTpc(bool twinMe=false, bool useSpacecharge=true);
 void TestSpotDistortion(AnnularFieldSim *t); //
 void SurveyFiles(TFileCollection* filelist);
+void LoadGreensFunctions(AnnularFieldSim *tpc);//load or generate the greens functions for the given TPC fieldsim.
+void UpdateFields(AnnularFieldSim *tpc, struct DistortionMapParameters params);// update the external E and B fields for the given TPC fieldsim.
+void UpdateSpaceCharge(AnnularFieldSim *tpc, struct DistortionMapParameters params);// update the space charge field for the given TPC fieldsim.
 
 struct DistortionMapParameters {
   //files
@@ -43,6 +46,9 @@ struct DistortionMapParameters {
   bool hasSpacecharge;
   bool isAdc;
   int nSteps;
+  float tpc_chargescale;
+  float spacecharge_cm_per_axis_unit;
+  bool hasTwin;
 };
 
 void tidy_generate_distortion_map(){
