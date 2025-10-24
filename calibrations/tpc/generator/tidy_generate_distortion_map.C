@@ -55,7 +55,8 @@ void tidy_generate_distortion_map(){
 //I am modifying this entire code, from the generate_distortion_map.C macro, to make it much tidier and simpler, so that the parameters are all in one place, and modifications are hopefully easier to see.
 
 DistortionMapParameters params;
-params.inputName="/sphenix/user/shulga/Work/IBF/DistortionMap/Files/Summary_hist_mdc2_UseFieldMaps_AA_event_0_bX10556072.root";
+//the standard:  params.inputName="/sphenix/user/shulga/Work/IBF/DistortionMap/Files/Summary_hist_mdc2_UseFieldMaps_AA_event_0_bX10556072.root";
+params.inputName="/direct/star+u/rcorliss/sphenix/temp/summed_evgeny/Summary_hist_mdc2_UseFieldMaps_AA_smoothed_average.root";
 params.gainName="no_gain";
 params.gainHistName[0]="hIbfGain_posz"; //0=north=positive z.  
 params.gainHistName[1]="hIbfGain_negz";
@@ -83,19 +84,19 @@ params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokent
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/nominal.root.500000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/nominal_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_nominal_0_0_0";
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/ifcmod.root.500000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/ifcmod_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_ifcmod_0_0_0";
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/stpmod.221.root.180000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/stpmod_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_stpmod_0_0_0";
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/stp_and_ifcmod.221.root.180000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/stp_and_ifcmod_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_stp_and_ifcmod_0_0_0";
 paramsets.push_back(params);
 
 
