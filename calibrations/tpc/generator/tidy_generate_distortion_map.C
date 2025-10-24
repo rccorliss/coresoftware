@@ -45,23 +45,23 @@ struct DistortionMapParameters {
   int nSteps;
 };
 
-void generate_distortion_map(const char *inputName, const char* gainName, const char *outputName, const char *ibfName, const char *primName, bool hasSpacecharge=true, bool isAdc=false, int nSteps=450, float xshift=0, float yshift=0, float zshift=0){
+void tidy_generate_distortion_map(){
 //I am modifying this entire code, from the generate_distortion_map.C macro, to make it much tidier and simpler, so that the parameters are all in one place, and modifications are hopefully easier to see.
 
 DistortionMapParameters params;
-params.inputName=inputName;
-params.gainName=gainName;
+params.inputName="/sphenix/user/shulga/Work/IBF/DistortionMap/Files/Summary_hist_mdc2_UseFieldMaps_AA_event_0_bX10556072.root";
+params.gainName="no_gain";
 params.gainHistName[0]="hIbfGain_posz"; //0=north=positive z.  
 params.gainHistName[1]="hIbfGain_negz";
-params.outputName=outputName;
-params.ibfName=ibfName;
-params.primName=primName;
-params.hasSpacecharge=hasSpacecharge;
-params.isAdc=isAdc;
-params.nSteps=nSteps;
-params.xshift=xshift;
-params.yshift=yshift;
-params.zshift=zshift;
+params.outputName="fill_me_in";
+params.ibfName="_h_SC_ibf_0";
+params.primName="_h_SC_prim_0";
+params.hasSpacecharge=true;
+params.isAdc=false;
+params.nSteps=450;
+params.xshift=0;
+params.yshift=0;
+params.zshift=0;
 params.bfieldName="/sphenix/user/rcorliss/rossegger/sphenix3dmaprhophiz.root";
 params.bfieldTreeName="fieldmap";
 params.efieldName="/sphenix/user/rcorliss/field/externalEfield.ttree.root";
