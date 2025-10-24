@@ -56,14 +56,14 @@ void tidy_generate_distortion_map(){
 
 DistortionMapParameters params;
 //the standard:  params.inputName="/sphenix/user/shulga/Work/IBF/DistortionMap/Files/Summary_hist_mdc2_UseFieldMaps_AA_event_0_bX10556072.root";
-params.inputName="/direct/star+u/rcorliss/sphenix/temp/summed_evgeny/Summary_hist_mdc2_UseFieldMaps_AA_smoothed_average.root";
+params.inputName="no_charge";///direct/star+u/rcorliss/sphenix/temp/summed_evgeny/Summary_hist_mdc2_UseFieldMaps_AA_smoothed_average.root";
 params.gainName="no_gain";
 params.gainHistName[0]="hIbfGain_posz"; //0=north=positive z.  
 params.gainHistName[1]="hIbfGain_negz";
 params.outputName="fill_me_in";
 params.ibfName="_h_SC_ibf_0";
 params.primName="_h_SC_prim_0";
-params.hasSpacecharge=true;
+params.hasSpacecharge=false;
 params.isAdc=false;
 params.nSteps=450;
 params.xshift=0;
@@ -79,24 +79,24 @@ params.spacecharge_cm_per_axis_unit=0.1;//cm per histogram axis unit (mm), match
 params.hasTwin=true; //this flag prompts the code to build both a positive-half and a negative-half for the TPC, reusing as much of the calculations as possible.  It is more efficient to 'twin' one half of the TPC than to recalculate/store the greens functions for both.
 
 std::vector<DistortionMapParameters> paramsets;
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/stock_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/empty_stock_0_0_0";
 
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/nominal.root.500000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_nominal_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/empty_nominal_0_0_0";
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/ifcmod.root.500000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_ifcmod_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/empty_ifcmod_0_0_0";
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/stpmod.221.root.180000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_stpmod_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/empty_stpmod_0_0_0";
 paramsets.push_back(params);
 params.efieldName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/stp_and_ifcmod.221.root.180000.root";
 params.efieldTreeName="field_ntuple";
-params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/smoothave_stp_and_ifcmod_0_0_0";
+params.outputName="/direct/star+u/rcorliss/sphenix/coresoftware_official/brokentpcE/empty_stp_and_ifcmod_0_0_0";
 paramsets.push_back(params);
 
 
