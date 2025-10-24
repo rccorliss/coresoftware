@@ -199,7 +199,7 @@ void LoadGreensFunctions(AnnularFieldSim *tpc){
   const char detgeoname[]="sphenix";
 
   sprintf(lookup_string,"ross_phi1_%s_phislice_lookup_r%dxp%dxz%d",detgeoname,
-    tpc->GetNRbins(),tpc->GetNPhibins(),tpc->GetNZbins());
+    tpc->GetFieldStepsR(),tpc->GetFieldStepsPhi(),tpc->GetFieldStepsZ());
   char lookupFilename[200];
   sprintf(lookupFilename,"%s.root",lookup_string);
   TFile *fileptr=TFile::Open(lookupFilename,"READ");
