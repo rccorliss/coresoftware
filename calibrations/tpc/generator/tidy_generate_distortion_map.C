@@ -160,18 +160,18 @@ void UpdateSpaceCharge(AnnularFieldSim *tpc, DistortionMapParameters params){
   //the signature is: void load_spacecharge(TH3F *hist, float zoffset, float chargescale, float cmscale, bool isChargeDensity);
   if (!params.isAdc){
     chargestring=Form("%s:(%s+%s)",params.inputName.Data(),params.ibfName.Data(),params.primName.Data());
-    tpc->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity, chargestring.Data());
-    if (params.hasTwin) tpc->twin->load_spacecharge(hCharge,0,tpc_chargescale,spacecharge_cm_per_axis_unit, usesChargeDensity);
+    tpc->load_spacecharge(hCharge,0,params.tpc_chargescale,params.spacecharge_cm_per_axis_unit, params.usesChargeDensity, chargestring.Data());
+    if (params.hasTwin) tpc->twin->load_spacecharge(hCharge,0,params.tpc_chargescale,params.spacecharge_cm_per_axis_unit, params.usesChargeDensity);
   }
   if (params.isAdc){ //load digital current using the scaling:
     gainfile=TFile::Open(params.gainName,"READ");
     TH2* hGain[2];
     hGain[0]=(TH2*)(gainfile->Get(params.gainHistName[0]));
     chargestring=Form("%s:(dc:%s g:%s:%s)",params.inputName.Data(),params.ibfName.Data(),params.gainName.Data(),params.gainHistName[0].Data());
-    tpc->load_digital_current(hCharge,hGain[0],tpc_chargescale,spacecharge_cm_per_axis_unit,chargestring.Data());
+    tpc->load_digital_current(hCharge,hGain[0],params.tpc_chargescale,params.spacecharge_cm_per_axis_unit,chargestring.Data());
     if (params.hasTwin) {
       hGain[1]=(TH2*)(gainfile->Get(params.gainHistName[1]));
-      tpc->twin->load_digital_current(hCharge,hGain[1],tpc_chargescale,spacecharge_cm_per_axis_unit,chargestring.Data());
+      tpc->twin->load_digital_current(hCharge,hGain[1],params.tpc_chargescale,params.spacecharge_cm_per_axis_unit,chargestring.Data());
     }
   }
   //build the electric fieldmap from the chargemap
