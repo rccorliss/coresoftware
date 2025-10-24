@@ -39,7 +39,7 @@ struct DistortionMapParameters {
   float zshift;
 
   // flags and parameters
-  bool usesChargeDensity
+  bool usesChargeDensity;
   bool hasSpacecharge;
   bool isAdc;
   int nSteps;
