@@ -27,7 +27,7 @@ void explainTH3F(const std::string& filename)
     TClass* cl = TClass::GetClass(key->GetClassName());
     if (cl && cl->InheritsFrom(TH3::Class()))
     {
-      h = (TH3*) key->ReadObj();
+      h = (TH3*) key->ReadObj();gi
       if (h) break;
     }
   }
@@ -46,11 +46,13 @@ void explainTH3F(const std::string& filename)
 
   for (int i = 0; i < 3; ++i)
   {
-    std::cout << "\n" << dims[i] << " Axis Name: " << axes[i]->GetTitle() << std::endl;
+    std::cout << "\n" << dims[i] << " Axis \"" << axes[i]->GetName() << " = \"" << axes[i]->GetTitle() << "\"; range = [" << axes[i]->GetXmin() << ", " << axes[i]->GetXmax() << "], bins = " << axes[i]->GetNbins() << " dx:";
     int nbins = axes[i]->GetNbins();
     for (int b = 1; b <= nbins; ++b)
     {
-      std::cout << "Bin " << b << " dx: " << axes[i]->GetBinWidth(b) << std::endl;
+      std::cout <<  axes[i]->GetBinWidth(b) << ", ";
+    }
+    std::cout << std::endl;
     }
   }
 
