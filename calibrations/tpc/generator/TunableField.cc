@@ -232,17 +232,29 @@ void TpcSpaceChargeFieldModel::makeIBFRotationallyPeriodic()
   // make an azimuthally periodic copy by going over the input bins once 
   // and putting the charge in the phi=phi, phi+pi/6, phi+2pi/6, etc bins, 
   // (with wrapping) then divide contents by 12.
+
+//magic rules for Evgeny's /sphenix/user/shulga/Work/IBF/DistortionMap/Files/Summary_hist_mdc2_UseFieldMaps_AA_event_0_bX10556072.root file:
+int bin_period=17; //bins corresponding to 30 degrees in phi; phibins 0 and 17 are both frame bins.
+int bin_wraparound_bonus=1; //the first and very last bin are the two halves of a single frame bin, so if we wrap around we have to add that bonus bin.
+
+
   
   TH3F* temp = (TH3F*)m_ibfCharge->Clone("h_ibf_periodic_temp");
-  temp->Reset();
+  temp->Reset();//zero out the spacecharge to start.
   
   double dphi_sector = 2.0 * M_PI / 12.0;
   
   for (int ip = 1; ip <= m_nphi; ++ip)
   {
     double phi = m_ibfCharge->GetXaxis()->GetBinCenter(ip);
+    double phispan = m_ibfCharge->GetXaxis()->GetBinWidth(ip);
+    if (phispan<0.03) continue; //ignore charge in the frame bins per Tom.
+    //this is hacky and matches Evgeny's phibinning.
     for (int ir = 1; ir <= m_nr; ++ir)
     {
+      double rspan = m_ibfCharge->GetYaxis()->GetBinWidth(ir);
+      if (rspan>7 && rspan<10) continue; ignore radial frame bins per Tom.
+      //this is still hacky.  Need to get this from the geom properly, so we can get dead areas.
       for (int iz = 1; iz <= m_nz; ++iz)
       {
         float q = m_ibfCharge->GetBinContent(ip, ir, iz);

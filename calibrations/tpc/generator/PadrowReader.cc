@@ -25,13 +25,13 @@ float PadrowReader::getActiveFraction(float rmin, float rmax, float phimin, floa
 
 int PadrowReader::getPadrowFromR(float r) const
 {
-    // For now, return 0 as per request
+    // For now, return 0
     return 0;
 }
 
 void PadrowReader::getPadrowRBounds(int padrow_idx, float& rmin, float& rmax) const
 {
-    // For now, set rmin and rmax to 0 as per request
+    // For now, set rmin and rmax to 0... we gotta fix this from the PHG4TpcCylindericalGeomContainer eventually.
     rmin = 0.0f;
     rmax = 0.0f;
 }
