@@ -27,7 +27,7 @@ void explainTH3F(const std::string& filename)
     TClass* cl = TClass::GetClass(key->GetClassName());
     if (cl && cl->InheritsFrom(TH3::Class()))
     {
-      h = (TH3*) key->ReadObj();gi
+      h = (TH3*) key->ReadObj();
       if (h) break;
     }
   }
