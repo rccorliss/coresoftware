@@ -53,7 +53,6 @@ void explainTH3F(const std::string& filename)
       std::cout <<  axes[i]->GetBinWidth(b) << ", ";
     }
     std::cout << std::endl;
-    }
   }
 
   f->Close();
