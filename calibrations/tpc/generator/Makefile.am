@@ -29,7 +29,10 @@ pkginclude_HEADERS = \
   AnalyticFieldModel.h \
   ChargeMapReader.h \
   MultiArray.h \
-  Rossegger.h
+  PadrowReader.h \
+  Rossegger.h \
+  RosseggerReader.h \
+  TunableField.h
 
 BUILT_SOURCES = \
   testexternals.cc

@@ -36,7 +36,20 @@ C) Producing the total electric field:
 
 */
 
-TpcSpaceChargeFieldModel::TpcSpaceChargeFieldModel()
+
+/*TODO:
+- get the field-computer to do either single-phi (and then we enforce rotational symmetry manually) or the full phi range all-to-all (for the padrows).
+- get RosseggerReader to do both positive and negative z by shifting the source and target points by the z extent if they're out of bounds.
+- fix the handling of padrow boundaries.  We need to get the actual padrow boundaries from the PHG4TpcCylindericalGeomContainer
+- implement a maximum distance in the field calculation, to skip source bins that are too far from the target point to contribute meaningfully to the field.  (make a little diagnostic test that shows the total field components as a function of the cutoff distance in the limiting case of perfectly uniform charge density?
+
+-(auto) Implement automatic detection of the number of histograms present in the space charge file to ensure correct normalization in loadPrimarySpaceCharge and loadIBFSpaceCharge.
+-(auto) Optimize computeField to pre-sum the Green's function azimuthal components when the source charge is rotationally symmetric, significantly reducing integration time.
+-(auto) Generalize the frame bin skipping logic in makeIBFRotationallyPeriodic to be geometry-driven rather than relying on "magic" bin indices.
+-(auto) Implement the PadrowReader logic to account for dead areas (e.g. support structures and module gaps) when calculating the active fraction of a bin.
+*/
+
+TunableField::TunableField()
 {
   m_padrowReader = new PadrowReader();
   m_rosseggerReader = new RosseggerReader();
@@ -53,7 +66,7 @@ TpcSpaceChargeFieldModel::TpcSpaceChargeFieldModel()
   m_totalIbfFieldZ = makeGuardedStandardTH3F("h_ibf_field_z", "E_{z} IBF");
 }
 
-TpcSpaceChargeFieldModel::~TpcSpaceChargeFieldModel()
+TunableField::~TunableField()
 {
   delete m_padrowReader;
   delete m_rosseggerReader;
@@ -69,7 +82,7 @@ TpcSpaceChargeFieldModel::~TpcSpaceChargeFieldModel()
   if (m_diagFile) m_diagFile->Close();
 }
 
-void TpcSpaceChargeFieldModel::clearPadrowFields()
+void TunableField::clearPadrowFields()
 {
   for (TH3F* h : m_padrowCharges) delete h;
   for (TH3F* h : m_padrowFieldR) delete h;
@@ -81,29 +94,31 @@ void TpcSpaceChargeFieldModel::clearPadrowFields()
   m_padrowFieldZ.clear();
 }
 
-void TpcSpaceChargeFieldModel::setDiagnosticFile(const std::string& filename)
+void TunableField::setDiagnosticFile(const std::string& filename)
 {
   m_diagFile = TFile::Open(filename.c_str(), "RECREATE");
 }
 
-void TpcSpaceChargeFieldModel::saveDiagnosticSpaceCharge(const std::string& name, TH3F* h)
+void TunableField::saveDiagnosticSpaceCharge(const std::string& name, TH3F* h)
 {
   if (!m_diagFile) return;
   m_diagFile->cd();
   h->Write(name.c_str());
 }
 
-void TpcSpaceChargeFieldModel::loadPrimarySpaceCharge()
+void TunableField::loadPrimarySpaceCharge()
 {
-  if (m_primaryFilenames.empty()) return;
+  if (m_scFilename.empty()) return;
 
-  float norm = 1.0 / m_primaryFilenames.size();
+  TFile* f = TFile::Open(m_scFilename.c_str());
+  if (!f) return;
 
-  for (const std::string& filename : m_primaryFilenames)
+  m_primaryCharge->Reset();
+  float norm = 1.0 / 30.0;
+  for (int i = 0; i < 30; ++i)
   {
-    TFile* f = TFile::Open(filename.c_str());
-    if (!f) continue;
-    TH3* h = (TH3*) f->Get("h_primary_sc"); 
+    std::string hname = std::format("_h_SC_prim_{}", i);
+    TH3* h = (TH3*) f->Get(hname.c_str());
     if (h)
     {
       for (int ir = 0; ir < m_nr; ++ir)
@@ -122,22 +137,24 @@ void TpcSpaceChargeFieldModel::loadPrimarySpaceCharge()
           }
         }
       }
-    }
-    f->Close();
   }
+  f->Close();
   saveDiagnosticSpaceCharge("h_primary_charge_native", m_primaryCharge);
 }
 
-void TpcSpaceChargeFieldModel::loadIBFSpaceCharge()
+void TunableField::loadIBFSpaceCharge()
 {
-  if (m_ibfFilenames.empty()) return;
-  float norm = 1.0 / m_ibfFilenames.size();
+  if (m_scFilename.empty()) return;
 
-  for (const std::string& filename : m_ibfFilenames)
+  TFile* f = TFile::Open(m_scFilename.c_str());
+  if (!f) return;
+
+  m_ibfCharge->Reset();
+  float norm = 1.0 / 30.0;
+  for (int i = 0; i < 30; ++i)
   {
-    TFile* f = TFile::Open(filename.c_str());
-    if (!f) continue;
-    TH3* h = (TH3*) f->Get("h_ibf_sc"); 
+    std::string hname = std::format("_h_SC_ibf_{}", i);
+    TH3* h = (TH3*) f->Get(hname.c_str());
     if (h)
     {
       for (int ir = 0; ir < m_nr; ++ir)
@@ -156,18 +173,18 @@ void TpcSpaceChargeFieldModel::loadIBFSpaceCharge()
           }
         }
       }
-    }
-    f->Close();
   }
+  f->Close();
   saveDiagnosticSpaceCharge("h_ibf_charge_native", m_ibfCharge);
 }
 
-void TpcSpaceChargeFieldModel::loadRossegger(const std::string& filename)
+void TunableField::loadRossegger()
 {
+  std::string filename = "/sphenix/user/rcorliss/rossegger/ross_phi1_sphenix_phislice_lookup_r26xp48xz40.root";
   if (m_rosseggerReader) m_rosseggerReader->Load(filename);
 }
 
-TVector3 TpcSpaceChargeFieldModel::getInterpolatedGreen(float phi_src, float r_src, float z_src, float r_tgt, float z_tgt)
+TVector3 TunableField::getInterpolatedGreen(float phi_src, float r_src, float z_src, float r_tgt, float z_tgt)
 {
   if (m_rosseggerReader)
   {
@@ -176,7 +193,7 @@ TVector3 TpcSpaceChargeFieldModel::getInterpolatedGreen(float phi_src, float r_s
   return TVector3(0, 0, 0);
 }
 
-void TpcSpaceChargeFieldModel::rotateAndAverage(TH3F* h)
+void TunableField::rotateAndAverage(TH3F* h)
 {
   // make this charge distribution azimuthally symmetric by averaging over phi. 
   for (int ir = 1; ir <= m_nr; ++ir)
@@ -197,13 +214,13 @@ void TpcSpaceChargeFieldModel::rotateAndAverage(TH3F* h)
   }
 }
 
-void TpcSpaceChargeFieldModel::makePrimaryInto2D()
+void TunableField::makePrimaryInto2D()
 {
   rotateAndAverage(m_primaryCharge);
   saveDiagnosticSpaceCharge("h_primary_charge_2D", m_primaryCharge);
 }
 
-void TpcSpaceChargeFieldModel::makeIBFinto2D()
+void TunableField::makeIBFinto2D()
 {
   // copy that native r and phi binning, and sum the ions across z. 
   // The ions in a given voxel are just the total charge in the column, 
@@ -227,7 +244,7 @@ void TpcSpaceChargeFieldModel::makeIBFinto2D()
   saveDiagnosticSpaceCharge("h_ibf_charge_2D", m_ibfCharge);
 }
 
-void TpcSpaceChargeFieldModel::makeIBFRotationallyPeriodic()
+void TunableField::makeIBFRotationallyPeriodic()
 {
   // make an azimuthally periodic copy by going over the input bins once 
   // and putting the charge in the phi=phi, phi+pi/6, phi+2pi/6, etc bins, 
@@ -283,69 +300,25 @@ int bin_wraparound_bonus=1; //the first and very last bin are the two halves of 
   saveDiagnosticSpaceCharge("h_ibf_charge_periodic", m_ibfCharge);
 }
 
-void TpcSpaceChargeFieldModel::loadPadrowBoundaries()
+void TunableField::loadPadrowBoundaries()
 {
-  // get the geometry from the sPHENIX codebase
-  m_padrowBoundaries.clear();
-  
-  // Nominal GEM module extents for R1, R2, R3 regions:
-  auto addRegion = [&](float rmin, float rmax, int nlayers) {
-    float dr = (rmax - rmin) / nlayers;
-    for (int i = 0; i < nlayers; ++i) {
-      m_padrowBoundaries.push_back({rmin + i * dr, rmin + (i + 1) * dr});
-    }
-  };
-  
-  addRegion(31.105, 40.785, 16);
-  addRegion(42.335, 57.375, 16);
-  addRegion(58.935, 75.815, 16);
-  
-  // Pass the loaded boundaries to the PadrowReader
-  m_padrowReader->setPadrowBoundaries(m_padrowBoundaries);
-  // now initialize the padrow histograms
-  clearPadrowFields();
-  for (int i = 0; i < 48; ++i) {
-    m_padrowCharges.push_back(makeUnguardedStandardTH3F(std::format("h_ibf_charge_padrow_{}", i), std::format("IBF Charge Padrow {}", i)));
-    m_padrowFieldR.push_back(makeGuardedStandardTH3F(std::format("h_ibf_field_r_padrow_{}", i), std::format("E_{r} IBF Padrow {}", i)));
-    m_padrowFieldP.push_back(makeGuardedStandardTH3F(std::format("h_ibf_field_p_padrow_{}", i), std::format("E_{\phi} IBF Padrow {}", i)));
-    m_padrowFieldZ.push_back(makeGuardedStandardTH3F(std::format("h_ibf_field_z_padrow_{}", i), std::format("E_{z} IBF Padrow {}", i)));
-  }
+  // get the geometry from the sPHENIX codebase and use it to determine the radial boundaries of each padrow, 
+  // and store those boundaries in m_padrowBoundaries.
+  //but for now, noop;
+  return;
 }
 
-void TpcSpaceChargeFieldModel::adjustIBFToActiveArea()
+void TunableField::adjustIBFToActiveArea()
 {
   // determine which (phi,r) locations are over active readout and which are not, 
   // and set the charge to zero where there is no active readout.
-  for (int i = 0; i < 48; ++i) m_padrowCharges[i]->Reset();
 
-  for (int ir = 1; ir <= m_nr; ++ir)
-  {
-    double r = m_ibfCharge->GetYaxis()->GetBinCenter(ir);
-    int padrow_idx = -1;
-    for (int i = 0; i < 48; ++i) {
-      if (r >= m_padrowBoundaries[i].first && r < m_padrowBoundaries[i].second) {
-        padrow_idx = i;
-        break;
-      }
-    }
-
-    for (int ip = 1; ip <= m_nphi; ++ip)
-    {
-      for (int iz = 1; iz <= m_nz; ++iz)
-      {
-        float q = m_ibfCharge->GetBinContent(ip, ir, iz);
-        if (padrow_idx == -1) {
-           m_ibfCharge->SetBinContent(ip, ir, iz, 0);
-        } else {
-           m_padrowCharges[padrow_idx]->SetBinContent(ip, ir, iz, q);
-        }
-      }
-    }
-  }
+  //but for now, just noop;
+  return;
   saveDiagnosticSpaceCharge("h_ibf_charge_active_trimmed", m_ibfCharge);
 }
 
-void TpcSpaceChargeFieldModel::computeField(TH3F* sourceCharge, TH3F* fieldR, TH3F* fieldP, TH3F* fieldZ)
+void TunableField::computeField(TH3F* sourceCharge, TH3F* fieldR, TH3F* fieldP, TH3F* fieldZ)
 {
   const double eps0 = 8.854e-14; // C / (V * cm)
   const double epsinv = 1.0 / eps0;
@@ -399,7 +372,7 @@ void TpcSpaceChargeFieldModel::computeField(TH3F* sourceCharge, TH3F* fieldR, TH
   FillGuardBins(fieldZ);
 }
 
-void TpcSpaceChargeFieldModel::computePadrowIBFFields()
+void TunableField::computePadrowIBFFields()
 {
   // for each padrow in one sector of the TPC, we compute the electric field 
   // due to the space charge we have assigned to that padrow.
@@ -408,7 +381,7 @@ void TpcSpaceChargeFieldModel::computePadrowIBFFields()
   }
 }
 
-void TpcSpaceChargeFieldModel::computePrimaryField()
+void TunableField::computePrimaryField()
 {
   /* Note(s):
   - we're only generating the primary field for one slice of phi, since by construction the primaries are rotationally symmetric.
@@ -418,7 +391,7 @@ void TpcSpaceChargeFieldModel::computePrimaryField()
   computeField(m_primaryCharge, m_primaryFieldR, m_primaryFieldP, m_primaryFieldZ);
 }
 
-void TpcSpaceChargeFieldModel::setPadrowKnockout(int padrow, bool knockout)
+void TunableField::setPadrowKnockout(int padrow, bool knockout)
 {
   if (padrow < 0) return;
   if (m_padrowKnockout.size() <= (size_t)padrow)
@@ -428,7 +401,7 @@ void TpcSpaceChargeFieldModel::setPadrowKnockout(int padrow, bool knockout)
   m_padrowKnockout[padrow] = knockout;
 }
 
-void TpcSpaceChargeFieldModel::FillGuardBins(TH3F* h)
+void TunableField::FillGuardBins(TH3F* h)
 {
   int nP = h->GetNbinsX();
   int nR = h->GetNbinsY();
@@ -464,9 +437,13 @@ void TpcSpaceChargeFieldModel::FillGuardBins(TH3F* h)
   }
 }
 
-void TpcSpaceChargeFieldModel::calculateFieldContributions()
+void TunableField::calculateFieldContributions()
 {
 //generate all the space charge distributions we need:
+
+//Rossegger lookup (needed for field calculations)
+loadRossegger();
+setDiagnosticFile("tunableField_intermediates.hist.root");
 
 //primary space charge (3D, one phi slice is all we use)
 loadPrimarySpaceCharge();//load it in in its native binning
@@ -484,24 +461,48 @@ adjustIBFToActiveArea();
 //compute the electric field in the active half of the TPC for each distribution:
 computePrimaryField();
 computePadrowIBFFields();
+m_componentFieldsAreReady = true;
 }
 
-void TpcSpaceChargeFieldModel::generateTotalField()
+void TunableField::generateTotalField()
 {
   if(!m_componentFieldsAreReady){
     calculateFieldContributions();
   }
 
-  //for each side of the TPC, sum the primary field and the padrow fields (with rotation and padrow knockouts):
-//E1=E_primary * primaryScale;
-//E2=primaryScale*ibfGain*sum_over_padrows( E_ibf_padrow  * padrowKnockout )
-//E3=E_external
+  // Sum the padrow fields into the total IBF field, respecting knockouts.
+  m_totalIbfFieldR->Reset();
+  m_totalIbfFieldP->Reset();
+  m_totalIbfFieldZ->Reset();
 
-//to
+  for (int i = 0; i < (int)m_padrowFieldR.size(); ++i)
+  {
+    bool knockout = (i < (int)m_padrowKnockout.size()) ? m_padrowKnockout[i] : false;
+    if (!knockout)
+    {
+      m_totalIbfFieldR->Add(m_padrowFieldR[i]);
+      m_totalIbfFieldP->Add(m_padrowFieldP[i]);
+      m_totalIbfFieldZ->Add(m_padrowFieldZ[i]);
+    }
+  }
+
+  // Diagnostic output for the assembled fields after knockouts but before overall scaling.
+  if (m_diagFile)
+  {
+    m_diagFile->cd();
+    m_primaryFieldR->Write("h_primary_field_R");
+    m_primaryFieldP->Write("h_primary_field_P");
+    m_primaryFieldZ->Write("h_primary_field_Z");
+
+    m_totalIbfFieldR->Write("h_total_ibf_field_R");
+    m_totalIbfFieldP->Write("h_total_ibf_field_P");
+    m_totalIbfFieldZ->Write("h_total_ibf_field_Z");
+  }
+
   m_fieldIsReady=true;
 }
 
-TVector3 TpcSpaceChargeFieldModel::getFieldAt(const TVector3& pos)
+TVector3 TunableField::getFieldAt(const TVector3& pos)
 {
 if(!m_fieldIsReady){
   generateTotalField();
@@ -537,7 +538,7 @@ if(!m_fieldIsReady){
   return totalField;
 }
 
-TH3F* TpcSpaceChargeFieldModel::makeUnguardedStandardTH3F(const std::string& name, const std::string& title)
+TH3F* TunableField::makeUnguardedStandardTH3F(const std::string& name, const std::string& title)
 {
   double dphi = (2.0 * M_PI) / m_nphi;
   double dr = (m_rmax - m_rmin) / m_nr;
@@ -547,7 +548,7 @@ TH3F* TpcSpaceChargeFieldModel::makeUnguardedStandardTH3F(const std::string& nam
   return new TH3F(name.c_str(), fullTitle.c_str(), m_nphi, 0, 2 * M_PI, m_nr, m_rmin, m_rmax, m_nz, 0, m_zmax);
 }
 
-TH3F* TpcSpaceChargeFieldModel::makeGuardedStandardTH3F(const std::string& name, const std::string& title)
+TH3F* TunableField::makeGuardedStandardTH3F(const std::string& name, const std::string& title)
 {
   double dphi = (2.0 * M_PI) / m_nphi;
   double dr = (m_rmax - m_rmin) / m_nr;

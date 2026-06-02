@@ -10,25 +10,24 @@ class PadrowReader;
 class TH3F;
 
 /**
- * \class TpcSpaceChargeFieldModel
+ * \class TunableField
  * \brief Implements a tunable electric field model for the sPHENIX TPC 
  * accounting for primary space charge and IBF.
  */
-class TpcSpaceChargeFieldModel
+class TunableField
 {
  public:
-  TpcSpaceChargeFieldModel();
-  virtual ~TpcSpaceChargeFieldModel();
+  TunableField();
+  virtual ~TunableField();
 
   // Part A: Primary Space Charge Handling
-  void setPrimaryFilenames(const std::vector<std::string>& filenames) { m_primaryFilenames = filenames; }
+  void setSpaceChargeFilename(const std::string& filename) { m_scFilename = filename; }
   void loadPrimarySpaceCharge();
   void makePrimaryInto2D();
   void computePrimaryField();
 
   // Part B: IBF Handling and Rossegger Lookup
-  void loadRossegger(const std::string& filename);
-  void setIBFFilenames(const std::vector<std::string>& filenames) { m_ibfFilenames = filenames; }
+  void loadRossegger();
   void loadIBFSpaceCharge();
   void makeIBFinto2D();
   void makeIBFRotationallyPeriodic();
@@ -87,8 +86,7 @@ class TpcSpaceChargeFieldModel
   int m_nphi = 36;
   int m_nz = 50;
 
-  std::vector<std::string> m_primaryFilenames;
-  std::vector<std::string> m_ibfFilenames;
+  std::string m_scFilename;
   std::vector<std::pair<float, float>> m_padrowBoundaries;
 
   float m_primaryScale = 1.0;
