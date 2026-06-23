@@ -137,6 +137,7 @@ void TunableField::loadPrimarySpaceCharge()
           }
         }
       }
+    }
   }
   f->Close();
   saveDiagnosticSpaceCharge("h_primary_charge_native", m_primaryCharge);
@@ -173,6 +174,7 @@ void TunableField::loadIBFSpaceCharge()
           }
         }
       }
+    }
   }
   f->Close();
   saveDiagnosticSpaceCharge("h_ibf_charge_native", m_ibfCharge);
