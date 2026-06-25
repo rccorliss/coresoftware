@@ -33,7 +33,7 @@ class PHGarfield : public SubsysReco
   void PrintMaps() const;
   void PrintGarfield(double x, double y, double z) const;
   void MoveMagnet(double x, double y, double z);
-  void RotateMagnet(double theta_x, theta_y, theta_z);
+  void RotateMagnet(double theta_x, double theta_y, double theta_z);
 
   //  These are left in public namespace for easy plotting macros...
   //  The user is encouraged to add more routine to fit their analysis goals...
