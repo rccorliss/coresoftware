@@ -9,6 +9,8 @@
 #include <fun4all/Fun4AllReturnCodes.h>
 
 #include <TPolyLine3D.h>
+#include <TVector3.h>
+#include <TRotation.h>
 
 #include <CLHEP/Units/SystemOfUnits.h>
 
