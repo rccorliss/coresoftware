@@ -10,6 +10,8 @@
 class CDBTTree;
 class PHField3DCartesian;
 class TPolyLine3D;
+class TVector3;
+class TRotation;
 
 namespace Garfield
 {
@@ -30,6 +32,8 @@ class PHGarfield : public SubsysReco
 
   void PrintMaps() const;
   void PrintGarfield(double x, double y, double z) const;
+  void MoveMagnet(double x, double y, double z);
+  void RotateMagnet(double theta_x, theta_y, theta_z);
 
   //  These are left in public namespace for easy plotting macros...
   //  The user is encouraged to add more routine to fit their analysis goals...
@@ -48,6 +52,8 @@ class PHGarfield : public SubsysReco
   PHField3DCartesian *m_field{nullptr};           // The stanards sPHENIX field holding container.
   Garfield::ComponentUser *m_component{nullptr};  // This handles the interface of the electric and magnetic fields as handed to Garfield
   Garfield::MediumMagboltz *m_gas{nullptr};       // This is the pre-tabulated gas properties required by Garfield...
+  TVector3 magpos;
+  TRotation magrot;
 
   //  These are utilities for a spot check of the overall routine:
   // std::string calibdir;

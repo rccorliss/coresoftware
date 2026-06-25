@@ -160,17 +160,36 @@ void PHGarfield::PrintMaps() const
   }
 }
 
+void PHGarfield::MoveMagnet(double x, double y, double z){
+magpos.SetXYZ(x,y,z);
+return;
+}
+void PHGarfield::RotateMagnet(double theta_x, double theta_y, double theta_z){
+magrot.RotateX(theta_x);
+magrot.RotateY(theta_y);
+magrot.RotateZ(theta_z);
+return;
+}
+
 void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, double& bx_t, double& by_t, double& bz_t) const
 {
   // NOTE:  Garfield uses  cm, V/cm, and Tesla.
   //        CLHEP    uses  mm, V/mm, and kiloTesla
   //        PHField3DCartesian follows the CLHEP conventions for magnetic fields.
 
+  //find the coordinates in global axes centered on magnet center:
+  TVector3 raw;
+  raw.SetXYZ(x_cm,y_cm,z_cm);
+  TVector3 magraw=raw-magpos;
+  //rotate into the magnet coordinates:
+  TRotation magrotInverse=magrot.Inverse();
+  TVector3 magcoord=magrotInverse*magraw;
+
   double point[4] =
       {
-          x_cm * CLHEP::cm,
-          y_cm * CLHEP::cm,
-          z_cm * CLHEP::cm,
+          magcoord.X() * CLHEP::cm,
+          magcoord.Y() * CLHEP::cm,
+          magcoord.Z() * CLHEP::cm,
           //(z_cm-20.0) * CLHEP::cm,
           0.0};
 
@@ -179,9 +198,18 @@ void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, do
   //  Get the magnetic field via the PHField3DCartesian object constructed usinf the CDB url reference.
   m_field->GetFieldValue(point, bfield);
 
-  bx_t = bfield[0] / CLHEP::tesla;
-  by_t = bfield[1] / CLHEP::tesla;
-  bz_t = bfield[2] / CLHEP::tesla;
+  //bx_t = bfield[0] / CLHEP::tesla;
+  //by_t = bfield[1] / CLHEP::tesla;
+  //bz_t = bfield[2] / CLHEP::tesla;
+
+TVector3 bfieldMag;
+bfieldMag.SetXYZ(bfield[0],bfield[1],bfield[2]);
+TVector3 bfieldGlobal=magrot*bfieldMag;
+bx_t = bfieldGlobal.X() / CLHEP::tesla;
+by_t = bfieldGlobal.Y() / CLHEP::tesla;
+bz_t = bfieldGlobal.Z() / CLHEP::tesla;
+
+
 }
 
 void PHGarfield::GetElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
