@@ -6,12 +6,12 @@
 #include <array>
 #include <numbers>
 #include <string>
+#include <TVector3.h>
+#include <TRotation.h>
 
 class CDBTTree;
 class PHField3DCartesian;
 class TPolyLine3D;
-class TVector3;
-class TRotation;
 
 namespace Garfield
 {
