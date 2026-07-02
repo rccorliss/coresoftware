@@ -215,7 +215,7 @@ tpcrot.RotateZ(theta_z);
 return;
 }
 
-void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
+void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans) const{
   //this assumes everything is in the same units!
   //convert coords from global coords in global axes
   //  to coords wrt tpc center (with global axes)
@@ -230,7 +230,7 @@ void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, 
   z=local.Z();
   return;
 }
-void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
+void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans) const{
   //this assumes everything is in the same units!
   //inverse of the ConvertToLocal:
   TVector3 local;

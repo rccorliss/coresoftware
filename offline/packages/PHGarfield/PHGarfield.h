@@ -41,8 +41,8 @@ class PHGarfield : public SubsysReco
   void MoveTpc(double x, double y, double z);
   void RotateTpc(double theta_x, double theta_y, double theta_z);
 
-  void ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans);
-  void ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans);
+  void ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans) const;
+  void ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans) const;
 
 
   //  These are left in public namespace for easy plotting macros...
