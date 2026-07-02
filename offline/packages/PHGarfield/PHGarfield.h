@@ -12,6 +12,7 @@
 class CDBTTree;
 class PHField3DCartesian;
 class TPolyLine3D;
+class TH2;
 
 namespace Garfield
 {
@@ -72,6 +73,10 @@ class PHGarfield : public SubsysReco
   PHField3DCartesian *m_field{nullptr};           // The stanards sPHENIX field holding container.
   Garfield::ComponentUser *m_component{nullptr};  // This handles the interface of the electric and magnetic fields as handed to Garfield
   Garfield::MediumMagboltz *m_gas{nullptr};       // This is the pre-tabulated gas properties required by Garfield...
+  std::string m_defaultGasfile;
+  bool m_GasFilesLoaded{false};
+
+  
   TVector3 magpos;
   TRotation magrot; 
   TVector3 tpcpos;

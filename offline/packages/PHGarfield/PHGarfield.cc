@@ -53,7 +53,7 @@ int PHGarfield::InitRun(PHCompositeNode* /*topNode*/)
   m_cdbTPCMAPttree->LoadCalibrations();
 
 
-/ Load the optional axisymmetric space-charge field map.
+  // Load the optional axisymmetric space-charge field map.
   // Failure is non-fatal: Garfield then uses only the nominal 400 V/cm field.
   if (!m_electricFieldMap.empty())
   {
@@ -74,7 +74,7 @@ int PHGarfield::InitRun(PHCompositeNode* /*topNode*/)
   
   // Here we fetch the gas from the CDB
   std::string gasfile = m_cdb->getUrl("PHGARFIELD_GAS");
-  if (gasfile.empty() || !fs::exists(gasfile))
+  if (gasfile.empty() || !std::filesystem::exists(gasfile))
     {
       std::cerr << PHWHERE << " Missing CDB gasfile: " << gasfile << std::endl;
       std::cerr << PHWHERE << " Using default gasfile: " << m_defaultGasfile << std::endl;
