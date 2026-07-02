@@ -23,10 +23,17 @@
 #include <iostream>  // for basic_ostream, operat...
 #include <vector>
 
-PHGarfield::PHGarfield(const std::string& name)
-  : SubsysReco(name)
+PHGarfield::PHGarfield(const std::string& name,
+                           const std::string& electricFieldMap,
+                           double spaceChargeScale)
+  : SubsysReco(name),
+    //m_defaultGasfile("/sphenix/user/hemmick/gasfiles_20260624/Ar75_CF20_iso5.gas")
+    m_defaultGasfile("/sphenix/user/hemmick/gasfiles_20260624"),
+    m_electricFieldMap(electricFieldMap),
+    m_spaceChargeScale(spaceChargeScale)
 {
 }
+
 
 int PHGarfield::InitRun(PHCompositeNode* /*topNode*/)
 {
@@ -45,13 +52,37 @@ int PHGarfield::InitRun(PHCompositeNode* /*topNode*/)
   m_cdbTPCMAPttree = new CDBTTree(text);
   m_cdbTPCMAPttree->LoadCalibrations();
 
+
+/ Load the optional axisymmetric space-charge field map.
+  // Failure is non-fatal: Garfield then uses only the nominal 400 V/cm field.
+  if (!m_electricFieldMap.empty())
+  {
+    if (!LoadElectricFieldCorrections(m_electricFieldMap))
+    {
+      std::cerr << PHWHERE << " Failed to load electric-field correction map: "
+                << m_electricFieldMap << std::endl;
+    }
+  }
+
+
   //  Make the Garfield Component and register the methods that will interface to our fields...
   m_component = new Garfield::ComponentUser();
   m_component->SetMagneticField([this](double x, double y, double z, double& bx, double& by, double& bz)
                                 { GetMagneticFieldTesla(x, y, z, bx, by, bz); });
   m_component->SetElectricField([this](double x, double y, double z, double& ex, double& ey, double& ez)
                                 { GetElectricFieldVcm(x, y, z, ex, ey, ez); });
-  InitializeGas("/direct/phenix+u/workarea/hemmick/code.sphenix/tkh/gas/gasfiles/");
+  
+  // Here we fetch the gas from the CDB
+  std::string gasfile = m_cdb->getUrl("PHGARFIELD_GAS");
+  if (gasfile.empty() || !fs::exists(gasfile))
+    {
+      std::cerr << PHWHERE << " Missing CDB gasfile: " << gasfile << std::endl;
+      std::cerr << PHWHERE << " Using default gasfile: " << m_defaultGasfile << std::endl;
+      gasfile = m_defaultGasfile;
+    }
+  InitializeGas(gasfile);
+
+  //InitializeGas("/direct/phenix+u/workarea/hemmick/code.sphenix/tkh/gas/gasfiles/");
 
   //  Diagnostic during code development...
   FillRadii();
@@ -172,13 +203,53 @@ magrot.RotateY(theta_y);
 magrot.RotateZ(theta_z);
 return;
 }
+void PHGarfield::MoveTpc(double x, double y, double z){
+tpcpos.SetXYZ(x,y,z);
+return;
+}
+void PHGarfield::RotateTpc(double theta_x, double theta_y, double theta_z){
+tpcrot.RotateX(theta_x);
+tpcrot.RotateY(theta_y);
+tpcrot.RotateZ(theta_z);
+return;
+}
+
+  void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
+    //this assumes everything is in the same units!
+    //convert coords from global coords in global axes
+    //  to coords wrt tpc center (with global axes)
+    TVector3 global;
+    global.SetXYZ(x,y,z);
+    TVector3 localRaw=raw-trans;
+    //rotate into the local axes:
+    TRotation localRotInverse=rot.Inverse();
+    TVector3 local=localRotInverse*localRaw;    
+    x=local.X();
+    y=local.Y();
+    z=local.Z();
+    return;
+  }
+  void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
+    //this assumes everything is in the same units!
+    //inverse of the ConvertToLocal:
+    TVector3 local;
+    local.SetXYZ(x,y,z);
+    //rotate back to global axes:
+    TVector3 globalRaw=rot*local;
+    TVector3 global=globalRaw+trans;
+    x=global.X();
+    y=global.Y();
+    z=global.Z();
+    return;
+  }
+  }
 
 void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, double& bx_t, double& by_t, double& bz_t) const
 {
   // NOTE:  Garfield uses  cm, V/cm, and Tesla.
   //        CLHEP    uses  mm, V/mm, and kiloTesla
   //        PHField3DCartesian follows the CLHEP conventions for magnetic fields.
-
+/*
   //find the coordinates in global axes centered on magnet center:
   TVector3 raw;
   raw.SetXYZ(x_cm,y_cm,z_cm);
@@ -186,12 +257,14 @@ void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, do
   //rotate into the magnet coordinates:
   TRotation magrotInverse=magrot.Inverse();
   TVector3 magcoord=magrotInverse*magraw;
+  */
+  ConvertToLocal(x_cm,y_cm,z_cm,magrot,magpos);
 
   double point[4] =
       {
-          magcoord.X() * CLHEP::cm,
-          magcoord.Y() * CLHEP::cm,
-          magcoord.Z() * CLHEP::cm,
+          x_cm * CLHEP::cm,
+          y_cm * CLHEP::cm,
+          z_cm * CLHEP::cm,
           //(z_cm-20.0) * CLHEP::cm,
           0.0};
 
@@ -214,15 +287,62 @@ bz_t = bfieldGlobal.Z() / CLHEP::tesla;
 
 }
 
+
 void PHGarfield::GetElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
 {
+  ConvertToLocal(x_cm,y_cm,z_cm,tpcrot,tpcpos);
+
+
+  double ex_loc,ey_loc,ez_loc;
+  GetTpcFrameElectricFieldVcm(localCoord.X(), localCoord.Y(),localCoord.Z(),ex_loc,ey_loc,ez_loc);
+  TVector3 fieldLocal;
+  fieldLocal.SetXYZ(ex_loc,ey_loc,ez_loc); 
+  //field is in TPC axes.  rotate into global axes:
+  TVector3 fieldGlobal=tpcrot*fieldLocal;
+
+  ex_vcm = fieldGlobal.X();
+  ey_vcm = fieldGlobal.Y();
+  ez_vcm = fieldGlobal.Z();
+  return;
+}
+
+void PHGarfield::GetTpcFrameElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
+{
   // NOTE:  Garfield uses  cm, V/cm, and Tesla.
-  (void) x_cm;
-  (void) y_cm;
+  // The notebook maps use cm on their axes and V/m in their bins.
+  // The map is produced for one TPC half using s = |z|, measured from
+  // the central membrane toward the readout plane.
+
+  const double r_cm = std::hypot(x_cm, y_cm);
+  const double abs_z_cm = std::abs(z_cm);
+
 
   ex_vcm = 0.0;
   ey_vcm = 0.0;
   ez_vcm = z_cm > 0 ? -400.0 : 400.0;
+
+  //Iurii's correction:
+    if (!m_erCorrection || !m_ezCorrection || m_spaceChargeScale == 0.0)
+  {
+    return;
+  }
+
+  const double delta_er_vcm = m_spaceChargeScale *
+      InterpolateCorrectionVcm(m_erCorrection, r_cm, abs_z_cm);
+  const double delta_ez_local_vcm = m_spaceChargeScale *
+      InterpolateCorrectionVcm(m_ezCorrection, r_cm, abs_z_cm);
+
+  // Convert the cylindrical radial correction to Cartesian components.
+  if (r_cm > 0.0)
+  {
+    ex_vcm += delta_er_vcm * x_cm / r_cm;
+    ey_vcm += delta_er_vcm * y_cm / r_cm;
+  }
+
+  // hEzDefault is expressed along the local coordinate s = |z|.
+  // Convert it to the global Cartesian z direction.
+  ez_vcm += z_cm >= 0.0 ? delta_ez_local_vcm : -delta_ez_local_vcm;
+
 }
 
 void PHGarfield::InitializeGas(const std::string &dir)
@@ -289,6 +409,28 @@ double PHGarfield::bounder(double phi, double phi_min)
   return phi;
 }
 
+TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x, double y, double z, double step_ns)
+{
+  //x,y,z are denominated in tpc coordinate, so transform them to global
+  ConvertToGlobal(x,y,z,tpcrot,tpcpos);
+
+  TPolyLine3D* poly = ReverseDrift(x,y,z,step_ns);
+  //polyline is in global coordinates, so transform it back, point by point.
+  Float_t *polyPoints=poly->GetP();
+  for (unsigned int i = 0; i < poly->GetN(); i++)
+  {
+    double polyX=poly->GetP()[i*3];
+    double polyY=poly->GetP()[i*3+1];
+    double polyZ=poly->GetP()[i*3+2];
+    ConvertToLocal(polyX,polyY,polyZ,tpcrot,tpcpos)
+    
+    poly->SetPoint(i, polyX,polyY,polyZ);
+  }
+
+  return poly;
+}
+
+}
 TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_ns)
 {
   std::vector<double> xlist;
