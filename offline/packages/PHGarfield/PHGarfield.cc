@@ -420,7 +420,7 @@ TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double 
 
   TPolyLine3D* poly = ReverseDrift(x,y,z,step_ns);
   //polyline is in global coordinates, so transform it back, point by point.
-  for (unsigned int i = 0; i < poly->GetN(); i++)
+  for (int i = 0; i < poly->GetN(); i++)
   {
     double polyX=poly->GetP()[i*3];
     double polyY=poly->GetP()[i*3+1];
@@ -433,7 +433,6 @@ TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double 
   return poly;
 }
 
-}
 TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_ns)
 {
   std::vector<double> xlist;

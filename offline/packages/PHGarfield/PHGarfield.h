@@ -62,6 +62,7 @@ TPolyLine3D* ReverseDriftTpcCoords(double x_cm, double y_cm, double z_cm, double
  private:
   void GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, double &bx_t, double &by_t, double &bz_t) const;      // Feeds magnetic field to Garfield
   void GetElectricFieldVcm(double x_cm, double y_cm, double z_cm, double &ex_vcm, double &ey_vcm, double &ez_vcm) const;  // Feeds electric field to Garfield
+  void GetTpcFrameElectricFieldVcm(double x_cm, double y_cm, double z_cm, double &ex_vcm, double &ey_vcm, double &ez_vcm) const;  // Feeds electric field to Garfield
   void InitializeGas(const std::string &dir);
   bool LoadElectricFieldCorrections(const std::string &filename);
   double InterpolateCorrectionVcm(const TH2 *hist, double r_cm, double abs_z_cm) const;
