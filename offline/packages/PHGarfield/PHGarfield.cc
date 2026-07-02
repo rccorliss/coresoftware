@@ -12,6 +12,8 @@
 #include <TPolyLine3D.h>
 #include <TVector3.h>
 #include <TRotation.h>
+#include <TFile.h>
+#include <TH2.h>
 
 #include <CLHEP/Units/SystemOfUnits.h>
 
