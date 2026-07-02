@@ -347,6 +347,80 @@ void PHGarfield::GetTpcFrameElectricFieldVcm(double x_cm, double y_cm, double z_
 
 }
 
+bool PHGarfield::LoadElectricFieldCorrections(const std::string& filename)
+{
+  std::unique_ptr<TFile> input(TFile::Open(filename.c_str(), "READ"));
+  if (!input || input->IsZombie())
+  {
+    std::cerr << PHWHERE << " Could not open electric-field map: "
+              << filename << std::endl;
+    return false;
+  }
+
+  auto* er = dynamic_cast<TH2*>(input->Get("QA/hErDefault"));
+  auto* ez = dynamic_cast<TH2*>(input->Get("QA/hEzDefault"));
+
+  // Also allow maps written at the ROOT-file top level.
+  if (!er) er = dynamic_cast<TH2*>(input->Get("hErDefault"));
+  if (!ez) ez = dynamic_cast<TH2*>(input->Get("hEzDefault"));
+
+  if (!er || !ez)
+  {
+    std::cerr << PHWHERE
+              << " Missing QA/hErDefault or QA/hEzDefault in "
+              << filename << std::endl;
+    return false;
+  }
+
+  delete m_erCorrection;
+  delete m_ezCorrection;
+  m_erCorrection = dynamic_cast<TH2*>(er->Clone("PHGarfield_ErCorrection"));
+  m_ezCorrection = dynamic_cast<TH2*>(ez->Clone("PHGarfield_EzCorrection"));
+
+  if (!m_erCorrection || !m_ezCorrection)
+  {
+    delete m_erCorrection;
+    delete m_ezCorrection;
+    m_erCorrection = nullptr;
+    m_ezCorrection = nullptr;
+    return false;
+  }
+
+  m_erCorrection->SetDirectory(nullptr);
+  m_ezCorrection->SetDirectory(nullptr);
+
+  std::cout << "Loaded axisymmetric electric-field corrections from "
+            << filename << std::endl;
+  std::cout << "  scale k_eff = " << m_spaceChargeScale << std::endl;
+  std::cout << "  r range [cm] = ["
+            << m_erCorrection->GetXaxis()->GetXmin() << ", "
+            << m_erCorrection->GetXaxis()->GetXmax() << "]" << std::endl;
+  std::cout << "  |z| range [cm] = ["
+            << m_erCorrection->GetYaxis()->GetXmin() << ", "
+            << m_erCorrection->GetYaxis()->GetXmax() << "]" << std::endl;
+
+  return true;
+}
+
+double PHGarfield::InterpolateCorrectionVcm(const TH2* hist,
+                                             double r_cm,
+                                             double abs_z_cm) const
+{
+  if (!hist) return 0.0;
+
+  const auto* xaxis = hist->GetXaxis();
+  const auto* yaxis = hist->GetYaxis();
+  if (r_cm < xaxis->GetXmin() || r_cm > xaxis->GetXmax() ||
+      abs_z_cm < yaxis->GetXmin() || abs_z_cm > yaxis->GetXmax())
+  {
+    return 0.0;
+  }
+
+  // Notebook histograms store V/m; Garfield expects V/cm.
+  return hist->Interpolate(r_cm, abs_z_cm) / 100.0;
+}
+
+
 void PHGarfield::InitializeGas(const std::string &dir)
 {
   //  Create and fill the gas object so that we can trace particles through the gas...
