@@ -47,7 +47,7 @@ class PHGarfield : public SubsysReco
 
   //  These are left in public namespace for easy plotting macros...
   //  The user is encouraged to add more routine to fit their analysis goals...
-  TPolyLine3D* ReverseDriftTpcCoords(double x, double y, double z, double step_ns); //Convert into global, drift in global, and convert back to tpc coords.
+TPolyLine3D* ReverseDriftTpcCoords(double x_cm, double y_cm, double z_cm, double step_ns);//Convert into global, drift in global, and convert back to tpc coords.
 
   TPolyLine3D* ReverseDrift(double x_cm, double y_cm, double z_cm, double step_ns = 50.0);  // Drifts electrons from some initial point until they hit a detector boundary...
 
@@ -76,7 +76,7 @@ class PHGarfield : public SubsysReco
   std::string m_defaultGasfile;
   bool m_GasFilesLoaded{false};
 
-  
+
   TVector3 magpos;
   TRotation magrot; 
   TVector3 tpcpos;

@@ -258,14 +258,14 @@ void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, do
   TRotation magrotInverse=magrot.Inverse();
   TVector3 magcoord=magrotInverse*magraw;
   */
-  double x_cm=x_cm,y_cm=y_cm, z_cm=z_cm;
-  ConvertToLocal(x_cm,y_cm,z_cm,magrot,magpos);
+  double x=x_cm,y=y_cm, z=z_cm;
+  ConvertToLocal(x,y,z,magrot,magpos);
 
   double point[4] =
       {
-          x_cm * CLHEP::cm,
-          y_cm * CLHEP::cm,
-          z_cm * CLHEP::cm,
+          x * CLHEP::cm,
+          y * CLHEP::cm,
+          z * CLHEP::cm,
           //(z_cm-20.0) * CLHEP::cm,
           0.0};
 
@@ -291,11 +291,12 @@ bz_t = bfieldGlobal.Z() / CLHEP::tesla;
 
 void PHGarfield::GetElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
 {
-  ConvertToLocal(x_cm,y_cm,z_cm,tpcrot,tpcpos);
+  double x=x_cm,y=y_cm, z=z_cm;
+  ConvertToLocal(x,y,z,tpcrot,tpcpos);
 
 
   double ex_loc,ey_loc,ez_loc;
-  GetTpcFrameElectricFieldVcm(localCoord.X(), localCoord.Y(),localCoord.Z(),ex_loc,ey_loc,ez_loc);
+  GetTpcFrameElectricFieldVcm(x,y,z,ex_loc,ey_loc,ez_loc);
   TVector3 fieldLocal;
   fieldLocal.SetXYZ(ex_loc,ey_loc,ez_loc); 
   //field is in TPC axes.  rotate into global axes:
@@ -410,14 +411,15 @@ double PHGarfield::bounder(double phi, double phi_min)
   return phi;
 }
 
-TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x, double y, double z, double step_ns)
+TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double z_cm, double step_ns)
 {
+
   //x,y,z are denominated in tpc coordinate, so transform them to global
+  double x=x_cm,y=y_cm, z=z_cm;
   ConvertToGlobal(x,y,z,tpcrot,tpcpos);
 
   TPolyLine3D* poly = ReverseDrift(x,y,z,step_ns);
   //polyline is in global coordinates, so transform it back, point by point.
-  Float_t *polyPoints=poly->GetP();
   for (unsigned int i = 0; i < poly->GetN(); i++)
   {
     double polyX=poly->GetP()[i*3];
