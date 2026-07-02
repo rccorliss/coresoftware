@@ -215,35 +215,34 @@ tpcrot.RotateZ(theta_z);
 return;
 }
 
-  void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
-    //this assumes everything is in the same units!
-    //convert coords from global coords in global axes
-    //  to coords wrt tpc center (with global axes)
-    TVector3 global;
-    global.SetXYZ(x,y,z);
-    TVector3 localRaw=raw-trans;
-    //rotate into the local axes:
-    TRotation localRotInverse=rot.Inverse();
-    TVector3 local=localRotInverse*localRaw;    
-    x=local.X();
-    y=local.Y();
-    z=local.Z();
-    return;
-  }
-  void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
-    //this assumes everything is in the same units!
-    //inverse of the ConvertToLocal:
-    TVector3 local;
-    local.SetXYZ(x,y,z);
-    //rotate back to global axes:
-    TVector3 globalRaw=rot*local;
-    TVector3 global=globalRaw+trans;
-    x=global.X();
-    y=global.Y();
-    z=global.Z();
-    return;
-  }
-  }
+void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
+  //this assumes everything is in the same units!
+  //convert coords from global coords in global axes
+  //  to coords wrt tpc center (with global axes)
+  TVector3 global;
+  global.SetXYZ(x,y,z);
+  TVector3 localRaw=global-trans;
+  //rotate into the local axes:
+  TRotation localRotInverse=rot.Inverse();
+  TVector3 local=localRotInverse*localRaw;    
+  x=local.X();
+  y=local.Y();
+  z=local.Z();
+  return;
+}
+void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans){
+  //this assumes everything is in the same units!
+  //inverse of the ConvertToLocal:
+  TVector3 local;
+  local.SetXYZ(x,y,z);
+  //rotate back to global axes:
+  TVector3 globalRaw=rot*local;
+  TVector3 global=globalRaw+trans;
+  x=global.X();
+  y=global.Y();
+  z=global.Z();
+  return;
+}
 
 void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, double& bx_t, double& by_t, double& bz_t) const
 {
@@ -259,6 +258,7 @@ void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, do
   TRotation magrotInverse=magrot.Inverse();
   TVector3 magcoord=magrotInverse*magraw;
   */
+  double x_cm=x_cm,y_cm=y_cm, z_cm=z_cm;
   ConvertToLocal(x_cm,y_cm,z_cm,magrot,magpos);
 
   double point[4] =
