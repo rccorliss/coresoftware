@@ -425,7 +425,7 @@ TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double 
     double polyX=poly->GetP()[i*3];
     double polyY=poly->GetP()[i*3+1];
     double polyZ=poly->GetP()[i*3+2];
-    ConvertToLocal(polyX,polyY,polyZ,tpcrot,tpcpos)
+    ConvertToLocal(polyX,polyY,polyZ,tpcrot,tpcpos);
     
     poly->SetPoint(i, polyX,polyY,polyZ);
   }
