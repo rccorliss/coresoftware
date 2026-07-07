@@ -330,6 +330,7 @@ void PHGarfield::GetTpcFrameElectricFieldVcm(double x_cm, double y_cm, double z_
   ex_vcm = 0.0;
   ey_vcm = 0.0;
   ez_vcm = z_cm > 0 ? -400.0 : 400.0;
+  return;
 
   //Yuri's correction:
     if (!m_erCorrection || !m_ezCorrection || m_spaceChargeScale == 0.0)
@@ -521,6 +522,8 @@ TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double 
 
 TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_ns)
 {
+  printf("ReverseDrifting (Global Coords) (%f,%f,%f, step=%f)\n",x,y,z,step_ns);
+
   std::vector<double> xlist;
   std::vector<double> ylist;
   std::vector<double> zlist;
