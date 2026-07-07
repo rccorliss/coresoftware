@@ -316,7 +316,7 @@ std::cout <<PHWHERE << "enter\n";
   ex_vcm = fieldGlobal.X();
   ey_vcm = fieldGlobal.Y();
   ez_vcm = fieldGlobal.Z();
-std::cout <<PHWHERE << "exit: p:("<<x_cm<<", "<<y_cm<<", "<<z_cm <<")-->E:("<<ex_t<<", "<<ey_t<<", "<<ez_t <<")\n";
+std::cout <<PHWHERE << "exit: p:("<<x_cm<<", "<<y_cm<<", "<<z_cm <<")-->E:("<<ex_vcm<<", "<<ey_vcm<<", "<<ez_vcm <<")\n";
 
   return;
 }
