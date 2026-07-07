@@ -558,7 +558,7 @@ TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_
     m_gas->ElectronVelocity(ex, ey, ez, bx, by, bz, vx, vy, vz);
 std::cout <<PHWHERE << "Drifting:";
 printf("i=%d, step_ns=%f, v=(%f,%f,%f), p=(%f,%f,%f)",step,step_ns, vx,vy,vz,x,y,z);
-printf("  B=(%f,%f,%f), E=(%f,%f,%f)\n",bx,by,bz,ex,ey,ez)
+printf("  B=(%f,%f,%f), E=(%f,%f,%f)\n",bx,by,bz,ex,ey,ez);
     x = x - vx * step_ns;
     y = y - vy * step_ns;
     z = z - vz * step_ns;
@@ -607,7 +607,7 @@ bool PHGarfield::StopHere(const double x, const double y, const double z,
   }
 if (z==zPrevious){
   //it is identically not moving in z.  Something is wrong.
-  std::cerr<<"z=zPrevious, implying the reverse drift is not moving."
+  std::cerr<<"z=zPrevious, implying the reverse drift is not moving.";
   return true;
 }
 
