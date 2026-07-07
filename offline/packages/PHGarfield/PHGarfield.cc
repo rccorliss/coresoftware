@@ -239,7 +239,7 @@ void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, 
   return;
 }
 void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans) const{
-  printf("Convert to Global (%f,%f,%f)\n",x,y,z);
+  //printf("Convert to Global (%f,%f,%f)\n",x,y,z);
   //this assumes everything is in the same units!
   //inverse of the ConvertToLocal:
   TVector3 local;
@@ -503,7 +503,7 @@ double PHGarfield::bounder(double phi, double phi_min)
 
 TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double z_cm, double step_ns)
 {
-  printf("ReverseDrifting (TPC Coords) (%f,%f,%f, step=%f)\n",x_cm,y_cm,z_cm,step_ns);
+  //printf("ReverseDrifting (TPC Coords) (%f,%f,%f, step=%f)\n",x_cm,y_cm,z_cm,step_ns);
 
   //x,y,z are denominated in tpc coordinate, so transform them to global
   double x=x_cm,y=y_cm, z=z_cm;
@@ -511,11 +511,11 @@ TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double 
 
   TPolyLine3D* poly = ReverseDrift(x,y,z,step_ns);
   //polyline is in global coordinates, so transform it back, point by point.
-  printf("ReverseDrifting (TPC Coords) Polyline has n=%d\n",poly->GetN());
+  //printf("ReverseDrifting (TPC Coords) Polyline has n=%d\n",poly->GetN());
 
   for (int i = 0; i < poly->GetN(); i++)
   {
-    if (!(i%100)) printf("i=%d",i);
+    //if (!(i%100)) printf("i=%d",i);
     double polyX=poly->GetP()[i*3];
     double polyY=poly->GetP()[i*3+1];
     double polyZ=poly->GetP()[i*3+2];
@@ -529,7 +529,7 @@ TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double 
 
 TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_ns)
 {
-  printf("ReverseDrifting (Global Coords) (%f,%f,%f, step=%f)\n",x,y,z,step_ns);
+  //printf("ReverseDrifting (Global Coords) (%f,%f,%f, step=%f)\n",x,y,z,step_ns);
 
   std::vector<double> xlist;
   std::vector<double> ylist;
@@ -557,9 +557,11 @@ TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_
     GetMagneticFieldTesla(x, y, z, bx, by, bz);
     GetElectricFieldVcm(x, y, z, ex, ey, ez);
     m_gas->ElectronVelocity(ex, ey, ez, bx, by, bz, vx, vy, vz);
-std::cout <<PHWHERE << "Drifting:";
-printf("i=%d, step_ns=%f, v=(%f,%f,%f), p=(%f,%f,%f)",step,step_ns, vx,vy,vz,x,y,z);
-printf("  B=(%f,%f,%f), E=(%f,%f,%f)\n",bx,by,bz,ex,ey,ez);
+    if (vx==0.0 && vy==0.0 && vz=0.0){
+      std::cout <<PHWHERE << "Drifting has v=0:";
+      printf("i=%d, step_ns=%f, v=(%f,%f,%f), p=(%f,%f,%f)",step,step_ns, vx,vy,vz,x,y,z);
+      printf("  B=(%f,%f,%f), E=(%f,%f,%f)\n",bx,by,bz,ex,ey,ez);
+    }
     x = x - vx * step_ns;
     y = y - vy * step_ns;
     z = z - vz * step_ns;
