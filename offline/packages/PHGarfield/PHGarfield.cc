@@ -557,7 +557,7 @@ TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_
     GetMagneticFieldTesla(x, y, z, bx, by, bz);
     GetElectricFieldVcm(x, y, z, ex, ey, ez);
     m_gas->ElectronVelocity(ex, ey, ez, bx, by, bz, vx, vy, vz);
-    if (vx==0.0 && vy==0.0 && vz=0.0){
+    if (vx==0.0 && vy==0.0 && vz==0.0){
       std::cout <<PHWHERE << "Drifting has v=0:";
       printf("i=%d, step_ns=%f, v=(%f,%f,%f), p=(%f,%f,%f)",step,step_ns, vx,vy,vz,x,y,z);
       printf("  B=(%f,%f,%f), E=(%f,%f,%f)\n",bx,by,bz,ex,ey,ez);
