@@ -607,7 +607,7 @@ bool PHGarfield::StopHere(const double x, const double y, const double z,
   }
 if (z==zPrevious){
   //it is identically not moving in z.  Something is wrong.
-  std::cerr<<"z=zPrevious, implying the reverse drift is not moving.\n";
+  std::cerr<<"z=zPrevious.  No motion.  Stopping Here.\n";
   return true;
 }
 
