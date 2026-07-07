@@ -76,6 +76,7 @@ int PHGarfield::InitRun(PHCompositeNode* /*topNode*/)
                                 { GetElectricFieldVcm(x, y, z, ex, ey, ez); });
   
   // Here we fetch the gas from the CDB
+  /*
   std::string gasfile = m_cdb->getUrl("PHGARFIELD_GAS");
   if (gasfile.empty() || !std::filesystem::exists(gasfile))
     {
@@ -84,8 +85,8 @@ int PHGarfield::InitRun(PHCompositeNode* /*topNode*/)
       gasfile = m_defaultGasfile;
     }
   InitializeGas(gasfile);
-
-  //InitializeGas("/direct/phenix+u/workarea/hemmick/code.sphenix/tkh/gas/gasfiles/");
+*/
+  InitializeGas("/direct/phenix+u/workarea/hemmick/code.sphenix/tkh/gas/gasfiles/");
 
   //  Diagnostic during code development...
   FillRadii();
