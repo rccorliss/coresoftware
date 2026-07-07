@@ -550,12 +550,15 @@ TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_
   double vz;
 
   double zPrevious = z;
+  int step=0;
   while (!StopHere(x, y, z, zPrevious))
   {
     zPrevious = z;
     GetMagneticFieldTesla(x, y, z, bx, by, bz);
     GetElectricFieldVcm(x, y, z, ex, ey, ez);
     m_gas->ElectronVelocity(ex, ey, ez, bx, by, bz, vx, vy, vz);
+std::cout <<PHWHERE << "Drifting:";
+printf("i=%d, step_ns=%f, v=(%f,%f,%f), p=(%f,%f,%f)\n",step,step_ns, vx,vy,vz,x,y,z);
 
     x = x - vx * step_ns;
     y = y - vy * step_ns;
@@ -564,6 +567,7 @@ TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_
     xlist.push_back(x);
     ylist.push_back(y);
     zlist.push_back(z);
+    step++;
   }
 
   TPolyLine3D* poly = new TPolyLine3D(xlist.size() - 1);
