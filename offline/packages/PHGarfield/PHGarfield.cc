@@ -503,7 +503,7 @@ double PHGarfield::bounder(double phi, double phi_min)
 
 TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double z_cm, double step_ns)
 {
-  //printf("ReverseDrifting (TPC Coords) (%f,%f,%f, step=%f)\n",x_cm,y_cm,z_cm,step_ns);
+  printf("ReverseDrifting (TPC Coords) (%f,%f,%f, step=%f)\n",x_cm,y_cm,z_cm,step_ns);
 
   //x,y,z are denominated in tpc coordinate, so transform them to global
   double x=x_cm,y=y_cm, z=z_cm;
