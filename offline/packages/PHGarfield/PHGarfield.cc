@@ -254,7 +254,7 @@ void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot,
 
 void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, double& bx_t, double& by_t, double& bz_t) const
 {
-std::cout <<PHWHERE << "enter\n";
+//std::cout <<PHWHERE << "enter\n";
   // NOTE:  Garfield uses  cm, V/cm, and Tesla.
   //        CLHEP    uses  mm, V/mm, and kiloTesla
   //        PHField3DCartesian follows the CLHEP conventions for magnetic fields.
@@ -294,14 +294,14 @@ bx_t = bfieldGlobal.X() / CLHEP::tesla;
 by_t = bfieldGlobal.Y() / CLHEP::tesla;
 bz_t = bfieldGlobal.Z() / CLHEP::tesla;
 
-std::cout <<PHWHERE << "exit: p:("<<x_cm<<", "<<y_cm<<", "<<z_cm <<")-->E:("<<bx_t<<", "<<by_t<<", "<<bz_t <<")\n";
+//std::cout <<PHWHERE << "exit: p:("<<x_cm<<", "<<y_cm<<", "<<z_cm <<")-->B:("<<bx_t<<", "<<by_t<<", "<<bz_t <<")\n";
 return;
 }
 
 
 void PHGarfield::GetElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
 {
-std::cout <<PHWHERE << "enter\n";
+//std::cout <<PHWHERE << "enter\n";
   double x=x_cm,y=y_cm, z=z_cm;
   ConvertToLocal(x,y,z,tpcrot,tpcpos);
 
@@ -316,14 +316,14 @@ std::cout <<PHWHERE << "enter\n";
   ex_vcm = fieldGlobal.X();
   ey_vcm = fieldGlobal.Y();
   ez_vcm = fieldGlobal.Z();
-std::cout <<PHWHERE << "exit: p:("<<x_cm<<", "<<y_cm<<", "<<z_cm <<")-->E:("<<ex_vcm<<", "<<ey_vcm<<", "<<ez_vcm <<")\n";
+//std::cout <<PHWHERE << "exit: p:("<<x_cm<<", "<<y_cm<<", "<<z_cm <<")-->E:("<<ex_vcm<<", "<<ey_vcm<<", "<<ez_vcm <<")\n";
 
   return;
 }
 
 void PHGarfield::GetTpcFrameElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
 {
-std::cout <<PHWHERE << "enter\n";
+//std::cout <<PHWHERE << "enter\n";
   // NOTE:  Garfield uses  cm, V/cm, and Tesla.
   // The notebook maps use cm on their axes and V/m in their bins.
   // The map is produced for one TPC half using s = |z|, measured from
@@ -336,7 +336,6 @@ std::cout <<PHWHERE << "enter\n";
   ex_vcm = 0.0;
   ey_vcm = 0.0;
   ez_vcm = z_cm > 0 ? -400.0 : 400.0;
-  return;
 
   //Yuri's correction:
     if (!m_erCorrection || !m_ezCorrection || m_spaceChargeScale == 0.0)
@@ -359,7 +358,7 @@ std::cout <<PHWHERE << "enter\n";
   // hEzDefault is expressed along the local coordinate s = |z|.
   // Convert it to the global Cartesian z direction.
   ez_vcm += z_cm >= 0.0 ? delta_ez_local_vcm : -delta_ez_local_vcm;
-std::cout <<PHWHERE << "exit\n";
+//std::cout <<PHWHERE << "exit\n";
   return;
 }
 
@@ -558,8 +557,8 @@ TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_
     GetElectricFieldVcm(x, y, z, ex, ey, ez);
     m_gas->ElectronVelocity(ex, ey, ez, bx, by, bz, vx, vy, vz);
 std::cout <<PHWHERE << "Drifting:";
-printf("i=%d, step_ns=%f, v=(%f,%f,%f), p=(%f,%f,%f)\n",step,step_ns, vx,vy,vz,x,y,z);
-
+printf("i=%d, step_ns=%f, v=(%f,%f,%f), p=(%f,%f,%f)",step,step_ns, vx,vy,vz,x,y,z);
+printf("  B=(%f,%f,%f), E=(%f,%f,%f)\n",bx,by,bz,ex,ey,ez)
     x = x - vx * step_ns;
     y = y - vy * step_ns;
     z = z - vz * step_ns;
@@ -606,6 +605,11 @@ bool PHGarfield::StopHere(const double x, const double y, const double z,
   {
     return true;
   }
+if (z==zPrevious){
+  //it is identically not moving in z.  Something is wrong.
+  std::cerr<<"z=zPrevious, implying the reverse drift is not moving."
+  return true;
+}
 
   return false;
 }
