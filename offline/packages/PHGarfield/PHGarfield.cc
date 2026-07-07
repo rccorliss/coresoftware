@@ -254,7 +254,7 @@ void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot,
 
 void PHGarfield::GetMagneticFieldTesla(double x_cm, double y_cm, double z_cm, double& bx_t, double& by_t, double& bz_t) const
 {
-cout <<PHWHERE << "enter";
+std::cout <<PHWHERE << "enter";
   // NOTE:  Garfield uses  cm, V/cm, and Tesla.
   //        CLHEP    uses  mm, V/mm, and kiloTesla
   //        PHField3DCartesian follows the CLHEP conventions for magnetic fields.
@@ -294,14 +294,14 @@ bx_t = bfieldGlobal.X() / CLHEP::tesla;
 by_t = bfieldGlobal.Y() / CLHEP::tesla;
 bz_t = bfieldGlobal.Z() / CLHEP::tesla;
 
-cout <<PHWHERE << "exit";
+std::cout <<PHWHERE << "exit";
 return;
 }
 
 
 void PHGarfield::GetElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
 {
-cout <<PHWHERE << "enter";
+std::cout <<PHWHERE << "enter";
   double x=x_cm,y=y_cm, z=z_cm;
   ConvertToLocal(x,y,z,tpcrot,tpcpos);
 
@@ -316,14 +316,14 @@ cout <<PHWHERE << "enter";
   ex_vcm = fieldGlobal.X();
   ey_vcm = fieldGlobal.Y();
   ez_vcm = fieldGlobal.Z();
-cout <<PHWHERE << "exit";
+std::cout <<PHWHERE << "exit";
 
   return;
 }
 
 void PHGarfield::GetTpcFrameElectricFieldVcm(double x_cm, double y_cm, double z_cm, double& ex_vcm, double& ey_vcm, double& ez_vcm) const
 {
-cout <<PHWHERE << "enter";
+std::cout <<PHWHERE << "enter";
   // NOTE:  Garfield uses  cm, V/cm, and Tesla.
   // The notebook maps use cm on their axes and V/m in their bins.
   // The map is produced for one TPC half using s = |z|, measured from
@@ -359,7 +359,7 @@ cout <<PHWHERE << "enter";
   // hEzDefault is expressed along the local coordinate s = |z|.
   // Convert it to the global Cartesian z direction.
   ez_vcm += z_cm >= 0.0 ? delta_ez_local_vcm : -delta_ez_local_vcm;
-cout <<PHWHERE << "exit";
+std::cout <<PHWHERE << "exit";
   return;
 }
 
