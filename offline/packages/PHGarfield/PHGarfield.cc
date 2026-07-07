@@ -503,7 +503,7 @@ TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double 
 
   TPolyLine3D* poly = ReverseDrift(x,y,z,step_ns);
   //polyline is in global coordinates, so transform it back, point by point.
-  printf("ReverseDrifting (TPC Coords) Polyline has n=\n",poly->GetN());
+  printf("ReverseDrifting (TPC Coords) Polyline has n=%d\n",poly->GetN());
 
   for (int i = 0; i < poly->GetN(); i++)
   {
