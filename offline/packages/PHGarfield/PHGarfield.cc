@@ -548,7 +548,7 @@ TPolyLine3D* PHGarfield::ReverseDrift(double x, double y, double z, double step_
   double vy;
   double vz;
 
-  double zPrevious = z;
+  double zPrevious = z*1000;//ridiculous starting estimate ;)
   int step=0;
   while (!StopHere(x, y, z, zPrevious))
   {
