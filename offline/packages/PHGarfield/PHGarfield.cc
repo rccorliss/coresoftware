@@ -207,10 +207,13 @@ magrot.RotateZ(theta_z);
 return;
 }
 void PHGarfield::MoveTpc(double x, double y, double z){
+printf("Translating TPC by (%f,%f,%f) radians",x,y,z);
+
 tpcpos.SetXYZ(x,y,z);
 return;
 }
 void PHGarfield::RotateTpc(double theta_x, double theta_y, double theta_z){
+  printf("Rotating TPC by (%f,%f,%f) radians",theta_x,theta_y,theta_z);
 tpcrot.RotateX(theta_x);
 tpcrot.RotateY(theta_y);
 tpcrot.RotateZ(theta_z);
@@ -218,6 +221,8 @@ return;
 }
 
 void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, TVector3 trans) const{
+  printf("Convert to Local (%f,%f,%f)",x,y,z);
+
   //this assumes everything is in the same units!
   //convert coords from global coords in global axes
   //  to coords wrt tpc center (with global axes)
@@ -233,6 +238,7 @@ void PHGarfield::ConvertToLocal(double &x, double &y, double &z, TRotation rot, 
   return;
 }
 void PHGarfield::ConvertToGlobal(double &x, double &y, double &z, TRotation rot, TVector3 trans) const{
+  printf("Convert to Global (%f,%f,%f)",x,y,z);
   //this assumes everything is in the same units!
   //inverse of the ConvertToLocal:
   TVector3 local;
@@ -325,7 +331,7 @@ void PHGarfield::GetTpcFrameElectricFieldVcm(double x_cm, double y_cm, double z_
   ey_vcm = 0.0;
   ez_vcm = z_cm > 0 ? -400.0 : 400.0;
 
-  //Iurii's correction:
+  //Yuri's correction:
     if (!m_erCorrection || !m_ezCorrection || m_spaceChargeScale == 0.0)
   {
     return;
@@ -489,6 +495,7 @@ double PHGarfield::bounder(double phi, double phi_min)
 
 TPolyLine3D* PHGarfield::ReverseDriftTpcCoords(double x_cm, double y_cm, double z_cm, double step_ns)
 {
+  printf("ReverseDrifting (TPC COords) (%f,%f,%f, step=%f)",x_cm,y_cm,z_cm,step_ns);
 
   //x,y,z are denominated in tpc coordinate, so transform them to global
   double x=x_cm,y=y_cm, z=z_cm;
